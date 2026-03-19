@@ -100,6 +100,21 @@ PRESETS: dict[str, dict[str, dict[str, Any]]] = {
             },
         },
     },
+    "qec_clifford": {
+        "smoke": {
+            "source_format": "normalized_ir",
+            "semantic_target": "detectors",
+            "reference_tier": "smoke",
+            "split_tag": "demo",
+            "repeat_count_hint": 1,
+            "parameters": {
+                "code_family": "repetition",
+                "distance": 3,
+                "cycles": 4,
+                "detector_layout": "line",
+            },
+        },
+    },
 }
 
 

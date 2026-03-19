@@ -1,4 +1,6 @@
-from aqs.manifest import finalize_workload_manifest, validate_manifest
+from pathlib import Path
+
+from aqs.manifest import finalize_workload_manifest, load_yaml, validate_manifest
 
 
 def test_manifest_fixup_matches_canonical_hash():
@@ -24,3 +26,9 @@ def test_manifest_fixup_matches_canonical_hash():
     }
     fixed = finalize_workload_manifest(manifest)
     assert validate_manifest(fixed) == []
+
+
+def test_workload_templates_validate():
+    for path in sorted(Path("workloads/manifests/templates").glob("*.yaml")):
+        manifest = load_yaml(path)
+        assert validate_manifest(manifest) == [], f"{path} should validate"

@@ -3,7 +3,7 @@ family_id: qec_clifford
 family_version: 0.1.0
 generator_name: qec_clifford
 generator_version: 0.1.0
-source_format: stim
+source_format: normalized_ir
 semantic_target: detectors
 reference_tier: smoke
 split_tag: demo
