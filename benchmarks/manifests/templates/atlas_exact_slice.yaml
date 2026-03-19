@@ -1,0 +1,14 @@
+api_version: aqs.benchmark.v1
+project: atlas
+dataset_name: atlas_exact_slice_smoke
+version_tag: 0.1.0
+objective: ttfr
+system_manifest: configs/systems/h100_80gb.yml
+workload_glob: workloads/manifests/generated/*.yaml
+allowed_modes:
+  - statevec
+  - exact_tn
+profile_policy: representative_only
+notes: first atlas exact/state-vector slice
+probe_strategy: surrogate_only
+max_workloads: 8

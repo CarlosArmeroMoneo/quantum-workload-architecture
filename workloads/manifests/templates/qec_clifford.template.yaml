@@ -1,0 +1,17 @@
+api_version: aqs.workload.v1
+family_id: qec_clifford
+family_version: 0.1.0
+generator_name: qec_clifford
+generator_version: 0.1.0
+source_format: stim
+semantic_target: detectors
+reference_tier: smoke
+split_tag: demo
+repeat_count_hint: 1
+seed: 401
+parameters:
+  code_family: repetition
+  distance: 3
+  cycles: 4
+  detector_layout: line
+notes: atlas stabilizer-native smoke case

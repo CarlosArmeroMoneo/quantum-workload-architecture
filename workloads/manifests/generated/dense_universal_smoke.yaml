@@ -1,0 +1,20 @@
+api_version: aqs.workload.v1
+family_id: dense_universal
+family_version: 0.1.0
+generator_name: dense_universal
+generator_version: 0.1.0
+seed: 101
+source_format: normalized_ir
+semantic_target: amplitude
+reference_tier: smoke
+split_tag: demo
+repeat_count_hint: 1
+parameters:
+  n_qubits: 12
+  depth: 4
+  topology: ring
+  two_qubit_density: medium
+  measurement_pattern: terminal_all
+ids:
+  workload_id: wkl_b6916593a1f59be8
+  source_hash: b6916593a1f59be800cf7d36a626157d18933f301738a094404d66e7b1d8f385

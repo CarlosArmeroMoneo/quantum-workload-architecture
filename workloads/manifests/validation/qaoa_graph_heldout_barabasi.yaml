@@ -1,0 +1,20 @@
+api_version: aqs.workload.v1
+family_id: qaoa_graph
+family_version: 0.1.0
+generator_name: qaoa_graph
+generator_version: 0.1.0
+seed: 404
+source_format: normalized_ir
+semantic_target: expectation
+reference_tier: boundary
+split_tag: heldout_family
+repeat_count_hint: 12
+parameters:
+  n_qubits: 18
+  graph_family: barabasi
+  graph_degree: 3
+  p: 2
+  observable_count: 4
+ids:
+  workload_id: wkl_0c8b77ac7ab661c0
+  source_hash: 0c8b77ac7ab661c03622df70ccfe183c9a9f08c36afb8cc59d782301913959c4

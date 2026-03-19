@@ -1,0 +1,19 @@
+api_version: aqs.workload.v1
+family_id: grid_2d_shallow
+family_version: 0.1.0
+generator_name: grid_2d_shallow
+generator_version: 0.1.0
+seed: 606
+source_format: normalized_ir
+semantic_target: expectation
+reference_tier: scale
+split_tag: val
+repeat_count_hint: 32
+parameters:
+  rows: 6
+  cols: 6
+  layers: 6
+  entangler_pattern: brickwork
+ids:
+  workload_id: wkl_0ebc88a91f0d69c0
+  source_hash: 0ebc88a91f0d69c06419ee5e4da4f228ca10de8f2e93bc3d036e8b1789b364f8

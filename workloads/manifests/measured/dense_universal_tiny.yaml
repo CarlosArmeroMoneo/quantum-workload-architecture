@@ -1,0 +1,23 @@
+api_version: aqs.workload.v1
+family_id: dense_universal
+family_version: v1
+generator_name: aqs.generators.dense_universal
+generator_version: v0
+source_format: normalized_ir
+semantic_target: amplitude
+reference_tier: smoke
+split_tag: train
+repeat_count_hint: 6
+seed: 11
+parameters:
+  n_qubits: 6
+  depth: 2
+  topology: ring
+  two_qubit_density: low
+  measurement_pattern: terminal_observable_only
+source:
+  loader: normalized_ir
+notes: tiny dense-universal measured exact-TN slice
+ids:
+  workload_id: wkl_388d598960b83fca
+  source_hash: 388d598960b83fcaebd2a39740277c4087f8e4f39919bb58a0bb84d3b21fc4f5

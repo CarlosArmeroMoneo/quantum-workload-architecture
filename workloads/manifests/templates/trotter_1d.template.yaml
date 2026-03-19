@@ -1,0 +1,18 @@
+api_version: aqs.workload.v1
+family_id: trotter_1d
+family_version: 0.1.0
+generator_name: trotter_1d
+generator_version: 0.1.0
+source_format: normalized_ir
+semantic_target: expectation
+reference_tier: smoke
+split_tag: demo
+repeat_count_hint: 10
+seed: 307
+parameters:
+  n_qubits: 16
+  steps: 4
+  hamiltonian_pattern: xxz
+  boundary_condition: open
+  observable_count: 2
+notes: tnep bootstrap mps-favorable smoke case

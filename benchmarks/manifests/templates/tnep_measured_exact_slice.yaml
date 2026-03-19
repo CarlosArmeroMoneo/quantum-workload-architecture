@@ -1,0 +1,17 @@
+api_version: aqs.benchmark.v1
+project: tnep
+dataset_name: tnep_measured_exact_slice_smoke
+version_tag: "v0"
+objective: ttfr
+system_manifest: configs/systems/cpu_probe.yml
+workload_glob: workloads/manifests/measured/*.yaml
+allowed_modes:
+  - exact_tn
+  - exact_tn_distributed
+probe_strategy: surrogate_only
+execution_intent: optional_real
+planner_budget: balanced
+top_k_candidates: 3
+measurement_repeats: 3
+allow_distributed: false
+max_workloads: 3

@@ -1,0 +1,13 @@
+api_version: aqs.benchmark.v1
+project: tnep
+dataset_name: tnep_exact_probe_smoke
+version_tag: 0.1.0
+objective: ttfr
+system_manifest: configs/systems/cpu_probe.yml
+workload_glob: workloads/manifests/generated/*.yaml
+allowed_modes:
+  - exact_tn
+profile_policy: probes_only
+notes: CPU-side contract_path bootstrap slice
+probe_strategy: surrogate_only
+max_workloads: 8

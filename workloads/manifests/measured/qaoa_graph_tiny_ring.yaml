@@ -1,0 +1,23 @@
+api_version: aqs.workload.v1
+family_id: qaoa_graph
+family_version: v1
+generator_name: aqs.generators.qaoa_graph
+generator_version: v0
+source_format: normalized_ir
+semantic_target: expectation
+reference_tier: smoke
+split_tag: heldout_family
+repeat_count_hint: 12
+seed: 7
+parameters:
+  n_qubits: 6
+  graph_family: ring
+  graph_degree: 2
+  p: 1
+  observable_count: 2
+source:
+  loader: normalized_ir
+notes: tiny heldout qaoa measured slice
+ids:
+  workload_id: wkl_7c373cc359f7f1c0
+  source_hash: 7c373cc359f7f1c0d6fee212de622a4cdf22c7dd2a3d2c141dff4895aec441f3

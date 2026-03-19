@@ -1,0 +1,17 @@
+api_version: aqs.benchmark.v1
+project: tnep
+dataset_name: tnep_planner_validation_smoke
+version_tag: 0.1.0
+objective: ttfr
+system_manifest: configs/systems/h100_80gb_x4.yml
+workload_glob: workloads/manifests/validation/*.yaml
+allowed_modes:
+  - exact_tn
+  - exact_tn_distributed
+probe_strategy: surrogate_only
+planner_budget: balanced
+allow_distributed: true
+max_candidates: 4
+max_workloads: 8
+profile_policy: none
+notes: Held-out-family surrogate regret validation for exact-TN planning on a 4xH100 reference profile

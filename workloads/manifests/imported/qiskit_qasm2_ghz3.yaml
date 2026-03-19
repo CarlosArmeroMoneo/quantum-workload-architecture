@@ -1,0 +1,26 @@
+api_version: aqs.workload.v1
+family_id: dense_universal
+family_version: 0.1.0
+generator_name: imported_qasm2
+generator_version: 0.1.0
+seed: 0
+source_format: qiskit
+source:
+  loader: qasm2_file
+  path: workloads/sources/openqasm/ghz3.qasm
+semantic_target: amplitude
+execution_target:
+  kind: amplitude
+  bitstring: '000'
+reference_tier: smoke
+split_tag: demo
+repeat_count_hint: 1
+parameters:
+  n_qubits: 3
+  depth: 3
+  topology: ring
+  two_qubit_density: medium
+  measurement_pattern: terminal_observable_only
+ids:
+  workload_id: wkl_db16240957828e69
+  source_hash: db16240957828e696aa8282f09be2a486e8d71fb8092a9b5ef8fc02b1420c078

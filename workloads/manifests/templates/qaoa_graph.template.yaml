@@ -1,0 +1,18 @@
+api_version: aqs.workload.v1
+family_id: qaoa_graph
+family_version: 0.1.0
+generator_name: qaoa_graph
+generator_version: 0.1.0
+source_format: normalized_ir
+semantic_target: expectation
+reference_tier: smoke
+split_tag: demo
+repeat_count_hint: 4
+seed: 203
+parameters:
+  n_qubits: 12
+  graph_family: ring
+  graph_degree: 2
+  p: 1
+  observable_count: 1
+notes: atlas structured-locality smoke case

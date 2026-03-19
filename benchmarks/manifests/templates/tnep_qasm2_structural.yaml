@@ -1,0 +1,14 @@
+api_version: aqs.benchmark.v1
+project: tnep
+dataset_name: tnep_qasm2_structural_smoke
+version_tag: 0.1.0
+objective: ttfr
+system_manifest: configs/systems/cpu_probe.yml
+workload_glob: workloads/manifests/imported/*.yaml
+allowed_modes:
+  - exact_tn
+probe_strategy: structural_real
+execution_intent: optional_real
+max_workloads: 4
+profile_policy: probes_only
+notes: Structural-real exact-TN probe path over imported OpenQASM2/Qiskit-compatible workloads
