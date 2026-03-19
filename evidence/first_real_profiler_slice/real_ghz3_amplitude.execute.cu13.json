@@ -137,7 +137,7 @@
       "workspace comfortably covers the current peak estimate, limiting slicing pressure"
     ],
     "feasibility_label": "feasible",
-    "gpu_arch_target": "sm90",
+    "gpu_arch_target": "sm75",
     "hyper_samples": 2,
     "is_feasible": true,
     "max_error": 0.0,
@@ -164,28 +164,29 @@
   "system_manifest": {
     "api_version": "aqs.system.v1",
     "appliance_image": {
-      "base_ref": "optional_if_using_a_local_layered_image",
-      "ref": "nvcr.io/nvidia/cuquantum-appliance:25.11-x86_64@sha256:fill_me_in"
+      "base_ref": null,
+      "ref": null
     },
     "container_runtime": {
       "kind": "docker",
-      "version": "27.x"
+      "version": "Docker version 28.2.2, build 28.2.2-0ubuntu1~24.04.1"
     },
-    "driver_version": "570.xx",
-    "gpu_arch_target": "sm90",
+    "driver_version": "580.126.09",
+    "gpu_arch_target": "sm75",
     "gpu_count": 1,
-    "gpu_mem_gb": 80,
-    "gpu_model": "NVIDIA H100 80GB HBM3",
+    "gpu_mem_gb": 15.0,
+    "gpu_model": "Quadro RTX 5000",
     "interconnect": "pcie",
-    "kernel_version": "6.8.0-generic",
-    "node_label": "fill_me_with_host_label",
-    "notes": "template for the first profiling-capable Linux host used for real exact-TN profiler-backed runs",
-    "os_release": "Ubuntu 24.04 LTS",
+    "kernel_version": "6.8.0-106-generic",
+    "node_label": "ovh-gra9-rtx5000-28",
+    "notes": "canonical OVH profiling host for real exact-TN profiler-backed runs on Quadro RTX 5000",
+    "os_release": "Ubuntu 24.04.3 LTS",
     "profiling_host": {
+      "artifact_index": "docs/reports/first_real_profiler_slice_index.md",
       "canonical_tool_source": {
-        "ncu": "container_bundled",
-        "nsys": "container_bundled",
-        "qdstrm_importer": "container_bundled"
+        "ncu": "host_installed_ubuntu_repo",
+        "nsys": "host_installed_ubuntu_repo",
+        "qdstrm_importer": "host_installed_ubuntu_repo"
       },
       "container_launch": {
         "cap_add": [],
@@ -193,38 +194,42 @@
         "gpu_access": "--gpus all",
         "privileged": false,
         "uid": 1000,
-        "user": "cuquantum",
-        "workspace_mount": "/host/workspace:/workspace"
+        "user": "ubuntu",
+        "workspace_mount": null
       },
       "elevated_probe_attempt": {
-        "cap_add": [
-          "SYS_ADMIN"
-        ],
+        "cap_add": [],
         "privileged": false,
-        "result": "optional_if_tested",
+        "result": "succeeded_with_explicit_cuda_env_before_non_admin_counter_fix",
         "user": "root"
       },
-      "gpu_performance_counters": "enabled_or_blocked_on_host_policy",
-      "ncu_version": "Version 2025.3.1.0",
+      "execution_runbook": "docs/runbooks/ovh_cu13_real_execution.md",
+      "gpu_performance_counters": "enabled_for_non_admin_users_after_host_policy_change",
+      "ncu_version": "NVIDIA (R) Nsight Compute Command Line Profiler 2022.4.1.0",
       "notes": [
-        "freeze this file before collecting real profiler-backed benchmark evidence",
-        "keep profiler collection and importer tooling on the same blessed source",
-        "if the host changes materially, create a new manifest instead of editing in place"
+        "canonical profiling on this host uses host-installed Ubuntu nsight packages, not container-bundled profiler tools",
+        "qdstrm importer is not on PATH by default and must be discovered at /usr/lib/nsight-systems/host-linux-x64/QdstrmImporter",
+        "nsys smoke is fully working on this host",
+        "ncu smoke is intentionally unfiltered on this host/toolchain to avoid brittle NVTX filter behavior",
+        "real exact-TN execution on this host uses the .venv_cu13 environment plus qwa_cuda_env_cu13.sh",
+        "container runtime inventory is recorded here, but the canonical first slice ran directly on the host in .venv_cu13",
+        "real profiler-backed architecture analysis was successfully produced on this host",
+        "if the host changes materially, create a new manifest rather than editing this file in place"
       ],
-      "nsys_version": "NVIDIA Nsight Systems version 2025.3.1.0",
-      "qdstrm_importer_version": "QdstrmImporter version 2025.3.1.0 or unavailable_with_recorded_probe_error",
+      "nsys_version": "NVIDIA Nsight Systems version 2022.4.2.50-32196742v0",
+      "qdstrm_importer_version": "NVIDIA Nsight Systems 2022.4.2.50-32196742v0",
       "qdstrm_importer_version_probe_error": null,
-      "readiness_artifact": "configs/systems/<host_slug>.profiling_ready.json",
-      "session_log": "docs/runbooks/profiler_<host_slug>_session.md",
+      "readiness_artifact": "configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json",
+      "session_log": "docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md",
       "tool_paths": {
-        "ncu": "/usr/local/cuda/bin/ncu",
-        "nsys": "/opt/nvidia/nsight-compute/<version>/host/target-linux-x64/nsys",
-        "qdstrm_importer": "/opt/nvidia/nsight-compute/<version>/host/linux-desktop-glibc_2_11_3-x64/QdstrmImporter"
+        "ncu": "/usr/bin/ncu",
+        "nsys": "/usr/bin/nsys",
+        "qdstrm_importer": "/usr/lib/nsight-systems/host-linux-x64/QdstrmImporter"
       }
     },
-    "ram_gb": 512,
-    "system_name": "linux_profiler_node_template"
+    "ram_gb": 26.76,
+    "system_name": "ovh_gra9_rtx5000_28"
   },
-  "system_name": "linux_profiler_node_template",
+  "system_name": "ovh_gra9_rtx5000_28",
   "workload_id": "wkl_5361a0b920fc4e05"
 }

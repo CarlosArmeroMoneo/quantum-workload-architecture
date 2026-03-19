@@ -124,3 +124,40 @@ def test_ovh_exact_artifact_manifest_references_pinned_digests_and_synced_files(
     ]
     for path in release_paths:
         assert path.startswith("first-real-profiler-slice-evidence/")
+
+
+def test_curated_real_execution_evidence_is_host_specific_and_not_template_derived():
+    curated_paths = [
+        "evidence/first_real_profiler_slice/real_ghz3_amplitude.execute.cu13.json",
+        "evidence/first_real_profiler_slice/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.execution.json",
+        "evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.execution.json",
+    ]
+    forbidden_tokens = [
+        "fill_me",
+        "optional_if",
+        "linux_profiler_node_template",
+    ]
+
+    for path in curated_paths:
+        text = Path(path).read_text(encoding="utf-8")
+        payload = json.loads(text)
+
+        for token in forbidden_tokens:
+            assert token not in text
+
+        assert payload["system_name"] == "ovh_gra9_rtx5000_28"
+        assert payload["selected_plan"]["gpu_arch_target"] == "sm75"
+
+        system_manifest = payload["system_manifest"]
+        assert system_manifest["system_name"] == "ovh_gra9_rtx5000_28"
+        assert system_manifest["gpu_model"] == "Quadro RTX 5000"
+        assert system_manifest["gpu_arch_target"] == "sm75"
+        assert system_manifest["node_label"] == "ovh-gra9-rtx5000-28"
+        assert system_manifest["driver_version"] == "580.126.09"
+        assert system_manifest["profiling_host"]["canonical_tool_source"] == {
+            "nsys": "host_installed_ubuntu_repo",
+            "qdstrm_importer": "host_installed_ubuntu_repo",
+            "ncu": "host_installed_ubuntu_repo",
+        }
+        assert system_manifest["profiling_host"]["readiness_artifact"] == "configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json"
+        assert system_manifest["profiling_host"]["execution_runbook"] == "docs/runbooks/ovh_cu13_real_execution.md"

@@ -60,11 +60,11 @@ Public repo policy:
 
 ## Technical Appendix
 
-- Public evidence index: `docs/reports/first_real_profiler_slice_index.md`
-- Canonical OVH rerun guide: `docs/runbooks/ovh_cu13_real_execution.md`
-- Canonical OVH session summary: `docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md`
-- Generic profiler-host runbook: `docs/runbooks/profiler_linux_host.md`
-- Known local-host blockers: `docs/known_limitations/profiler_host_blockers.md`
+- Public evidence index: [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md)
+- Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)
+- Canonical OVH session summary: [`docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md`](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md)
+- Generic profiler-host runbook: [`docs/runbooks/profiler_linux_host.md`](docs/runbooks/profiler_linux_host.md)
+- Known local-host blockers: [`docs/known_limitations/profiler_host_blockers.md`](docs/known_limitations/profiler_host_blockers.md)
 
 ## Repository Notes
 
