@@ -1,0 +1,75 @@
+api_version: aqs.profiler_slice.v1
+slice_name: first_real_profiler_slice_ovh_gra9_rtx5000_28
+checkpoint_id: real_exact_tn_profiler_ovh_rtx5000_v1_2026-03-14
+goal: one fully real profiler-backed exact-TN slice on the OVH Ubuntu RTX 5000 profiling host
+
+blessed_environment:
+  appliance_image: null
+  base_appliance_image: null
+  canonical_tool_source:
+    nsys: host_installed_ubuntu_repo
+    qdstrm_importer: host_installed_ubuntu_repo
+    ncu: host_installed_ubuntu_repo
+  notes:
+    - host profiler binaries are used on this slice
+    - qdstrm importer is discovered from the Ubuntu nsight host-tools path
+    - canonical real execution on this host uses .venv_cu13 plus qwa_cuda_env_cu13.sh
+    - ncu smoke is intentionally unfiltered on this host/toolchain to avoid brittle NVTX filter behavior
+    - raw profiler binaries are published through the public release asset listed in the artifact manifest
+
+system_manifest: configs/systems/ovh_gra9_rtx5000_28.yml
+readiness_artifact: configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json
+runbooks:
+  session_log: docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md
+  repro_execution: docs/runbooks/ovh_cu13_real_execution.md
+artifact_index: docs/reports/first_real_profiler_slice_index.md
+artifact_manifest: configs/profiling/first_real_profiler_slice_ovh_gra9_rtx5000_28.artifacts.json
+
+workloads:
+  amplitude: workloads/manifests/imported/real_ghz3_amplitude.yaml
+  batched_amplitudes: workloads/manifests/imported/real_dense_ring6_batched.yaml
+
+canonical_artifacts:
+  readiness_dir: artifacts/readiness/ovh_gra9_rtx5000_28
+  unprofiled_execute: artifacts/real_profile_runs/real_ghz3_amplitude.execute.cu13.json
+  amplitude_nsys_execution: artifacts/real_profile_runs/amplitude_nsys_cu13_final/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.execution.json
+  amplitude_nsys_profile_summary: artifacts/real_profile_runs/amplitude_nsys_cu13_final/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.profile_summary.json
+  amplitude_nsys_report: artifacts/real_profile_runs/amplitude_nsys_cu13_final/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.nsys-rep
+  batched_ncu_execution: artifacts/real_profile_runs/batched_ncu_cu13/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.execution.json
+  batched_ncu_profile_summary: artifacts/real_profile_runs/batched_ncu_cu13/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json
+  batched_ncu_report: artifacts/real_profile_runs/batched_ncu_cu13/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.ncu-rep
+  batched_ncu_csv: artifacts/real_profile_runs/batched_ncu_cu13/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.ncu.csv
+  architecture_output: artifacts/arch_real/real_dense_ring6_batched.arch.json
+
+execution_protocol:
+  objective: ttfr
+  precision: complex128
+  planner_budget: balanced
+  plan_rank: 1
+  execution_intent: require_real
+  allow_distributed: false
+  measurement_repeats: 2
+  expected_warm_repeats: 2
+  probe_strategy: cuquantum_if_available
+  notes:
+    - validate the selected plan shape from the actual execution payload
+    - do not assume H100-specific workspace behavior
+    - use the OVH CUDA 13 virtual environment for real execution
+    - the canonical ncu-backed architecture handoff may rely on execution phase_times if the imported metrics summary is sparse
+
+usable_artifact_criteria:
+  nsys:
+    - .nsys-rep exists
+    - SQLite export or stats-backed summary succeeds
+    - parsed summary is non-empty
+  ncu:
+    - .ncu-rep exists
+    - at least one kernel is captured
+    - imported CSV/stdout is non-empty
+    - parsed profile summary is non-empty
+
+stop_go_rule:
+  do_not_start_real_slice_until:
+    - aqs doctor --profiling reports profiling_ready=true
+    - aqs profile smoke --tool nsys succeeds with a usable report and summary
+    - aqs profile smoke --tool ncu succeeds with a usable report and summary

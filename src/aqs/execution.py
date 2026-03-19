@@ -1,0 +1,515 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime, timezone
+import math
+import statistics
+import time
+from typing import Any
+
+import opt_einsum as oe
+
+from .doctor import collect_system_profile
+from .execution_real import (
+    REAL_EXECUTION_SOURCE,
+    RealExecutionError,
+    execute_real_plan_candidate,
+)
+from .features import extract_feature_snapshot
+from .manifest import load_yaml
+from .normalize import normalize_workload_manifest
+from .planner import PlanConfig, generate_plan_candidates, load_system_manifest, select_top_plan
+from .profiling import PhaseRecorder, build_synthetic_profile_summary
+from .tnprobe import ProbeConfig, _dtype_from_precision, _select_probe_input, run_exact_tn_probe
+from .utils import canonical_json, sha256_text
+
+EXECUTION_VERSION = "aqs.execution.v2"
+STRUCTURAL_EXECUTION_SOURCE = "measured_structural_cpu_hybrid"
+
+
+@dataclass(frozen=True)
+class ExecutionConfig:
+    objective: str = "ttfr"
+    precision: str = "complex128"
+    probe_strategy: str = "structural_real"
+    measurement_repeats: int = 3
+    max_tensor_count: int = 64
+    max_qubits: int = 12
+    execution_intent: str = "optional_real"
+
+
+class ExecutionError(RuntimeError):
+    pass
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _safe_output_digest(result: Any) -> str:
+    if hasattr(result, "tobytes"):
+        payload = result.tobytes()[:256]
+        return "out_" + sha256_text(payload.hex())[:16]
+    return "out_" + sha256_text(repr(result))[:16]
+
+
+def _guardrail_error(raw: dict[str, Any], config: ExecutionConfig) -> str | None:
+    n_qubits = int(raw.get("n_qubits") or 0)
+    tensor_count = int(raw.get("tensor_count") or 0)
+    if n_qubits > config.max_qubits:
+        return f"workload exceeds measured-executor qubit guardrail ({n_qubits} > {config.max_qubits})"
+    if tensor_count > config.max_tensor_count:
+        return f"workload exceeds measured-executor tensor guardrail ({tensor_count} > {config.max_tensor_count})"
+    return None
+
+
+def _build_execution_args(workload_manifest: dict[str, Any], config: ExecutionConfig) -> tuple[list[Any], dict[str, Any]]:
+    dtype = _dtype_from_precision(config.precision)
+    return _select_probe_input(
+        workload_manifest,
+        ProbeConfig(precision=config.precision, probe_strategy=config.probe_strategy),
+        dtype,
+    )
+
+
+def _measure_base_contract(args: list[Any], repeats: int) -> tuple[dict[str, Any], Any]:
+    t0 = time.perf_counter()
+    path, path_info = oe.contract_path(*args, optimize="greedy")
+    path_s = max(time.perf_counter() - t0, 0.0)
+
+    iter_samples = []
+    result = None
+    for _ in range(max(1, repeats)):
+        t1 = time.perf_counter()
+        result = oe.contract(*args, optimize=path)
+        iter_samples.append(max(time.perf_counter() - t1, 0.0))
+
+    first_contract_s = iter_samples[0]
+    steady_iter_ms = statistics.median(iter_samples[1:] or iter_samples) * 1000.0
+    return {
+        "path_s": round(path_s, 9),
+        "first_contract_s": round(first_contract_s, 9),
+        "steady_iter_ms": round(steady_iter_ms, 6),
+        "repeat_samples_ms": [round(sample * 1000.0, 6) for sample in iter_samples],
+        "path_length": len(path) if path is not None else None,
+        "largest_intermediate": float(getattr(path_info, "largest_intermediate", 0.0)) if path_info is not None else None,
+        "optimizer_cost": float(getattr(path_info, "opt_cost", 0.0)) if path_info is not None else None,
+    }, result
+
+
+def _apply_plan_adjustments(base: dict[str, Any], plan: dict[str, Any], repeat_count: int) -> tuple[dict[str, Any], dict[str, float]]:
+    hyper = max(1, int(plan.get("hyper_samples") or 1))
+    mpi_ranks = max(1, int(plan.get("mpi_ranks") or 1))
+    workspace_gb = float(plan.get("workspace_gb") or 0.0)
+    predicted_peak_gb = max(float(plan.get("predicted_peak_gb") or 0.0), 1e-9)
+
+    planning_mult = 1.0 + 0.05 * math.log2(hyper)
+    if bool(plan.get("autotune")):
+        planning_mult *= 1.08
+
+    iter_mult = max(0.78, 1.0 - 0.025 * math.log2(hyper))
+    if repeat_count >= 8 and bool(plan.get("autotune")):
+        iter_mult *= 0.93
+    if repeat_count >= 8 and bool(plan.get("reuse_cache")):
+        iter_mult *= 0.86
+    if workspace_gb > 0:
+        workspace_ratio = workspace_gb / predicted_peak_gb
+        if workspace_ratio < 1.0:
+            iter_mult *= 1.0 + 0.10 * (1.0 - workspace_ratio)
+        elif workspace_ratio > 1.1:
+            iter_mult *= 0.96
+    else:
+        workspace_ratio = 0.0
+
+    distributed_iter_bonus = 1.0
+    distributed_setup_penalty = 1.0
+    if plan.get("mode") == "exact_tn_distributed" and mpi_ranks > 1:
+        distributed_setup_penalty = 1.04 + 0.02 * max(0, mpi_ranks - 1)
+        distributed_iter_bonus = min(0.92, 0.88 / math.sqrt(mpi_ranks) + 0.30)
+
+    ttfr_s = (float(base["path_s"]) * planning_mult * distributed_setup_penalty) + float(base["first_contract_s"]) * iter_mult * distributed_iter_bonus
+    steady_iter_ms = float(base["steady_iter_ms"]) * iter_mult * distributed_iter_bonus
+    wall_s = ttfr_s if repeat_count <= 1 else ttfr_s + ((repeat_count - 1) * steady_iter_ms / 1000.0)
+    gpu_seconds = wall_s * mpi_ranks
+
+    adjusted = {
+        "ttfr_s": round(ttfr_s, 6),
+        "steady_iter_ms": round(steady_iter_ms, 6),
+        "wall_s": round(wall_s, 6),
+        "gpu_seconds": round(gpu_seconds, 6),
+        "peak_mem_gb": round(float(plan.get("predicted_peak_gb") or 0.0) * (0.97 + 0.04 * min(math.log2(hyper), 4.0) / 4.0), 6),
+        "peak_workspace_gb": round(workspace_gb, 6),
+    }
+    factors = {
+        "planning_multiplier": round(planning_mult, 6),
+        "iter_multiplier": round(iter_mult, 6),
+        "distributed_iter_bonus": round(distributed_iter_bonus, 6),
+        "distributed_setup_penalty": round(distributed_setup_penalty, 6),
+        "workspace_ratio": round(workspace_ratio, 6),
+    }
+    return adjusted, factors
+
+
+def _build_run_id(payload: dict[str, Any]) -> str:
+    return "run_" + sha256_text(
+        canonical_json(
+            {
+                "plan_id": payload["plan_id"],
+                "system_id": payload["system_id"],
+                "replicate_idx": payload["replicate_idx"],
+                "status": payload["status"],
+                "execution_source": payload["execution_source"],
+            }
+        )
+    )[:16]
+
+
+def _failure_run(
+    plan: dict[str, Any],
+    workload_manifest: dict[str, Any],
+    system_profile: dict[str, Any],
+    *,
+    execution_source: str,
+    status: str,
+    detail: dict[str, Any],
+) -> dict[str, Any]:
+    payload = {
+        "plan_id": plan["plan_id"],
+        "workload_id": workload_manifest["ids"]["workload_id"],
+        "system_id": system_profile["system_id"],
+        "replicate_idx": 0,
+        "status": status,
+        "started_at": _utc_now_iso(),
+        "finished_at": _utc_now_iso(),
+        "wall_s": None,
+        "ttfr_s": None,
+        "steady_iter_ms": None,
+        "gpu_seconds": None,
+        "peak_mem_gb": None,
+        "peak_workspace_gb": None,
+        "output_digest": None,
+        "failure_detail_json": detail,
+        "execution_source": execution_source,
+    }
+    payload["run_id"] = _build_run_id(payload)
+    return payload
+
+
+def _execute_structural_plan_candidate_bundle(
+    workload_manifest: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    system_profile: dict[str, Any],
+    system_manifest: dict[str, Any] | None,
+    probe: dict[str, Any] | None,
+    config: ExecutionConfig,
+    fallback_detail: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    system_manifest = system_manifest or {}
+    repeat_count = int(workload_manifest.get("repeat_count_hint") or 1)
+    started_at = _utc_now_iso()
+    profiler = PhaseRecorder()
+
+    status = "success"
+    output_digest = None
+    failure_detail_json: dict[str, Any] = {}
+    measured = {
+        "wall_s": None,
+        "ttfr_s": None,
+        "steady_iter_ms": None,
+        "gpu_seconds": None,
+        "peak_mem_gb": None,
+        "peak_workspace_gb": None,
+    }
+    base: dict[str, Any] | None = None
+    factors: dict[str, float] | None = None
+    raw: dict[str, Any] | None = None
+    profile_summary = None
+
+    if plan.get("mode") not in {"exact_tn", "exact_tn_distributed"}:
+        status = "unsupported_semantics"
+        failure_detail_json = {
+            "reason": f"measured executor currently supports exact TN modes only, got {plan.get('mode')!r}",
+            "execution_version": EXECUTION_VERSION,
+        }
+    else:
+        try:
+            with profiler.phase("build_inputs"):
+                args, raw = _build_execution_args(workload_manifest, config)
+                guardrail_error = _guardrail_error(raw, config)
+            if guardrail_error:
+                status = "runtime_error"
+                failure_detail_json = {
+                    "reason": guardrail_error,
+                    "raw_probe_source": raw,
+                    "execution_version": EXECUTION_VERSION,
+                }
+            else:
+                base, result = _measure_base_contract(args, config.measurement_repeats)
+                measured, factors = _apply_plan_adjustments(base, plan, repeat_count)
+                with profiler.phase("postprocess"):
+                    output_digest = _safe_output_digest(result)
+                failure_detail_json = {
+                    "execution_source": STRUCTURAL_EXECUTION_SOURCE,
+                    "execution_version": EXECUTION_VERSION,
+                    "probe_strategy": config.probe_strategy,
+                    "execution_intent": config.execution_intent,
+                    "raw_probe_source": raw,
+                    "base_measurement": base,
+                    "adjustment_factors": factors,
+                    "measured_phase_times": profiler.phase_times,
+                }
+        except Exception as exc:
+            status = "runtime_error"
+            failure_detail_json = {
+                "reason": str(exc),
+                "execution_source": STRUCTURAL_EXECUTION_SOURCE,
+                "execution_version": EXECUTION_VERSION,
+                "execution_intent": config.execution_intent,
+                "measured_phase_times": profiler.phase_times,
+            }
+
+    finished_at = _utc_now_iso()
+    payload = {
+        "plan_id": plan["plan_id"],
+        "workload_id": workload_manifest["ids"]["workload_id"],
+        "system_id": system_profile["system_id"],
+        "replicate_idx": 0,
+        "status": status,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "output_digest": output_digest,
+        "failure_detail_json": failure_detail_json,
+        "execution_source": failure_detail_json.get("execution_source", STRUCTURAL_EXECUTION_SOURCE),
+        **measured,
+    }
+    payload["run_id"] = _build_run_id(payload)
+
+    if status == "success":
+        profile_summary = build_synthetic_profile_summary(
+            payload,
+            plan,
+            repeat_count=repeat_count,
+            system_manifest=system_manifest,
+            probe=probe,
+            raw_source=raw,
+            measured_phase_times=profiler.phase_times,
+            base_measurement=base,
+            adjustment_factors=factors,
+        )
+        payload["profile_summary"] = profile_summary
+        payload["failure_detail_json"] = {
+            **payload["failure_detail_json"],
+            "profile_id": profile_summary["profile_id"],
+        }
+
+    if fallback_detail:
+        payload["failure_detail_json"] = {
+            **payload["failure_detail_json"],
+            "real_executor_fallback": fallback_detail,
+        }
+
+    return {
+        "execution_run": payload,
+        "profile_summary": profile_summary,
+        "accuracy_eval": None,
+        "linked_assets": [],
+    }
+
+
+def execute_plan_candidate_bundle(
+    workload_manifest: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    system_profile: dict[str, Any] | None = None,
+    system_manifest: dict[str, Any] | None = None,
+    probe: dict[str, Any] | None = None,
+    config: ExecutionConfig | None = None,
+) -> dict[str, Any]:
+    config = config or ExecutionConfig(objective=str(plan.get("objective") or "ttfr"), precision=str(plan.get("precision") or "complex128"))
+    system_profile = system_profile or collect_system_profile()
+
+    if config.execution_intent == "optional_real":
+        bundle = _execute_structural_plan_candidate_bundle(
+            workload_manifest,
+            plan,
+            system_profile=system_profile,
+            system_manifest=system_manifest,
+            probe=probe,
+            config=config,
+            fallback_detail={
+                "fallback_code": "real_not_requested",
+                "fallback_reason": "execution_intent=optional_real keeps the structural executor as the default path",
+            },
+        )
+        return bundle
+
+    if plan.get("mode") != "exact_tn":
+        detail = {
+            "reason_code": "unsupported_semantics",
+            "reason": f"real cuTensorNet execution requires plan.mode='exact_tn', got {plan.get('mode')!r}",
+            "execution_source": REAL_EXECUTION_SOURCE,
+            "execution_version": EXECUTION_VERSION,
+            "execution_intent": config.execution_intent,
+        }
+        if config.execution_intent == "prefer_real":
+            return _execute_structural_plan_candidate_bundle(
+                workload_manifest,
+                plan,
+                system_profile=system_profile,
+                system_manifest=system_manifest,
+                probe=probe,
+                config=config,
+                fallback_detail={
+                    "fallback_code": detail["reason_code"],
+                    "fallback_reason": detail["reason"],
+                },
+            )
+        run = _failure_run(plan, workload_manifest, system_profile, execution_source=REAL_EXECUTION_SOURCE, status="unsupported_semantics", detail=detail)
+        return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": []}
+
+    try:
+        real_bundle = execute_real_plan_candidate(
+            workload_manifest,
+            plan,
+            system_profile=system_profile,
+            config=config,
+        )
+        run = real_bundle["execution_run"]
+        run["failure_detail_json"] = {
+            **(run.get("failure_detail_json") or {}),
+            "execution_intent": config.execution_intent,
+        }
+        return {
+            **real_bundle,
+            "linked_assets": [],
+        }
+    except RealExecutionError as exc:
+        detail = {
+            "reason_code": exc.code,
+            "reason": exc.message,
+            "execution_source": REAL_EXECUTION_SOURCE,
+            "execution_version": EXECUTION_VERSION,
+            "execution_intent": config.execution_intent,
+        }
+        if config.execution_intent == "prefer_real" and exc.recoverable:
+            return _execute_structural_plan_candidate_bundle(
+                workload_manifest,
+                plan,
+                system_profile=system_profile,
+                system_manifest=system_manifest,
+                probe=probe,
+                config=config,
+                fallback_detail={
+                    "fallback_code": exc.code,
+                    "fallback_reason": exc.message,
+                },
+            )
+        run = _failure_run(plan, workload_manifest, system_profile, execution_source=REAL_EXECUTION_SOURCE, status=exc.status, detail=detail)
+        return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": []}
+    except Exception as exc:
+        detail = {
+            "reason_code": "runtime_error",
+            "reason": str(exc),
+            "execution_source": REAL_EXECUTION_SOURCE,
+            "execution_version": EXECUTION_VERSION,
+            "execution_intent": config.execution_intent,
+        }
+        run = _failure_run(plan, workload_manifest, system_profile, execution_source=REAL_EXECUTION_SOURCE, status="runtime_error", detail=detail)
+        return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": []}
+
+
+def execute_plan_candidate(
+    workload_manifest: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    system_profile: dict[str, Any] | None = None,
+    system_manifest: dict[str, Any] | None = None,
+    probe: dict[str, Any] | None = None,
+    config: ExecutionConfig | None = None,
+) -> dict[str, Any]:
+    return execute_plan_candidate_bundle(
+        workload_manifest,
+        plan,
+        system_profile=system_profile,
+        system_manifest=system_manifest,
+        probe=probe,
+        config=config,
+    )["execution_run"]
+
+
+def execute_selected_plan(
+    workload_manifest_path: str,
+    system_manifest_path: str,
+    *,
+    plan_rank: int = 1,
+    objective: str = "ttfr",
+    probe_strategy: str = "structural_real",
+    planner_budget: str = "balanced",
+    allow_distributed: bool = True,
+    max_candidates: int | None = None,
+    measurement_repeats: int = 3,
+    execution_intent: str = "optional_real",
+) -> dict[str, Any]:
+    manifest = load_yaml(workload_manifest_path)
+    system_manifest = load_system_manifest(system_manifest_path)
+    system_profile = collect_system_profile()
+    ir = normalize_workload_manifest(manifest)
+    features = extract_feature_snapshot(manifest, ir)
+    probe = run_exact_tn_probe(manifest, ProbeConfig(objective=objective, probe_strategy=probe_strategy))
+    candidates = generate_plan_candidates(
+        manifest,
+        features,
+        probe,
+        system_manifest,
+        config=PlanConfig(
+            objective=objective,
+            planner_budget=planner_budget,
+            allow_distributed=allow_distributed,
+            max_candidates=max_candidates,
+        ),
+    )
+    chosen = next((candidate for candidate in candidates if int(candidate.get("recommendation_rank", 9999)) == plan_rank), None)
+    if chosen is None:
+        chosen = select_top_plan(candidates, objective=objective)
+    if chosen is None:
+        raise ExecutionError("No plan candidate available for execution")
+    bundle = execute_plan_candidate_bundle(
+        manifest,
+        chosen,
+        system_profile=system_profile,
+        system_manifest=system_manifest,
+        probe=probe,
+        config=ExecutionConfig(
+            objective=objective,
+            precision=str(chosen.get("precision") or "complex128"),
+            probe_strategy=probe_strategy,
+            measurement_repeats=measurement_repeats,
+            execution_intent=execution_intent,
+        ),
+    )
+    return {
+        "workload_id": manifest["ids"]["workload_id"],
+        "family_id": manifest["family_id"],
+        "repeat_count_hint": manifest.get("repeat_count_hint", 1),
+        "system_name": system_manifest["system_name"],
+        "system_manifest": system_manifest,
+        "probe": probe,
+        "selected_plan": chosen,
+        "profile_summary": bundle.get("profile_summary"),
+        "accuracy_eval": bundle.get("accuracy_eval"),
+        "execution_run": bundle["execution_run"],
+        "linked_assets": bundle.get("linked_assets", []),
+        "candidate_count": len(candidates),
+    }
+
+
+__all__ = [
+    "EXECUTION_VERSION",
+    "STRUCTURAL_EXECUTION_SOURCE",
+    "ExecutionConfig",
+    "ExecutionError",
+    "execute_plan_candidate",
+    "execute_plan_candidate_bundle",
+    "execute_selected_plan",
+]

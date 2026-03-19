@@ -1,0 +1,43 @@
+api_version: aqs.profiler_slice.v1
+slice_name: first_real_profiler_slice_ubuntu2404_wsl2_rtx4050
+checkpoint_id: real_exact_tn_profiler_wsl2_rtx4050_v1_2026-03-08
+goal: one fully real profiler-backed exact-TN slice on the frozen WSL2 RTX 4050 profiling node
+blessed_environment:
+  appliance_image: aqs-cuquantum-appliance:25.11-local@sha256:aef88e708e5aa60c449a7128ed64ce87d4ed8f2073339f79d73245686e9dfd52
+  base_appliance_image: nvcr.io/nvidia/cuquantum-appliance:25.11-x86_64@sha256:ca123ee404701de0d13ba4e531c5fe635f9c15733829ec2d1639cb8199c253ec
+  canonical_tool_source:
+    nsys: container_bundled
+    qdstrm_importer: container_bundled
+    ncu: container_bundled
+  notes:
+    - do not mix host and container profiler binaries for this slice without updating the host manifest
+    - this successor freeze intentionally omits H100-only selected-plan assertions
+system_manifest: configs/systems/ubuntu2404_wsl2_rtx4050.yml
+workloads:
+  amplitude: workloads/manifests/imported/real_ghz3_amplitude.yaml
+  batched_amplitudes: workloads/manifests/imported/real_dense_ring6_batched.yaml
+execution_protocol:
+  objective: ttfr
+  precision: complex128
+  planner_budget: balanced
+  plan_rank: 1
+  execution_intent: require_real
+  allow_distributed: false
+  measurement_repeats: 2
+  expected_warm_repeats: 2
+  notes:
+    - validate the selected plan shape from the actual execution payload instead of freezing H100-only workspace expectations
+usable_artifact_criteria:
+  nsys:
+    - .nsys-rep exists
+    - SQLite export or stats-backed summary succeeds
+    - parsed summary is non-empty
+  ncu:
+    - .ncu-rep exists
+    - at least one kernel is captured in the intended NVTX-scoped range
+    - parsed metrics summary is non-empty
+stop_go_rule:
+  do_not_start_real_slice_until:
+    - aqs doctor --profiling reports profiling_ready=true
+    - aqs profile smoke --tool nsys succeeds with a usable report and summary
+    - aqs profile smoke --tool ncu succeeds with a usable report and summary
