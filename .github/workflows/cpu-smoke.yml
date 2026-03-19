@@ -1,0 +1,26 @@
+name: cpu-smoke
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev,db]
+      - name: Initialize DB
+        run: |
+          python scripts/init_db.py --db benchmarks/warehouse/aqs.duckdb --schema benchmarks/warehouse/schema.sql
+      - name: Validate manifests
+        run: |
+          python -m aqs manifest validate workloads/manifests/templates/*.yaml configs/systems/*.yml benchmarks/manifests/templates/*.yaml
+      - name: Run tests
+        run: pytest -q

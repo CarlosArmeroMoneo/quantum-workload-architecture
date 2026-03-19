@@ -1,0 +1,10 @@
+api_version: aqs.system.v1
+system_name: h100_80gb_single
+node_label: reference_h100
+gpu_model: NVIDIA H100 80GB HBM3
+gpu_count: 1
+gpu_mem_gb: 80
+gpu_arch_target: sm90
+ram_gb: 512
+interconnect: pcie
+notes: single-GPU reference profile for atlas and early tnep runs

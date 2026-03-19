@@ -1,0 +1,10 @@
+api_version: aqs.system.v1
+system_name: cpu_probe_only
+node_label: local_cpu_probe
+gpu_model: null
+gpu_count: 0
+gpu_mem_gb: 0
+gpu_arch_target: sm90
+ram_gb: 64
+interconnect: none
+notes: used for CPU-side contract_path and schema smoke work

@@ -1,0 +1,10 @@
+api_version: aqs.system.v1
+system_name: h100_80gb_x4
+node_label: reference_h100_x4
+gpu_model: NVIDIA H100 80GB HBM3
+gpu_count: 4
+gpu_mem_gb: 80
+gpu_arch_target: sm90
+ram_gb: 1024
+interconnect: nvlink
+notes: four-GPU reference profile for distributed exact-TN planning and break-even studies

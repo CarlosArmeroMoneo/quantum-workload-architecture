@@ -1,0 +1,323 @@
+from __future__ import annotations
+
+from copy import deepcopy
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from .utils import canonical_json, sha256_text
+
+
+WORKLOAD_COMMON_REQUIRED = {
+    "api_version",
+    "family_id",
+    "family_version",
+    "generator_name",
+    "generator_version",
+    "source_format",
+    "semantic_target",
+    "reference_tier",
+    "split_tag",
+    "repeat_count_hint",
+    "parameters",
+}
+
+WORKLOAD_ENUMS = {
+    "source_format": {"qiskit", "cirq", "stim", "cudaq", "normalized_ir"},
+    "semantic_target": {"state", "amplitude", "batched_amplitudes", "expectation", "samples", "detectors", "syndrome_summary"},
+    "reference_tier": {"smoke", "exact_ref", "boundary", "scale"},
+    "split_tag": {"train", "val", "test", "heldout_family", "demo"},
+}
+
+SOURCE_LOADERS = {
+    "qiskit": {"qasm2_file", "qasm2_inline"},
+    "cirq": {"cirq_json_file", "cirq_json_inline"},
+    "stim": {"stim_text_file", "stim_text_inline"},
+    "cudaq": {"cudaq_python_file"},
+    "normalized_ir": {"normalized_ir"},
+}
+
+PROBE_STRATEGIES = {"surrogate_only", "structural_real", "real_if_available", "cuquantum_if_available", "cuquantum_required"}
+EXECUTION_INTENTS = {"optional_real", "prefer_real", "require_real"}
+
+FAMILY_PARAM_RULES: dict[str, dict[str, tuple[type | tuple[type, ...], Any]]] = {
+    "dense_universal": {
+        "n_qubits": (int, lambda v: v > 0),
+        "depth": (int, lambda v: v >= 0),
+        "topology": (str, {"ring", "grid", "all_to_all"}),
+        "two_qubit_density": (str, {"low", "medium", "high"}),
+        "measurement_pattern": (str, {"terminal_all", "terminal_observable_only"}),
+    },
+    "qaoa_graph": {
+        "n_qubits": (int, lambda v: v > 0),
+        "graph_family": (str, {"ring", "2d_grid", "erdos_renyi", "random_regular", "barabasi"}),
+        "graph_degree": (int, lambda v: v >= 0),
+        "p": (int, lambda v: v > 0),
+        "observable_count": (int, lambda v: v > 0),
+    },
+    "trotter_1d": {
+        "n_qubits": (int, lambda v: v > 0),
+        "steps": (int, lambda v: v > 0),
+        "hamiltonian_pattern": (str, {"xxz", "transverse_field_ising"}),
+        "boundary_condition": (str, {"open", "periodic"}),
+        "observable_count": (int, lambda v: v > 0),
+    },
+    "grid_2d_shallow": {
+        "rows": (int, lambda v: v > 0),
+        "cols": (int, lambda v: v > 0),
+        "layers": (int, lambda v: v > 0),
+        "entangler_pattern": (str, {"brickwork", "checkerboard"}),
+    },
+    "noisy_observable": {
+        "n_qubits": (int, lambda v: v > 0),
+        "depth": (int, lambda v: v > 0),
+        "noise_model": (str, {"depolarizing", "amplitude_damping", "phase_flip"}),
+        "noise_rate": ((int, float), lambda v: v >= 0),
+        "observable_count": (int, lambda v: v > 0),
+    },
+    "qec_clifford": {
+        "code_family": (str, {"repetition", "small_surface_like"}),
+        "distance": (int, lambda v: v > 0),
+        "cycles": (int, lambda v: v > 0),
+        "detector_layout": (str, {"line", "surface_patch"}),
+    },
+    "repeated_sweep": {
+        "base_family": (str, {"dense_universal", "qaoa_graph", "trotter_1d", "grid_2d_shallow"}),
+        "repeat_count": (int, lambda v: v > 0),
+        "parameter_kind": (str, {"angles", "fields", "observables"}),
+    },
+}
+
+SYSTEM_REQUIRED = {
+    "api_version",
+    "system_name",
+    "gpu_count",
+    "gpu_mem_gb",
+}
+
+BENCHMARK_REQUIRED = {
+    "api_version",
+    "project",
+    "dataset_name",
+    "version_tag",
+    "objective",
+    "system_manifest",
+    "workload_glob",
+    "allowed_modes",
+}
+
+
+def load_yaml(path: str | Path) -> dict[str, Any]:
+    with Path(path).open("r", encoding="utf-8") as handle:
+        data = yaml.safe_load(handle)
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected a YAML mapping at {path}")
+    return data
+
+
+def dump_yaml(data: dict[str, Any], path: str | Path) -> None:
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with Path(path).open("w", encoding="utf-8") as handle:
+        yaml.safe_dump(data, handle, sort_keys=False)
+
+
+def finalize_workload_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+    manifest = deepcopy(manifest)
+    payload = {
+        key: manifest[key]
+        for key in sorted(manifest.keys())
+        if key not in {"ids"}
+    }
+    source_hash = sha256_text(canonical_json(payload))
+    workload_id = "wkl_" + source_hash[:16]
+    manifest["ids"] = {
+        "workload_id": workload_id,
+        "source_hash": source_hash,
+    }
+    return manifest
+
+
+def _check_typed_rule(name: str, value: Any, type_spec: Any, constraint: Any) -> str | None:
+    if not isinstance(value, type_spec):
+        return f"parameter '{name}' should be of type {type_spec}, got {type(value)}"
+    if callable(constraint) and not constraint(value):
+        return f"parameter '{name}' failed its value constraint"
+    if isinstance(constraint, set) and value not in constraint:
+        return f"parameter '{name}' must be one of {sorted(constraint)}, got {value!r}"
+    return None
+
+
+def _validate_source_descriptor(source_format: str, source: Any) -> list[str]:
+    errors: list[str] = []
+    if source_format == "normalized_ir":
+        if source and source.get("loader") not in {None, "normalized_ir"}:
+            errors.append("normalized_ir workloads should not declare an external source loader")
+        return errors
+
+    if not isinstance(source, dict):
+        return [f"source is required and must be a mapping for source_format={source_format!r}"]
+    loader = source.get("loader")
+    allowed_loaders = SOURCE_LOADERS.get(source_format, set())
+    if loader not in allowed_loaders:
+        errors.append(f"source.loader must be one of {sorted(allowed_loaders)} for source_format={source_format!r}")
+        return errors
+
+    if loader.endswith("_file") and not isinstance(source.get("path"), str):
+        errors.append(f"source.path is required for loader={loader!r}")
+    if loader.endswith("_inline") and not isinstance(source.get("text"), str):
+        errors.append(f"source.text is required for loader={loader!r}")
+    return errors
+
+
+def _validate_execution_target(manifest: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    target = manifest.get("execution_target")
+    semantic_target = manifest.get("semantic_target")
+    source_format = manifest.get("source_format")
+    if semantic_target not in {"amplitude", "batched_amplitudes"}:
+        if target is not None and not isinstance(target, dict):
+            errors.append("execution_target must be a mapping when provided")
+        return errors
+
+    requires_target = source_format == "qiskit"
+    if target is None:
+        if requires_target:
+            errors.append("execution_target is required for imported qiskit amplitude/batched_amplitudes workloads")
+        return errors
+    if not isinstance(target, dict):
+        errors.append("execution_target must be a mapping")
+        return errors
+
+    kind = target.get("kind")
+    if kind != semantic_target:
+        errors.append(f"execution_target.kind must match semantic_target {semantic_target!r}")
+        return errors
+
+    if kind == "amplitude":
+        bitstring = target.get("bitstring")
+        n_qubits = manifest.get("parameters", {}).get("n_qubits")
+        if not isinstance(bitstring, str) or not bitstring or any(ch not in {"0", "1"} for ch in bitstring):
+            errors.append("execution_target.bitstring must be a non-empty bitstring")
+        elif isinstance(n_qubits, int) and len(bitstring) != n_qubits:
+            errors.append("execution_target.bitstring length must match parameters.n_qubits")
+    elif kind == "batched_amplitudes":
+        fixed_qubits = target.get("fixed_qubits")
+        n_qubits = manifest.get("parameters", {}).get("n_qubits")
+        if not isinstance(fixed_qubits, dict):
+            errors.append("execution_target.fixed_qubits must be a mapping of qubit index to 0 or 1")
+        else:
+            seen: set[int] = set()
+            for key, value in fixed_qubits.items():
+                try:
+                    qubit = int(key)
+                except Exception:
+                    errors.append(f"execution_target.fixed_qubits key {key!r} is not an integer")
+                    continue
+                if qubit < 0:
+                    errors.append(f"execution_target.fixed_qubits key {key!r} must be >= 0")
+                if isinstance(n_qubits, int) and qubit >= n_qubits:
+                    errors.append(f"execution_target.fixed_qubits key {key!r} must be < parameters.n_qubits")
+                if qubit in seen:
+                    errors.append(f"execution_target.fixed_qubits key {key!r} is duplicated")
+                seen.add(qubit)
+                if value not in {0, 1, "0", "1"}:
+                    errors.append(f"execution_target.fixed_qubits[{key!r}] must be 0 or 1")
+    return errors
+
+
+def validate_workload_manifest(manifest: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    missing = sorted(WORKLOAD_COMMON_REQUIRED - set(manifest.keys()))
+    if missing:
+        errors.append(f"missing required fields: {missing}")
+        return errors
+    if manifest.get("api_version") != "aqs.workload.v1":
+        errors.append("api_version must be 'aqs.workload.v1'")
+    family_id = manifest.get("family_id")
+    if family_id not in FAMILY_PARAM_RULES:
+        errors.append(f"unsupported family_id: {family_id!r}")
+        return errors
+    for key, allowed in WORKLOAD_ENUMS.items():
+        if manifest.get(key) not in allowed:
+            errors.append(f"field '{key}' must be one of {sorted(allowed)}, got {manifest.get(key)!r}")
+    repeat_count_hint = manifest.get("repeat_count_hint")
+    if not isinstance(repeat_count_hint, int) or repeat_count_hint < 1:
+        errors.append("repeat_count_hint must be an integer >= 1")
+    params = manifest.get("parameters")
+    if not isinstance(params, dict):
+        errors.append("parameters must be a mapping")
+        return errors
+    rules = FAMILY_PARAM_RULES[family_id]
+    for field_name, (type_spec, constraint) in rules.items():
+        if field_name not in params:
+            errors.append(f"missing parameter '{field_name}' for family '{family_id}'")
+            continue
+        maybe_error = _check_typed_rule(field_name, params[field_name], type_spec, constraint)
+        if maybe_error:
+            errors.append(maybe_error)
+
+    errors.extend(_validate_source_descriptor(str(manifest.get("source_format")), manifest.get("source")))
+    errors.extend(_validate_execution_target(manifest))
+
+    finalized = finalize_workload_manifest(manifest)
+    ids = manifest.get("ids")
+    if ids:
+        if ids.get("workload_id") != finalized["ids"]["workload_id"]:
+            errors.append("ids.workload_id does not match the canonical hash-derived workload ID")
+        if ids.get("source_hash") != finalized["ids"]["source_hash"]:
+            errors.append("ids.source_hash does not match the canonical source hash")
+    return errors
+
+
+def validate_system_manifest(manifest: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    missing = sorted(SYSTEM_REQUIRED - set(manifest.keys()))
+    if missing:
+        errors.append(f"missing required fields: {missing}")
+        return errors
+    if manifest.get("api_version") != "aqs.system.v1":
+        errors.append("api_version must be 'aqs.system.v1'")
+    if not isinstance(manifest.get("gpu_count"), int) or manifest["gpu_count"] < 0:
+        errors.append("gpu_count must be an integer >= 0")
+    if not isinstance(manifest.get("gpu_mem_gb"), (int, float)) or manifest["gpu_mem_gb"] < 0:
+        errors.append("gpu_mem_gb must be numeric and >= 0")
+    return errors
+
+
+def validate_benchmark_manifest(manifest: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    missing = sorted(BENCHMARK_REQUIRED - set(manifest.keys()))
+    if missing:
+        errors.append(f"missing required fields: {missing}")
+        return errors
+    if manifest.get("api_version") != "aqs.benchmark.v1":
+        errors.append("api_version must be 'aqs.benchmark.v1'")
+    if manifest.get("project") not in {"foundation", "atlas", "tnep", "arch"}:
+        errors.append("project must be one of foundation/atlas/tnep/arch")
+    if manifest.get("objective") not in {"ttfr", "steady_state", "gpu_seconds"}:
+        errors.append("objective must be one of ttfr/steady_state/gpu_seconds")
+    allowed_modes = manifest.get("allowed_modes")
+    if not isinstance(allowed_modes, list) or not allowed_modes:
+        errors.append("allowed_modes must be a non-empty list")
+    probe_strategy = manifest.get("probe_strategy")
+    if probe_strategy is not None and probe_strategy not in PROBE_STRATEGIES:
+        errors.append(f"probe_strategy must be one of {sorted(PROBE_STRATEGIES)}")
+    execution_intent = manifest.get("execution_intent")
+    if execution_intent is not None and execution_intent not in EXECUTION_INTENTS:
+        errors.append(f"execution_intent must be one of {sorted(EXECUTION_INTENTS)}")
+    max_workloads = manifest.get("max_workloads")
+    if max_workloads is not None and (not isinstance(max_workloads, int) or max_workloads < 1):
+        errors.append("max_workloads must be an integer >= 1 when provided")
+    return errors
+
+
+def validate_manifest(manifest: dict[str, Any]) -> list[str]:
+    api_version = manifest.get("api_version")
+    if api_version == "aqs.workload.v1":
+        return validate_workload_manifest(manifest)
+    if api_version == "aqs.system.v1":
+        return validate_system_manifest(manifest)
+    if api_version == "aqs.benchmark.v1":
+        return validate_benchmark_manifest(manifest)
+    return [f"unsupported api_version: {api_version!r}"]

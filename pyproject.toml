@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aqs"
+version = "0.5.0"
+description = "Quantum workload architecture toolkit and evidence trail"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "PyYAML>=6.0",
+  "numpy>=1.24",
+  "networkx>=3.0",
+  "opt_einsum>=3.3",
+]
+
+[project.optional-dependencies]
+quantum = [
+  "qiskit>=1.0",
+]
+db = [
+  "duckdb>=1.0.0",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+aqs = "aqs.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "gpu: requires a real GPU execution environment",
+  "profiler: requires Nsight Systems or Nsight Compute CLIs",
+]
