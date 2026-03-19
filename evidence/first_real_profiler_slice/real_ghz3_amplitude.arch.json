@@ -1,0 +1,108 @@
+{
+  "analysis_id": "arch_7502521d43447bf5",
+  "analysis_version": "aqs.arch.v0",
+  "family_id": "dense_universal",
+  "nominations": [
+    {
+      "bottleneck_family": "reuse_cache",
+      "case_id": "case_efd078eb0e4d5c7b",
+      "counterfactual_knobs": [
+        {
+          "hypothesis": "repeated-structure workloads may benefit from larger cache workspace",
+          "knob_name": "cache_workspace_gb",
+          "suggested_sweep": [
+            0.0,
+            2.0,
+            8.0,
+            16.0
+          ],
+          "unit": "GB"
+        },
+        {
+          "hypothesis": "cache and autotune ROI depends strongly on repetition depth",
+          "knob_name": "repeat_count_hint",
+          "suggested_sweep": [
+            1,
+            8,
+            32,
+            128
+          ],
+          "unit": "iterations"
+        }
+      ],
+      "nomination_reason_json": {
+        "cold_warm_ratio": 3.898687,
+        "first_contract_s": 0.002252739,
+        "reason": "real cold-vs-warm contraction timings show measurable amortization potential",
+        "warm_contract_total_s": 0.00057782
+      },
+      "nomination_source": "real_profiler_analysis",
+      "run_id": "run_219ba8a96d5d0d44",
+      "severity_score": 1.0,
+      "supporting_profile_ids": [
+        "prof_490509b99b8312b9"
+      ]
+    },
+    {
+      "bottleneck_family": "planner_roi",
+      "case_id": "case_517fd2184b4703a7",
+      "counterfactual_knobs": [
+        {
+          "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+          "knob_name": "planner_budget_multiplier",
+          "suggested_sweep": [
+            0.5,
+            1.0,
+            2.0
+          ],
+          "unit": "x"
+        }
+      ],
+      "nomination_reason_json": {
+        "planner_share_pct": 49.637055,
+        "planner_time_s": 0.008488804,
+        "reason": "real NVTX timings show path search/autotune taking a material share of the profiled run",
+        "repeat_count_hint": 1
+      },
+      "nomination_source": "real_profiler_analysis",
+      "run_id": "run_219ba8a96d5d0d44",
+      "severity_score": 0.827284,
+      "supporting_profile_ids": [
+        "prof_490509b99b8312b9"
+      ]
+    },
+    {
+      "bottleneck_family": "launch_overhead",
+      "case_id": "case_bb824f308a065a96",
+      "counterfactual_knobs": [
+        {
+          "hypothesis": "small jobs are sensitive to launch and setup overhead",
+          "knob_name": "orchestration_overhead_multiplier",
+          "suggested_sweep": [
+            1.0,
+            0.75,
+            0.5
+          ],
+          "unit": "x"
+        }
+      ],
+      "nomination_reason_json": {
+        "reason": "real NVTX timings show load/convert/postprocess overhead consuming a meaningful share",
+        "setup_share_pct": 33.811661,
+        "setup_time_s": 0.005782385
+      },
+      "nomination_source": "real_profiler_analysis",
+      "run_id": "run_219ba8a96d5d0d44",
+      "severity_score": 0.614757,
+      "supporting_profile_ids": [
+        "prof_490509b99b8312b9"
+      ]
+    }
+  ],
+  "repeat_count_hint": 1,
+  "selected_mode": "exact_tn",
+  "source_kind": "execution_payload",
+  "source_profile_id": "prof_490509b99b8312b9",
+  "source_run_id": "run_219ba8a96d5d0d44",
+  "workload_id": "wkl_5361a0b920fc4e05"
+}

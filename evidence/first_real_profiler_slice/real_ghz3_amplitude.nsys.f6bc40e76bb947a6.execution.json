@@ -1,0 +1,230 @@
+{
+  "accuracy_eval": {
+    "evaluation_version": "aqs.accuracy.v1",
+    "primary_metric": "amplitude_abs_err",
+    "rows": [
+      {
+        "eval_id": "eval_d29c713cc3c0f914",
+        "evaluation_version": "aqs.accuracy.v1",
+        "metric_name": "amplitude_abs_err",
+        "metric_value": 0.0,
+        "pass": true,
+        "reference_run_id": null,
+        "run_id": "run_219ba8a96d5d0d44",
+        "threshold": 1e-12
+      },
+      {
+        "eval_id": "eval_cf9aaf9e87b85224",
+        "evaluation_version": "aqs.accuracy.v1",
+        "metric_name": "amplitude_rel_err",
+        "metric_value": 0.0,
+        "pass": true,
+        "reference_run_id": null,
+        "run_id": "run_219ba8a96d5d0d44",
+        "threshold": 1e-12
+      }
+    ],
+    "run_id": "run_219ba8a96d5d0d44",
+    "status": "pass"
+  },
+  "candidate_count": 3,
+  "execution_run": {
+    "execution_source": "cuquantum_tensornet_gpu",
+    "failure_detail_json": {
+      "autotune_time_s": 0.0,
+      "capabilities": {
+        "cupy_present": true,
+        "cuquantum_present": true,
+        "gpu_present": true,
+        "ncu_present": true,
+        "nsys_present": true,
+        "qiskit_present": true
+      },
+      "execution_intent": "require_real",
+      "execution_source": "cuquantum_tensornet_gpu",
+      "execution_target": {
+        "bitstring": "000",
+        "kind": "amplitude"
+      },
+      "execution_version": "aqs.execution.real.v1",
+      "first_contract_time_s": 0.002155096,
+      "network_options": {
+        "device_id": 0,
+        "memory_limit": 15461882265
+      },
+      "nvtx_phase_version": "aqs.nvtx.v1",
+      "path_info": {
+        "largest_intermediate": 4.0,
+        "num_slices": 1,
+        "opt_cost": 100.0
+      },
+      "path_search_time_s": 0.008382783,
+      "phase_times": {
+        "contract_first": 0.0022527390101458877,
+        "contract_path": 0.008488804000080563,
+        "contract_warm": 0.0005778199847554788,
+        "convert_to_einsum": 0.0049354399961885065,
+        "load_circuit": 0.0005981739959679544,
+        "postprocess": 0.00024877100076992065
+      },
+      "probe_strategy": "cuquantum_if_available",
+      "release_workspace_contract_time_s": 0.000205112,
+      "warm_contract_times_ms": [
+        0.223787,
+        0.179054
+      ]
+    },
+    "finished_at": "2026-03-15T07:25:27.709174+00:00",
+    "gpu_seconds": 0.024376053,
+    "output_digest": "out_852fa66e589dc06a",
+    "peak_mem_gb": 3.815e-06,
+    "peak_workspace_gb": 14.4,
+    "plan_id": "plan_14f420581c36243a",
+    "replicate_idx": 0,
+    "run_id": "run_219ba8a96d5d0d44",
+    "started_at": "2026-03-15T07:25:27.684791+00:00",
+    "status": "success",
+    "steady_iter_ms": 0.201421,
+    "system_id": "sys_f9dd176897ccba7a",
+    "ttfr_s": 0.023177829,
+    "wall_s": 0.024376053,
+    "workload_id": "wkl_5361a0b920fc4e05"
+  },
+  "family_id": "dense_universal",
+  "linked_assets": [],
+  "probe": {
+    "autotune": null,
+    "cache_workspace_gb": null,
+    "gpu_arch_target": null,
+    "hyper_samples": null,
+    "largest_intermediate": 4.0,
+    "mode": "exact_tn",
+    "mpi_ranks": null,
+    "num_slices": 1,
+    "objective": "ttfr",
+    "optimizer_cost": 100.0,
+    "precision": "complex128",
+    "predicted_error": 0.0,
+    "predicted_peak_gb": 6e-08,
+    "probe_id": "probe_fe723223e9db6f0e",
+    "probe_kind": "tn_contract_path",
+    "probe_strategy": "cuquantum_if_available",
+    "raw_info_json": {
+      "backend": "cuquantum",
+      "error_message": null,
+      "family_id": "dense_universal",
+      "loader": "qasm2",
+      "operand_count": 9,
+      "path_length": 8,
+      "probe_input_kind": "einsum_expression",
+      "probe_source": "cuquantum_circuit_to_einsum",
+      "probe_version": "aqs.tn_probe.v1",
+      "qubit_count": 3,
+      "semantic_target": "amplitude",
+      "source_kind": "qiskit"
+    },
+    "reuse_cache": null,
+    "status": "success",
+    "workspace_gb": null
+  },
+  "profile_summary": null,
+  "repeat_count_hint": 1,
+  "selected_plan": {
+    "autotune": false,
+    "cache_workspace_gb": 0.0,
+    "explanation_json": [
+      "small planner budget prioritizes time-to-first-result over path optimality",
+      "workspace comfortably covers the current peak estimate, limiting slicing pressure"
+    ],
+    "feasibility_label": "feasible",
+    "gpu_arch_target": "sm90",
+    "hyper_samples": 2,
+    "is_feasible": true,
+    "max_error": 0.0,
+    "mode": "exact_tn",
+    "mpi_ranks": 1,
+    "objective": "ttfr",
+    "parent_probe_ids": [
+      "probe_fe723223e9db6f0e"
+    ],
+    "plan_id": "plan_14f420581c36243a",
+    "planner_version": "aqs.tnep_planner.v0",
+    "precision": "complex128",
+    "predicted_error": 0.0,
+    "predicted_gpu_seconds": 0.497969,
+    "predicted_iter_ms": 4.996248,
+    "predicted_peak_gb": 0.0,
+    "predicted_ttfr_s": 0.497969,
+    "project": "tnep",
+    "recommendation_rank": 1,
+    "reuse_cache": false,
+    "template_name": "quick_turnaround",
+    "workspace_gb": 14.4
+  },
+  "system_manifest": {
+    "api_version": "aqs.system.v1",
+    "appliance_image": {
+      "base_ref": "optional_if_using_a_local_layered_image",
+      "ref": "nvcr.io/nvidia/cuquantum-appliance:25.11-x86_64@sha256:fill_me_in"
+    },
+    "container_runtime": {
+      "kind": "docker",
+      "version": "27.x"
+    },
+    "driver_version": "570.xx",
+    "gpu_arch_target": "sm90",
+    "gpu_count": 1,
+    "gpu_mem_gb": 80,
+    "gpu_model": "NVIDIA H100 80GB HBM3",
+    "interconnect": "pcie",
+    "kernel_version": "6.8.0-generic",
+    "node_label": "fill_me_with_host_label",
+    "notes": "template for the first profiling-capable Linux host used for real exact-TN profiler-backed runs",
+    "os_release": "Ubuntu 24.04 LTS",
+    "profiling_host": {
+      "canonical_tool_source": {
+        "ncu": "container_bundled",
+        "nsys": "container_bundled",
+        "qdstrm_importer": "container_bundled"
+      },
+      "container_launch": {
+        "cap_add": [],
+        "gid": 1000,
+        "gpu_access": "--gpus all",
+        "privileged": false,
+        "uid": 1000,
+        "user": "cuquantum",
+        "workspace_mount": "/host/workspace:/workspace"
+      },
+      "elevated_probe_attempt": {
+        "cap_add": [
+          "SYS_ADMIN"
+        ],
+        "privileged": false,
+        "result": "optional_if_tested",
+        "user": "root"
+      },
+      "gpu_performance_counters": "enabled_or_blocked_on_host_policy",
+      "ncu_version": "Version 2025.3.1.0",
+      "notes": [
+        "freeze this file before collecting real profiler-backed benchmark evidence",
+        "keep profiler collection and importer tooling on the same blessed source",
+        "if the host changes materially, create a new manifest instead of editing in place"
+      ],
+      "nsys_version": "NVIDIA Nsight Systems version 2025.3.1.0",
+      "qdstrm_importer_version": "QdstrmImporter version 2025.3.1.0 or unavailable_with_recorded_probe_error",
+      "qdstrm_importer_version_probe_error": null,
+      "readiness_artifact": "configs/systems/<host_slug>.profiling_ready.json",
+      "session_log": "docs/runbooks/profiler_<host_slug>_session.md",
+      "tool_paths": {
+        "ncu": "/usr/local/cuda/bin/ncu",
+        "nsys": "/opt/nvidia/nsight-compute/<version>/host/target-linux-x64/nsys",
+        "qdstrm_importer": "/opt/nvidia/nsight-compute/<version>/host/linux-desktop-glibc_2_11_3-x64/QdstrmImporter"
+      }
+    },
+    "ram_gb": 512,
+    "system_name": "linux_profiler_node_template"
+  },
+  "system_name": "linux_profiler_node_template",
+  "workload_id": "wkl_5361a0b920fc4e05"
+}

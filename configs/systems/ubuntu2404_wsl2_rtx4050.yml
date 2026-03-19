@@ -1,0 +1,54 @@
+api_version: aqs.system.v1
+system_name: ubuntu2404_wsl2_rtx4050_profiler
+node_label: ubuntu2404_wsl2_rtx4050
+gpu_model: NVIDIA GeForce RTX 4050 Laptop GPU
+gpu_count: 1
+gpu_mem_gb: 6
+gpu_arch_target: sm89
+ram_gb: 7
+interconnect: pcie
+os_release: Ubuntu 24.04.1 LTS (WSL2)
+kernel_version: 5.15.167.4-microsoft-standard-WSL2
+driver_version: "581.83"
+container_runtime:
+  kind: docker
+  version: "28.3.3"
+appliance_image:
+  ref: "aqs-cuquantum-appliance:25.11-local@sha256:aef88e708e5aa60c449a7128ed64ce87d4ed8f2073339f79d73245686e9dfd52"
+  base_ref: "nvcr.io/nvidia/cuquantum-appliance:25.11-x86_64@sha256:ca123ee404701de0d13ba4e531c5fe635f9c15733829ec2d1639cb8199c253ec"
+profiling_host:
+  canonical_tool_source:
+    nsys: container_bundled
+    qdstrm_importer: container_bundled
+    ncu: container_bundled
+  tool_paths:
+    nsys: /opt/nvidia/nsight-compute/2025.3.1/host/target-linux-x64/nsys
+    qdstrm_importer: /opt/nvidia/nsight-compute/2025.3.1/host/linux-desktop-glibc_2_11_3-x64/QdstrmImporter
+    ncu: /usr/local/cuda/bin/ncu
+  nsys_version: NVIDIA Nsight Systems version 2025.3.1.0
+  qdstrm_importer_version: unavailable
+  qdstrm_importer_version_probe_error: "/opt/nvidia/nsight-compute/2025.3.1/host/linux-desktop-glibc_2_11_3-x64/QdstrmImporter: error while loading shared libraries: libdw.so.1: cannot open shared object file: No such file or directory"
+  ncu_version: Version 2025.3.1.0 (build 36398880) (public-release)
+  gpu_performance_counters: blocked_on_host_policy
+  container_launch:
+    user: cuquantum
+    uid: 1000
+    gid: 1000
+    gpu_access: --gpus all
+    cap_add: []
+    privileged: false
+    workspace_mount: "/path/to/repo:/workspace"
+  elevated_probe_attempt:
+    user: root
+    cap_add:
+      - SYS_ADMIN
+    privileged: false
+    result: ERR_NVGPUCTRPERM persisted for unfiltered ncu smoke
+  readiness_artifact: configs/systems/ubuntu2404_wsl2_rtx4050.profiling_ready.json
+  session_log: docs/runbooks/profiler_ubuntu2404_wsl2_rtx4050_session.md
+  notes:
+    - freeze this file before collecting real profiler-backed benchmark evidence
+    - keep profiler collection and importer tooling on the same blessed source
+    - QdstrmImporter is bundled in the image but currently blocked by a missing libdw.so.1 dependency
+    - Nsight Compute smoke is blocked on this host by GPU counter policy before a usable filtered capture can be proven
+notes: frozen WSL2 Ubuntu 24.04 single-GPU profiling node used as a negative-control profiling host

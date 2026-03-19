@@ -1,0 +1,40 @@
+{
+  "analysis_id": "arch_750bf2dfdce0293b",
+  "analysis_version": "aqs.arch.v0",
+  "family_id": "dense_universal",
+  "nominations": [
+    {
+      "bottleneck_family": "launch_overhead",
+      "case_id": "case_97c0f73299570c29",
+      "counterfactual_knobs": [
+        {
+          "hypothesis": "small jobs are sensitive to launch and setup overhead",
+          "knob_name": "orchestration_overhead_multiplier",
+          "suggested_sweep": [
+            1.0,
+            0.75,
+            0.5
+          ],
+          "unit": "x"
+        }
+      ],
+      "nomination_reason_json": {
+        "reason": "real NVTX timings show load/convert/postprocess overhead consuming a meaningful share",
+        "setup_share_pct": 21.859295,
+        "setup_time_s": 0.366781632
+      },
+      "nomination_source": "real_profiler_analysis",
+      "run_id": "run_6e3b0bf4154a4a94",
+      "severity_score": 0.397442,
+      "supporting_profile_ids": [
+        "prof_ee9e809cca0bb5f2"
+      ]
+    }
+  ],
+  "repeat_count_hint": 12,
+  "selected_mode": "exact_tn",
+  "source_kind": "execution_payload",
+  "source_profile_id": "prof_ee9e809cca0bb5f2",
+  "source_run_id": "run_6e3b0bf4154a4a94",
+  "workload_id": "wkl_3a3d42fe7b94a2ed"
+}

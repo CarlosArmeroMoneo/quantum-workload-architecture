@@ -1,0 +1,69 @@
+api_version: aqs.system.v1
+system_name: ovh_gra9_rtx5000_28
+node_label: ovh-gra9-rtx5000-28
+gpu_model: Quadro RTX 5000
+gpu_count: 1
+gpu_mem_gb: 15.0
+gpu_arch_target: sm75
+ram_gb: 26.76
+interconnect: pcie
+os_release: Ubuntu 24.04.3 LTS
+kernel_version: 6.8.0-106-generic
+driver_version: "580.126.09"
+
+container_runtime:
+  kind: docker
+  version: "Docker version 28.2.2, build 28.2.2-0ubuntu1~24.04.1"
+
+appliance_image:
+  ref: null
+  base_ref: null
+
+profiling_host:
+  canonical_tool_source:
+    nsys: host_installed_ubuntu_repo
+    qdstrm_importer: host_installed_ubuntu_repo
+    ncu: host_installed_ubuntu_repo
+
+  tool_paths:
+    nsys: /usr/bin/nsys
+    qdstrm_importer: /usr/lib/nsight-systems/host-linux-x64/QdstrmImporter
+    ncu: /usr/bin/ncu
+
+  nsys_version: NVIDIA Nsight Systems version 2022.4.2.50-32196742v0
+  qdstrm_importer_version: NVIDIA Nsight Systems 2022.4.2.50-32196742v0
+  qdstrm_importer_version_probe_error: null
+  ncu_version: NVIDIA (R) Nsight Compute Command Line Profiler 2022.4.1.0
+  gpu_performance_counters: enabled_for_non_admin_users_after_host_policy_change
+
+  container_launch:
+    user: ubuntu
+    uid: 1000
+    gid: 1000
+    gpu_access: --gpus all
+    cap_add: []
+    privileged: false
+    workspace_mount: null
+
+  elevated_probe_attempt:
+    user: root
+    cap_add: []
+    privileged: false
+    result: succeeded_with_explicit_cuda_env_before_non_admin_counter_fix
+
+  readiness_artifact: configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json
+  session_log: docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md
+  execution_runbook: docs/runbooks/ovh_cu13_real_execution.md
+  artifact_index: docs/reports/first_real_profiler_slice_index.md
+
+  notes:
+    - canonical profiling on this host uses host-installed Ubuntu nsight packages, not container-bundled profiler tools
+    - qdstrm importer is not on PATH by default and must be discovered at /usr/lib/nsight-systems/host-linux-x64/QdstrmImporter
+    - nsys smoke is fully working on this host
+    - ncu smoke is intentionally unfiltered on this host/toolchain to avoid brittle NVTX filter behavior
+    - real exact-TN execution on this host uses the .venv_cu13 environment plus qwa_cuda_env_cu13.sh
+    - container runtime inventory is recorded here, but the canonical first slice ran directly on the host in .venv_cu13
+    - real profiler-backed architecture analysis was successfully produced on this host
+    - if the host changes materially, create a new manifest rather than editing this file in place
+
+notes: canonical OVH profiling host for real exact-TN profiler-backed runs on Quadro RTX 5000

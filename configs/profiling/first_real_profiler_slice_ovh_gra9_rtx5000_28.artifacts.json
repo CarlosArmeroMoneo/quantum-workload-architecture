@@ -1,0 +1,71 @@
+{
+  "artifact_manifest_version": "aqs.real_profiler_artifacts.v2",
+  "slice_name": "first_real_profiler_slice_ovh_gra9_rtx5000_28",
+  "release_assets": {
+    "repository": "CarlosArmeroMoneo/quantum-workload-architecture",
+    "tag": "v0.5.0-evidence",
+    "archive_asset": "first-real-profiler-slice-evidence.zip",
+    "checksum_asset": "SHA256SUMS.txt",
+    "release_url": "https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.5.0-evidence",
+    "archive_root": "first-real-profiler-slice-evidence"
+  },
+  "unprofiled_execute": {
+    "repo_path": "evidence/first_real_profiler_slice/real_ghz3_amplitude.execute.cu13.json"
+  },
+  "amplitude_nsys": {
+    "digest": "f6bc40e76bb947a6",
+    "execution_json": {
+      "repo_path": "evidence/first_real_profiler_slice/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.execution.json"
+    },
+    "profile_summary_json": {
+      "repo_path": "evidence/first_real_profiler_slice/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.profile_summary.json"
+    },
+    "arch_output": {
+      "repo_path": "evidence/first_real_profiler_slice/real_ghz3_amplitude.arch.json"
+    },
+    "report": {
+      "release_archive_path": "first-real-profiler-slice-evidence/amplitude_nsys/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.nsys-rep"
+    },
+    "qdstrm": {
+      "release_archive_path": "first-real-profiler-slice-evidence/amplitude_nsys/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.qdstrm"
+    },
+    "sqlite": {
+      "release_archive_path": "first-real-profiler-slice-evidence/amplitude_nsys/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.sqlite"
+    },
+    "attempt_json": {
+      "release_archive_path": "first-real-profiler-slice-evidence/amplitude_nsys/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.attempt.json"
+    },
+    "stats": {
+      "cudaapisum": {
+        "release_archive_path": "first-real-profiler-slice-evidence/amplitude_nsys/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.stats_cudaapisum.csv"
+      },
+      "gpukernsum": {
+        "release_archive_path": "first-real-profiler-slice-evidence/amplitude_nsys/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.stats_gpukernsum.csv"
+      },
+      "nvtxsum": {
+        "release_archive_path": "first-real-profiler-slice-evidence/amplitude_nsys/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.stats_nvtxsum.csv"
+      }
+    }
+  },
+  "batched_ncu": {
+    "digest": "0e70e7aabe3342c1",
+    "execution_json": {
+      "repo_path": "evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.execution.json"
+    },
+    "profile_summary_json": {
+      "repo_path": "evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json"
+    },
+    "csv": {
+      "repo_path": "evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.ncu.csv"
+    },
+    "arch_output": {
+      "repo_path": "evidence/first_real_profiler_slice/real_dense_ring6_batched.arch.json"
+    },
+    "report": {
+      "release_archive_path": "first-real-profiler-slice-evidence/batched_ncu/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.ncu-rep"
+    },
+    "attempt_json": {
+      "release_archive_path": "first-real-profiler-slice-evidence/batched_ncu/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.attempt.json"
+    }
+  }
+}

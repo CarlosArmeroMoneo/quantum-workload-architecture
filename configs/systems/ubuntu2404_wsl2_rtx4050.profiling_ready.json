@@ -1,0 +1,163 @@
+{
+  "profiling_readiness": {
+    "ncu": {
+      "gpu_counters_accessible": true,
+      "minimal_kernel_capture_possible": false,
+      "path": "/usr/local/cuda/bin/ncu",
+      "permissions_sufficient": false,
+      "present": true,
+      "readiness_class": "no_kernel_captured",
+      "remediation": [
+        "No kernels were captured for the requested NVTX-filtered range."
+      ],
+      "smoke_attempt": {
+        "artifact_presence_json": {
+          "csv": {
+            "exists": false,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/ncu/profiler_smoke.ncu.ncu.csv"
+          },
+          "report": {
+            "exists": false,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/ncu/profiler_smoke.ncu.ncu-rep"
+          },
+          "smoke_payload": {
+            "exists": true,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/ncu/profiler_smoke.ncu.smoke.json"
+          },
+          "summary": {
+            "exists": false,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/ncu/profiler_smoke.ncu.summary.json"
+          }
+        },
+        "attempt_id": "attempt_b92067474d25e0d9",
+        "attempt_role": "smoke",
+        "exit_code": 0,
+        "failure_class": "no_kernel_captured",
+        "importer_version": null,
+        "remediation": [
+          "No kernels were captured for the requested NVTX-filtered range."
+        ],
+        "state_json": {
+          "kernel_seen": false,
+          "launcher_started": true,
+          "metrics_collected": false,
+          "report_written": false,
+          "target_seen": true
+        },
+        "tool_kind": "ncu",
+        "tool_version": "NVIDIA (R) Nsight Compute Command Line Profiler",
+        "usability_state": "target_seen"
+      },
+      "version": "NVIDIA (R) Nsight Compute Command Line Profiler",
+      "version_probe_error": null
+    },
+    "nsys": {
+      "path": "/opt/nvidia/nsight-compute/2025.3.1/host/target-linux-x64/nsys",
+      "present": true,
+      "qdstrm_importer_path": "/opt/nvidia/nsight-compute/2025.3.1/host/linux-desktop-glibc_2_11_3-x64/QdstrmImporter",
+      "qdstrm_importer_present": true,
+      "qdstrm_importer_version": null,
+      "qdstrm_importer_version_probe_error": "/opt/nvidia/nsight-compute/2025.3.1/host/linux-desktop-glibc_2_11_3-x64/QdstrmImporter: error while loading shared libraries: libdw.so.1: cannot open shared object file: No such file or directory",
+      "readiness_class": "importer_runtime_blocked",
+      "remediation": [
+        "QdstrmImporter was found but could not be executed successfully, so .qdstrm traces cannot be converted into usable .nsys-rep reports.",
+        "/opt/nvidia/nsight-compute/2025.3.1/host/linux-desktop-glibc_2_11_3-x64/QdstrmImporter: error while loading shared libraries: libdw.so.1: cannot open shared object file: No such file or directory"
+      ],
+      "smoke_attempt": {
+        "artifact_presence_json": {
+          "qdstrm": {
+            "exists": true,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/nsys/profiler_smoke.nsys.qdstrm"
+          },
+          "report": {
+            "exists": false,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/nsys/profiler_smoke.nsys.nsys-rep"
+          },
+          "smoke_payload": {
+            "exists": true,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/nsys/profiler_smoke.nsys.smoke.json"
+          },
+          "sqlite": {
+            "exists": false,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/nsys/profiler_smoke.nsys.sqlite"
+          },
+          "stats_cudaapisum": {
+            "exists": false,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/nsys/profiler_smoke.nsys.stats_cudaapisum.csv"
+          },
+          "stats_gpukernsum": {
+            "exists": false,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/nsys/profiler_smoke.nsys.stats_gpukernsum.csv"
+          },
+          "stats_nvtxsum": {
+            "exists": false,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/nsys/profiler_smoke.nsys.stats_nvtxsum.csv"
+          },
+          "summary": {
+            "exists": false,
+            "path": "/workspace/artifacts/readiness/ubuntu2404_wsl2_rtx4050/nsys/profiler_smoke.nsys.summary.json"
+          }
+        },
+        "attempt_id": "attempt_fb7cbf192ebeb80a",
+        "attempt_role": "smoke",
+        "exit_code": 0,
+        "failure_class": "report_conversion_blocked",
+        "importer_version": null,
+        "remediation": [
+          "Nsight Systems collection likely happened, but usable report conversion did not.",
+          "A matching-version QdstrmImporter or host-side post-processing is required to convert .qdstrm into .nsys-rep."
+        ],
+        "state_json": {
+          "collection_started": true,
+          "qdstrm_produced": true,
+          "rep_converted": false,
+          "sqlite_exported": false,
+          "stats_ingested": false
+        },
+        "tool_kind": "nsys",
+        "tool_version": "NVIDIA Nsight Systems version 2025.3.1.0",
+        "usability_state": "qdstrm_produced"
+      },
+      "version": "NVIDIA Nsight Systems version 2025.3.1.0",
+      "version_probe_error": null,
+      "versions_match": false
+    },
+    "permissions": {
+      "cap_sys_admin_effective": false,
+      "is_root": false
+    },
+    "profiling_readiness_version": "aqs.profiling_readiness.v1",
+    "profiling_ready": false,
+    "system_id": "sys_2e3f688e4540ccfc"
+  },
+  "system_profile": {
+    "appliance_tag": null,
+    "container_runtime": "docker",
+    "cpu_cores_logical": 20,
+    "cpu_model": "13th Gen Intel(R) Core(TM) i7-13700H",
+    "cpu_sockets": 1,
+    "cuda_version": "13.0",
+    "cudaq_version": null,
+    "cupy_present": true,
+    "cuquantum_present": true,
+    "cuquantum_python_version": null,
+    "cuquantum_sdk_version": null,
+    "driver_version": "581.83",
+    "gpu_count": 1,
+    "gpu_mem_gb": 6.0,
+    "gpu_model": "NVIDIA GeForce RTX 4050 Laptop GPU",
+    "gpu_present": true,
+    "hostname_hash": "85fedc910ec4f90a0bbb3f909a497b81a59d86b208a22de24f39e864b09b26b5",
+    "mpi_impl": "mpirun (Open MPI) 5.0.8",
+    "ncu_present": true,
+    "node_label": null,
+    "notes": null,
+    "nsight_compute_version": "NVIDIA (R) Nsight Compute Command Line Profiler",
+    "nsight_systems_version": "NVIDIA Nsight Systems version 2025.3.1.0",
+    "nsys_present": true,
+    "os_release": "Ubuntu 24.04.3 LTS",
+    "qiskit_present": true,
+    "ram_gb": 7.61,
+    "system_id": "sys_2e3f688e4540ccfc"
+  }
+}
