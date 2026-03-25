@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from contextlib import nullcontext
-from dataclasses import dataclass
 from datetime import datetime, timezone
 import inspect
 import statistics
@@ -116,12 +115,12 @@ def validate_real_execution_request(manifest: dict[str, Any], *, system_profile:
 
 
 def _import_real_stack() -> tuple[Any, Any, Any]:
-    import cupy  # type: ignore
+    import cupy
     try:
-        from cuquantum.tensornet import CircuitToEinsum, Network  # type: ignore
+        from cuquantum.tensornet import CircuitToEinsum, Network
     except ImportError:  # pragma: no cover - compatibility with older cuQuantum wheels
-        from cuquantum import Network  # type: ignore
-        from cuquantum.tensornet import CircuitToEinsum  # type: ignore
+        from cuquantum import Network
+        from cuquantum.tensornet import CircuitToEinsum
 
     return cupy, Network, CircuitToEinsum
 
@@ -203,7 +202,7 @@ def _converter_fixed_qubits(circuit: Any, execution_target: dict[str, Any]) -> d
 
 
 def _reference_result_from_qiskit_circuit(circuit: Any, execution_target: dict[str, Any]) -> np.ndarray:
-    from qiskit.quantum_info import Statevector  # type: ignore
+    from qiskit.quantum_info import Statevector
 
     state = np.asarray(Statevector.from_instruction(circuit).data, dtype=np.complex128)
     n_qubits = len(getattr(circuit, "qubits", []))
@@ -234,7 +233,6 @@ def execute_real_plan_candidate(
 ) -> dict[str, Any]:
     system_profile = system_profile or collect_system_profile()
     preflight = validate_real_execution_request(workload_manifest, system_profile=system_profile)
-    summary = preflight["summary"]
     execution_target = preflight["execution_target"]
     cupy, Network, CircuitToEinsum = _import_real_stack()
 

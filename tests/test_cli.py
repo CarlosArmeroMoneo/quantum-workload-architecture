@@ -1,6 +1,8 @@
+from importlib.metadata import version as dist_version
 from pathlib import Path
 
-from aqs.cli import _json_safe
+from aqs import __version__
+from aqs.cli import _json_safe, build_parser, main
 
 
 def test_json_safe_serializes_nested_path_objects():
@@ -25,3 +27,17 @@ def test_json_safe_serializes_nested_path_objects():
         "README.md",
         "docs/runbooks/ovh_cu13_real_execution.md",
     ]
+
+
+def test_distribution_metadata_matches_imported_version():
+    assert dist_version("aqs") == __version__
+
+
+def test_cli_description_uses_public_project_name():
+    parser = build_parser()
+    assert parser.description == "Quantum Workload Architecture CLI"
+
+
+def test_main_reports_cli_version(capsys):
+    assert main(["--version"]) == 0
+    assert capsys.readouterr().out.strip() == f"aqs {__version__}"

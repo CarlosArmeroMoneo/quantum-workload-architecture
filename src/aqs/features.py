@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import math
 import networkx as nx
 
 from .utils import canonical_json, sha256_text
@@ -16,7 +15,7 @@ def _statevec_memory_bytes(n_qubits: int, bytes_per_amplitude: int) -> int:
 
 
 def _graph_from_json(summary: dict[str, Any]) -> nx.Graph:
-    graph = nx.Graph()
+    graph: nx.Graph = nx.Graph()
     node_count = int(summary.get("node_count", 0))
     graph.add_nodes_from(range(node_count))
     for edge in summary.get("edges", []):

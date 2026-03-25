@@ -9,7 +9,7 @@ import shutil
 import sqlite3
 import subprocess
 import sys
-from typing import Any
+from typing import Any, NoReturn
 
 from .db import (
     insert_accuracy_eval,
@@ -86,10 +86,10 @@ def _resolve_tool_command(command: str, *, env: dict[str, str] | None = None) ->
     if resolved:
         return [resolved]
 
-    for candidate in TOOL_FALLBACKS.get(command, []):
-        candidate_path = Path(candidate)
-        if candidate_path.exists() and candidate_path.is_file():
-            return [str(candidate_path)]
+    for fallback_candidate in TOOL_FALLBACKS.get(command, []):
+        fallback_path = Path(fallback_candidate)
+        if fallback_path.exists() and fallback_path.is_file():
+            return [str(fallback_path)]
 
     root = Path("/opt/nvidia")
     if root.exists():
@@ -99,9 +99,9 @@ def _resolve_tool_command(command: str, *, env: dict[str, str] | None = None) ->
             f"**/{command}",
         ]
         for pattern in patterns:
-            for candidate in sorted(root.glob(pattern)):
-                if candidate.exists() and candidate.is_file():
-                    return [str(candidate)]
+            for discovered_path in sorted(root.glob(pattern)):
+                if discovered_path.exists() and discovered_path.is_file():
+                    return [str(discovered_path)]
     return [command]
 
 
@@ -115,7 +115,7 @@ def _python_launch_env() -> dict[str, str]:
     # commands do not depend on the shell pre-sourcing helper scripts.
     venv_root = Path(sys.prefix)
     site_packages = sorted(venv_root.glob("lib/python*/site-packages"))
-    cuda_runtime_root = None
+    cuda_runtime_root: str | None = None
     lib_dirs: list[str] = []
     candidates = [
         "nvidia/cuda_runtime",
@@ -130,25 +130,26 @@ def _python_launch_env() -> dict[str, str]:
     for sp in site_packages:
         for rel in candidates:
             base = sp / rel
-            libdir = base / "lib"
-            if libdir.exists():
-                lib_dirs.append(str(libdir))
+            libdir_path = base / "lib"
+            if libdir_path.exists():
+                lib_dirs.append(str(libdir_path))
             if rel == "nvidia/cuda_runtime" and base.exists():
                 cuda_runtime_root = str(base)
     if cuda_runtime_root and not env.get("CUDA_PATH"):
         env["CUDA_PATH"] = cuda_runtime_root
     existing_ld = [p for p in env.get("LD_LIBRARY_PATH", "").split(os.pathsep) if p]
-    for libdir in lib_dirs:
-        if libdir not in existing_ld:
-            existing_ld.insert(0, libdir)
+    for lib_dir in lib_dirs:
+        if lib_dir not in existing_ld:
+            existing_ld.insert(0, lib_dir)
     if existing_ld:
         env["LD_LIBRARY_PATH"] = os.pathsep.join(existing_ld)
 
     path_entries = env.get("PATH", "").split(os.pathsep) if env.get("PATH") else []
     for tool_name in ("nsys", "QdstrmImporter", "ncu"):
         resolved = _resolve_tool_command(tool_name, env=env)[0]
-        parent = str(Path(resolved).parent)
-        if Path(resolved).exists() and parent not in path_entries:
+        resolved_path = Path(resolved)
+        parent = str(resolved_path.parent)
+        if resolved_path.exists() and parent not in path_entries:
             path_entries.insert(0, parent)
     if path_entries:
         env["PATH"] = os.pathsep.join(path_entries)
@@ -220,6 +221,14 @@ def _json_safe_value(obj: Any) -> Any:
     return obj
 
 
+def _dict_or_empty(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _str_list_or_empty(value: Any) -> list[str]:
+    return [str(item) for item in value] if isinstance(value, list) else []
+
+
 def _sha_or_none(text: str) -> str | None:
     return sha256_text(text) if text else None
 
@@ -257,7 +266,7 @@ def _locate_artifact(preferred_path: Path) -> Path:
 def _csv_float(row: dict[str, str], *keys: str) -> float | None:
     for key in keys:
         value = row.get(key)
-        if value in {None, ""}:
+        if value is None or value == "":
             continue
         try:
             return float(value)
@@ -530,7 +539,15 @@ def _store_attempt(db_path: str | Path | None, attempt_path: Path, attempt: dict
     insert_profiler_attempt(db_path, attempt)
 
 
-def _raise_with_attempt(message: str, attempt: dict[str, Any], outdir: Path, stem: str, *, db_path: str | Path | None = None, run_payload: dict[str, Any] | None = None) -> None:
+def _raise_with_attempt(
+    message: str,
+    attempt: dict[str, Any],
+    outdir: Path,
+    stem: str,
+    *,
+    db_path: str | Path | None = None,
+    run_payload: dict[str, Any] | None = None,
+) -> NoReturn:
     attempt_path = _write_attempt(outdir, stem, attempt)
     _store_attempt(db_path, attempt_path, attempt, run_payload=run_payload)
     raise ProfileToolError(message, attempt=attempt)
@@ -882,8 +899,8 @@ def collect_profiling_readiness(*, system_profile: dict[str, Any], outdir: str |
     nsys_version = nsys_probe["version"]
     importer_version = importer_probe["version"]
     ncu_version = ncu_probe["version"]
-    nsys_smoke = None
-    ncu_smoke = None
+    nsys_smoke: dict[str, Any] | None = None
+    ncu_smoke: dict[str, Any] | None = None
     if run_smoke and system_profile.get("gpu_present"):
         if nsys_probe["present"]:
             try:
@@ -899,8 +916,10 @@ def collect_profiling_readiness(*, system_profile: dict[str, Any], outdir: str |
     nsys_version_token = _version_token(nsys_version)
     importer_version_token = _version_token(importer_version)
     versions_match = bool(nsys_version_token and importer_version_token and nsys_version_token == importer_version_token)
-    nsys_smoke_attempt = ((nsys_smoke or {}).get("profiler_attempt") or {}) if nsys_smoke else {}
-    ncu_smoke_attempt = ((ncu_smoke or {}).get("profiler_attempt") or {}) if ncu_smoke else {}
+    nsys_smoke_attempt: dict[str, Any] = _dict_or_empty((nsys_smoke or {}).get("profiler_attempt")) if nsys_smoke else {}
+    ncu_smoke_attempt: dict[str, Any] = _dict_or_empty((ncu_smoke or {}).get("profiler_attempt")) if ncu_smoke else {}
+    nsys_smoke_state = _dict_or_empty(nsys_smoke_attempt.get("state_json"))
+    ncu_smoke_state = _dict_or_empty(ncu_smoke_attempt.get("state_json"))
 
     if not nsys_probe["present"]:
         nsys_readiness_class = "tool_missing"
@@ -920,9 +939,13 @@ def collect_profiling_readiness(*, system_profile: dict[str, Any], outdir: str |
         nsys_remediation = ["Nsight Systems CLI and QdstrmImporter versions do not match. Matching versions are required to convert .qdstrm into .nsys-rep."]
     elif nsys_smoke_attempt and nsys_smoke_attempt.get("failure_class"):
         nsys_readiness_class = str(nsys_smoke_attempt.get("failure_class"))
-        nsys_remediation = list(nsys_smoke_attempt.get("remediation") or [])
+        nsys_remediation = _str_list_or_empty(nsys_smoke_attempt.get("remediation"))
     elif run_smoke and system_profile.get("gpu_present"):
-        ready = bool(nsys_smoke_attempt.get("state_json", {}).get("rep_converted") and nsys_smoke_attempt.get("state_json", {}).get("sqlite_exported") and nsys_smoke_attempt.get("state_json", {}).get("stats_ingested"))
+        ready = bool(
+            nsys_smoke_state.get("rep_converted")
+            and nsys_smoke_state.get("sqlite_exported")
+            and nsys_smoke_state.get("stats_ingested")
+        )
         nsys_readiness_class = "ready" if ready else "collection_incomplete"
         nsys_remediation = [] if ready else ["Nsight Systems did not complete report conversion, SQLite export, and non-empty summary generation for the smoke target."]
     else:
@@ -934,12 +957,12 @@ def collect_profiling_readiness(*, system_profile: dict[str, Any], outdir: str |
         ncu_remediation = ["Nsight Compute is not available on PATH."]
     elif ncu_smoke_attempt and ncu_smoke_attempt.get("failure_class"):
         ncu_readiness_class = str(ncu_smoke_attempt.get("failure_class"))
-        ncu_remediation = list(ncu_smoke_attempt.get("remediation") or [])
+        ncu_remediation = _str_list_or_empty(ncu_smoke_attempt.get("remediation"))
     elif run_smoke and system_profile.get("gpu_present"):
         ready = bool(
-            ncu_smoke_attempt.get("state_json", {}).get("report_written")
-            and ncu_smoke_attempt.get("state_json", {}).get("kernel_seen")
-            and ncu_smoke_attempt.get("state_json", {}).get("metrics_collected")
+            ncu_smoke_state.get("report_written")
+            and ncu_smoke_state.get("kernel_seen")
+            and ncu_smoke_state.get("metrics_collected")
         )
         ncu_readiness_class = "ready" if ready else "collection_incomplete"
         ncu_remediation = [] if ready else ["Nsight Compute did not complete a narrow kernel capture and non-empty metrics summary for the smoke target."]
@@ -947,7 +970,7 @@ def collect_profiling_readiness(*, system_profile: dict[str, Any], outdir: str |
         ncu_readiness_class = "tool_ready_unverified"
         ncu_remediation = []
 
-    readiness = {
+    readiness: dict[str, Any] = {
         "profiling_readiness_version": "aqs.profiling_readiness.v1",
         "system_id": system_profile.get("system_id"),
         "permissions": permissions,
@@ -970,7 +993,7 @@ def collect_profiling_readiness(*, system_profile: dict[str, Any], outdir: str |
             "present": bool(ncu_probe["present"]),
             "version": ncu_version,
             "version_probe_error": ncu_probe["version_error"],
-            "minimal_kernel_capture_possible": bool(ncu_smoke_attempt.get("state_json", {}).get("kernel_seen")) if ncu_smoke else None,
+            "minimal_kernel_capture_possible": bool(ncu_smoke_state.get("kernel_seen")) if ncu_smoke else None,
             "gpu_counters_accessible": not (ncu_smoke_attempt.get("failure_class") == "gpu_counter_permission_denied") if ncu_smoke else None,
             "permissions_sufficient": bool(permissions["is_root"] or permissions["cap_sys_admin_effective"]),
             "readiness_class": ncu_readiness_class,

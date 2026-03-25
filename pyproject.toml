@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aqs"
-version = "0.5.0"
+dynamic = ["version"]
 description = "Quantum workload architecture toolkit and evidence trail"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -24,6 +24,10 @@ db = [
 ]
 dev = [
   "pytest>=8.0",
+  "ruff>=0.6",
+  "mypy>=1.10",
+  "types-PyYAML",
+  "types-networkx",
 ]
 
 [project.scripts]
@@ -35,9 +39,40 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.dynamic]
+version = {attr = "aqs.__version__"}
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
   "gpu: requires a real GPU execution environment",
   "profiler: requires Nsight Systems or Nsight Compute CLIs",
 ]
+
+[tool.ruff]
+target-version = "py310"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src/aqs"]
+pretty = true
+show_error_codes = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["opt_einsum"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+  "aqs.execution_real",
+  "aqs.nvtx",
+  "aqs.profiler_smoke_runner",
+  "aqs.source_adapters",
+  "aqs.tnprobe",
+]
+disable_error_code = ["import-not-found", "import-untyped"]

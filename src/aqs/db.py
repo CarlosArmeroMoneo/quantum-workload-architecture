@@ -10,7 +10,7 @@ from .utils import canonical_json, sha256_file, sha256_text
 
 def _require_duckdb():
     try:
-        import duckdb  # type: ignore
+        import duckdb
     except ImportError as exc:
         raise RuntimeError(
             "The DuckDB Python package is required for this command. Install with `pip install duckdb`."
@@ -400,20 +400,36 @@ def upsert_asset_file(
     notes: str | None = None,
 ) -> dict[str, Any]:
     path = Path(asset_path)
-    payload = {
+    relative_path = str(path).replace("\\", "/")
+    sha256 = sha256_file(path) if path.exists() else None
+    size_bytes = path.stat().st_size if path.exists() else None
+    resolved_asset_id = asset_id or (
+        "asset_"
+        + sha256_text(
+            canonical_json(
+                {
+                    "asset_type": asset_type,
+                    "relative_path": relative_path,
+                    "sha256": sha256,
+                    "size_bytes": size_bytes,
+                }
+            )
+        )[:16]
+    )
+    payload: dict[str, Any] = {
+        "asset_id": resolved_asset_id,
         "asset_type": asset_type,
-        "relative_path": str(path).replace("\\", "/"),
-        "sha256": sha256_file(path) if path.exists() else None,
-        "size_bytes": path.stat().st_size if path.exists() else None,
+        "relative_path": relative_path,
+        "sha256": sha256,
+        "size_bytes": size_bytes,
     }
-    payload["asset_id"] = asset_id or ("asset_" + sha256_text(canonical_json(payload))[:16])
     insert_asset_index(
         db_path,
-        asset_id=payload["asset_id"],
+        asset_id=resolved_asset_id,
         asset_type=asset_type,
-        relative_path=payload["relative_path"],
-        sha256=payload["sha256"],
-        size_bytes=payload["size_bytes"],
+        relative_path=relative_path,
+        sha256=sha256,
+        size_bytes=size_bytes,
         tracked_in_git=tracked_in_git,
         notes=notes,
     )

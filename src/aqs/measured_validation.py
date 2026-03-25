@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from .db import (
     insert_accuracy_eval,
@@ -38,12 +39,18 @@ def _resolve_repo_glob(glob_expr: str) -> list[Path]:
     return [path for path in paths if path.is_file()]
 
 
-def _objective_value(objective: str, run: dict[str, object]) -> float:
+def _float_or_inf(value: Any) -> float:
+    if value is None:
+        return float("inf")
+    return float(value)
+
+
+def _objective_value(objective: str, run: dict[str, Any]) -> float:
     if objective == "steady_state":
-        return float(run.get("steady_iter_ms") or float("inf"))
+        return _float_or_inf(run.get("steady_iter_ms"))
     if objective == "gpu_seconds":
-        return float(run.get("gpu_seconds") or float("inf"))
-    return float(run.get("ttfr_s") or float("inf"))
+        return _float_or_inf(run.get("gpu_seconds"))
+    return _float_or_inf(run.get("ttfr_s"))
 
 
 def validate_measured_manifest(
@@ -78,7 +85,7 @@ def validate_measured_manifest(
     measurement_repeats = int(benchmark.get("measurement_repeats") or 3)
     execution_intent = str(benchmark.get("execution_intent") or "optional_real")
 
-    results: list[dict[str, object]] = []
+    results: list[dict[str, Any]] = []
     top1_hits = 0
     top1_count = 0
     regrets: list[float] = []

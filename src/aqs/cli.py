@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from . import __version__
 from .arch import analyze_execution_json, analyze_validation_json
 from .benchmark import run_benchmark_manifest
 from .db import (
@@ -363,7 +364,8 @@ def _cmd_benchmark_run(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="aqs", description="Quantum workload architecture scaffold CLI")
+    parser = argparse.ArgumentParser(prog="aqs", description="Quantum Workload Architecture CLI")
+    parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
     init_db = sub.add_parser("init-db", help="Apply the warehouse schema to a DuckDB file")
@@ -537,6 +539,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    if len(argv) == 1 and argv[0] in {"-V", "--version"}:
+        print(f"aqs {__version__}")
+        return 0
     parser = build_parser()
     args = parser.parse_args(argv)
     try:

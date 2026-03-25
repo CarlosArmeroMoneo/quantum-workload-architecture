@@ -14,7 +14,7 @@ SMOKE_VERSION = "aqs.profiler_smoke.v1"
 
 def _push_smoke_range() -> bool:
     try:
-        import cupy  # type: ignore
+        import cupy
 
         cupy.cuda.nvtx.RangePush(f"{SMOKE_DOMAIN}@{SMOKE_RANGE}")
         return True
@@ -26,7 +26,7 @@ def _pop_smoke_range(pushed: bool) -> None:
     if not pushed:
         return
     try:
-        import cupy  # type: ignore
+        import cupy
 
         cupy.cuda.nvtx.RangePop()
     except Exception:
@@ -34,7 +34,7 @@ def _pop_smoke_range(pushed: bool) -> None:
 
 
 def run_smoke(size: int = 256) -> dict[str, object]:
-    import cupy  # type: ignore
+    import cupy
 
     lhs = cupy.arange(size * size, dtype=cupy.float32).reshape(size, size)
     rhs = cupy.arange(size * size, dtype=cupy.float32).reshape(size, size)

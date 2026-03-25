@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import math
 import re
 
 import networkx as nx
@@ -215,7 +214,7 @@ def maybe_load_qiskit_circuit(manifest: dict[str, Any]) -> Any | None:
     source = manifest.get("source") or {}
     loader = source.get("loader")
     try:
-        import qiskit.qasm2 as qasm2  # type: ignore
+        import qiskit.qasm2 as qasm2
     except Exception:
         return None
 
@@ -227,7 +226,7 @@ def maybe_load_qiskit_circuit(manifest: dict[str, Any]) -> Any | None:
 
 
 def interaction_graph_from_summary(summary: CircuitSummary) -> nx.Graph:
-    graph = nx.Graph()
+    graph: nx.Graph = nx.Graph()
     graph.add_nodes_from(range(summary.n_qubits))
     for op in summary.operations:
         if len(op.qubits) == 2:

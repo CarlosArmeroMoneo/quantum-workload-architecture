@@ -18,7 +18,7 @@ NVTX_PHASES = (
 
 def _nvtx_annotate():
     try:
-        import nvtx  # type: ignore
+        import nvtx
     except Exception:
         return None
     return nvtx.annotate
@@ -31,7 +31,7 @@ class _CuPyRange:
 
     def __enter__(self) -> "_CuPyRange":
         try:
-            import cupy  # type: ignore
+            import cupy
         except Exception:
             return self
         try:
@@ -46,7 +46,7 @@ class _CuPyRange:
         if not self._pushed:
             return None
         try:
-            import cupy  # type: ignore
+            import cupy
             cupy.cuda.nvtx.RangePop()
         except Exception:
             return None
