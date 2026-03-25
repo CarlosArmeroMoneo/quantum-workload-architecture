@@ -1,14 +1,14 @@
 # Quantum Workload Architecture
 
-Quantum Workload Architecture is a Python toolkit for answering a practical systems question: when a quantum workload lands on a real host, which execution plan is worth running and what bottleneck is actually limiting it?
+Quantum Workload Architecture is a Python toolkit for deciding which exact tensor-network plan to run for a quantum workload on a real machine, and for showing what actually bottlenecks that run.
 
-It is built as an engineering evidence trail, not just a simulator wrapper. The repository carries workloads from normalized manifests through exact tensor-network planning, real `cuTensorNet` execution, profiler reduction, and architecture-facing conclusions backed by tracked artifacts.
+The repo takes workloads from normalized manifests through planning, real `cuTensorNet` execution, profiler reduction, and architecture analysis, with the supporting artifacts either tracked in git or linked from a pinned release.
 
-## What This Repo Proves
+## What It Shows
 
-- A quantum workload can be normalized, probed, planned, and executed through one reproducible CLI flow.
-- Architecture recommendations can be grounded in measured Nsight evidence instead of synthetic heuristics alone.
-- The public repository can stay lightweight while still linking to pinned profiler artifacts and rerun instructions.
+- A workload can be normalized, probed, planned, and executed through one reproducible CLI flow.
+- The architecture recommendations come from measured Nsight data, not synthetic scoring alone.
+- Small summaries stay in git, while large profiler artifacts are published through a pinned release.
 
 ## Result Snapshot
 
