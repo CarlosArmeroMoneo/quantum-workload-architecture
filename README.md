@@ -21,6 +21,10 @@ The repo takes workloads from normalized manifests through planning, real `cuTen
 | Setup share | `21.86%` on the canonical batched run | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
 | Reproducibility path | Canonical rerun guide and pinned release assets | [OVH rerun guide](docs/runbooks/ovh_cu13_real_execution.md), [release `v0.5.0-evidence`](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.5.0-evidence) |
 
+![Canonical profiler-backed architecture snapshot](docs/reports/assets/first_real_profiler_slice_canonical.svg)
+
+Frozen March 14, 2026 snapshot for the canonical `real_dense_ring6_batched` run. The left panel is normalized from `execution_run.failure_detail_json.phase_times` in the [public evidence index](docs/reports/first_real_profiler_slice_index.md), using the tracked [batched execution payload](evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.execution.json); the right panel shows the matching primary nomination from the tracked [batched architecture output](evidence/first_real_profiler_slice/real_dense_ring6_batched.arch.json).
+
 ## 60-Second CPU Quickstart
 
 The CPU path is meant to prove the end-to-end workflow without requiring Qiskit, CUDA, or Nsight.

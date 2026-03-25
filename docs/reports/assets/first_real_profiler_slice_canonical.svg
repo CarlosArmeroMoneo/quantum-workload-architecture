@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Canonical profiler-backed architecture snapshot for the real_dense_ring6_batched run</title>
+  <desc id="desc">Two-panel SVG showing measured NVTX phase shares and the primary launch_overhead architecture nomination for the canonical OVH RTX 5000 batched run recorded on March 14, 2026.</desc>
+  <style>
+    .bg { fill: #f5f7fb; }
+    .panel { fill: #ffffff; stroke: #d0d5dd; stroke-width: 1.5; }
+    .panel-soft { fill: #fcfcfd; stroke: #eaecf0; stroke-width: 1; }
+    .chip { fill: #ffffff; stroke: #d0d5dd; stroke-width: 1; }
+    .title { fill: #101828; font: 700 28px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .subtitle { fill: #475467; font: 400 15px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .panel-title { fill: #101828; font: 700 22px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .panel-subtitle { fill: #667085; font: 400 13px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .label { fill: #344054; font: 600 14px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .body { fill: #101828; font: 600 16px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .body-small { fill: #475467; font: 400 13px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .metric { fill: #101828; font: 700 24px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .metric-small { fill: #101828; font: 700 19px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .mono { fill: #344054; font: 500 13px "IBM Plex Mono", "SFMono-Regular", Consolas, monospace; }
+    .mono-strong { fill: #101828; font: 700 15px "IBM Plex Mono", "SFMono-Regular", Consolas, monospace; }
+    .footnote { fill: #667085; font: 400 12px "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+    .track { stroke: #e4e7ec; stroke-width: 10; stroke-linecap: round; }
+    .axis { stroke: #d0d5dd; stroke-width: 1; }
+    .warm { stroke: #155eef; fill: #155eef; }
+    .first { stroke: #53b1fd; fill: #53b1fd; }
+    .convert { stroke: #f79009; fill: #f79009; }
+    .path { stroke: #12b76a; fill: #12b76a; }
+    .load { stroke: #667085; fill: #667085; }
+    .post { stroke: #d92d20; fill: #d92d20; }
+    .accent { fill: #eff8ff; stroke: #b2ddff; stroke-width: 1; }
+    .accent-warm { fill: #fff7ed; stroke: #fed7aa; stroke-width: 1; }
+    .accent-green { fill: #ecfdf3; stroke: #abefc6; stroke-width: 1; }
+    .pill { fill: #101828; }
+    .pill-text { fill: #ffffff; font: 700 16px "IBM Plex Mono", "SFMono-Regular", Consolas, monospace; }
+  </style>
+
+  <rect class="bg" x="10" y="10" width="1180" height="740" rx="28" />
+
+  <text class="title" x="48" y="66">Canonical Profiler Slice</text>
+  <text class="subtitle" x="48" y="94">Frozen README snapshot from March 14, 2026 for the tracked `real_dense_ring6_batched` OVH run.</text>
+
+  <g>
+    <rect class="chip" x="48" y="116" width="176" height="42" rx="14" />
+    <text class="body-small" x="64" y="133">Canonical host</text>
+    <text class="mono-strong" x="64" y="151">OVH RTX 5000</text>
+
+    <rect class="chip" x="238" y="116" width="144" height="42" rx="14" />
+    <text class="body-small" x="254" y="133">TTFR</text>
+    <text class="mono-strong" x="254" y="151">1.042 s</text>
+
+    <rect class="chip" x="396" y="116" width="144" height="42" rx="14" />
+    <text class="body-small" x="412" y="133">Wall</text>
+    <text class="mono-strong" x="412" y="151">2.231 s</text>
+
+    <rect class="chip" x="554" y="116" width="194" height="42" rx="14" />
+    <text class="body-small" x="570" y="133">repeat_count_hint</text>
+    <text class="mono-strong" x="570" y="151">12</text>
+
+    <rect class="chip" x="762" y="116" width="276" height="42" rx="14" />
+    <text class="body-small" x="778" y="133">Profiled phase budget</text>
+    <text class="mono-strong" x="778" y="151">1.677921 s normalized</text>
+  </g>
+
+  <rect class="panel" x="40" y="182" width="548" height="520" rx="24" />
+  <rect class="panel" x="612" y="182" width="548" height="520" rx="24" />
+
+  <g>
+    <text class="panel-title" x="72" y="224">Measured phase share</text>
+    <text class="panel-subtitle" x="72" y="246">Normalized from `execution_run.failure_detail_json.phase_times` in the canonical batched payload.</text>
+
+    <rect class="panel-soft" x="72" y="268" width="484" height="44" rx="14" />
+    <rect class="warm" x="88" y="282" width="196.81" height="16" rx="8" />
+    <rect class="first" x="284.81" y="282" width="123.52" height="16" rx="0" />
+    <rect class="convert" x="408.33" y="282" width="91.52" height="16" rx="0" />
+    <rect class="path" x="499.85" y="282" width="7.9" height="16" rx="0" />
+    <rect class="load" x="507.75" y="282" width="0.17" height="16" rx="0" />
+    <rect class="post" x="507.92" y="282" width="0.13" height="16" rx="0" />
+    <text class="body-small" x="88" y="333">`contract_warm` dominates the profiled slice, while setup totals `21.86%`.</text>
+
+    <line class="axis" x1="240" y1="366" x2="480" y2="366" />
+    <line class="axis" x1="240" y1="422" x2="480" y2="422" />
+    <line class="axis" x1="240" y1="478" x2="480" y2="478" />
+    <line class="axis" x1="240" y1="534" x2="480" y2="534" />
+    <line class="axis" x1="240" y1="590" x2="480" y2="590" />
+    <line class="axis" x1="240" y1="646" x2="480" y2="646" />
+
+    <text class="label" x="72" y="363">contract_warm</text>
+    <text class="body-small" x="72" y="381">786.20 ms</text>
+    <line class="track" x1="240" y1="366" x2="480" y2="366" />
+    <line class="warm" x1="240" y1="366" x2="480" y2="366" stroke-width="10" stroke-linecap="round" />
+    <text class="mono-strong" x="496" y="371">46.86%</text>
+
+    <text class="label" x="72" y="419">contract_first</text>
+    <text class="body-small" x="72" y="437">493.47 ms</text>
+    <line class="track" x1="240" y1="422" x2="480" y2="422" />
+    <line class="first" x1="240" y1="422" x2="390.55" y2="422" stroke-width="10" stroke-linecap="round" />
+    <text class="mono-strong" x="496" y="427">29.41%</text>
+
+    <text class="label" x="72" y="475">convert_to_einsum</text>
+    <text class="body-small" x="72" y="493">365.59 ms</text>
+    <line class="track" x1="240" y1="478" x2="480" y2="478" />
+    <line class="convert" x1="240" y1="478" x2="351.59" y2="478" stroke-width="10" stroke-linecap="round" />
+    <text class="mono-strong" x="496" y="483">21.79%</text>
+
+    <text class="label" x="72" y="531">contract_path</text>
+    <text class="body-small" x="72" y="549">31.47 ms</text>
+    <line class="track" x1="240" y1="534" x2="480" y2="534" />
+    <line class="path" x1="240" y1="534" x2="249.62" y2="534" stroke-width="10" stroke-linecap="round" />
+    <text class="mono-strong" x="496" y="539">1.88%</text>
+
+    <text class="label" x="72" y="587">load_circuit</text>
+    <text class="body-small" x="72" y="605">0.68 ms</text>
+    <line class="track" x1="240" y1="590" x2="480" y2="590" />
+    <line class="load" x1="240" y1="590" x2="240.2" y2="590" stroke-width="10" stroke-linecap="round" />
+    <text class="mono-strong" x="496" y="595">0.04%</text>
+
+    <text class="label" x="72" y="643">postprocess</text>
+    <text class="body-small" x="72" y="661">0.51 ms</text>
+    <line class="track" x1="240" y1="646" x2="480" y2="646" />
+    <line class="post" x1="240" y1="646" x2="240.15" y2="646" stroke-width="10" stroke-linecap="round" />
+    <text class="mono-strong" x="496" y="651">0.03%</text>
+  </g>
+
+  <g>
+    <text class="panel-title" x="644" y="224">Architecture nomination</text>
+    <text class="panel-subtitle" x="644" y="246">Primary output from `real_dense_ring6_batched.arch.json` for the same run.</text>
+
+    <rect class="pill" x="644" y="270" width="194" height="38" rx="19" />
+    <text class="pill-text" x="664" y="294">launch_overhead</text>
+
+    <rect class="accent" x="644" y="330" width="224" height="92" rx="18" />
+    <text class="body-small" x="664" y="354">nomination_source</text>
+    <text class="mono-strong" x="664" y="378">real_profiler_analysis</text>
+    <text class="body-small" x="664" y="402">selected_mode</text>
+    <text class="mono-strong" x="664" y="418">exact_tn</text>
+
+    <rect class="accent-warm" x="884" y="330" width="244" height="92" rx="18" />
+    <text class="body-small" x="904" y="354">severity_score</text>
+    <text class="metric" x="904" y="390">0.40</text>
+    <text class="body-small" x="904" y="412">rounded from `0.397442`</text>
+
+    <rect class="panel-soft" x="644" y="442" width="484" height="108" rx="18" />
+    <text class="label" x="664" y="470">Why it was nominated</text>
+    <text class="body" x="664" y="496">Real NVTX timings show load, convert, and postprocess overhead</text>
+    <text class="body" x="664" y="520">consuming a meaningful share of the profiled batched run.</text>
+    <text class="body-small" x="664" y="542">`setup_share_pct = 21.859295` and `setup_time_s = 0.366781632`</text>
+
+    <rect class="accent-green" x="644" y="570" width="484" height="96" rx="18" />
+    <text class="label" x="664" y="598">Counterfactual sweep</text>
+    <text class="mono" x="664" y="620">knob_name: orchestration_overhead_multiplier</text>
+
+    <rect class="panel" x="664" y="632" width="88" height="22" rx="11" />
+    <rect class="panel" x="810" y="632" width="88" height="22" rx="11" />
+    <rect class="panel" x="956" y="632" width="88" height="22" rx="11" />
+    <text class="mono-strong" x="693" y="648">1.0x</text>
+    <text class="mono-strong" x="836" y="648">0.75x</text>
+    <text class="mono-strong" x="987" y="648">0.5x</text>
+    <text class="mono-strong" x="770" y="648">-&gt;</text>
+    <text class="mono-strong" x="916" y="648">-&gt;</text>
+  </g>
+
+  <text class="footnote" x="48" y="730">Tracked sources: evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.execution.json and evidence/first_real_profiler_slice/real_dense_ring6_batched.arch.json</text>
+</svg>
