@@ -25,6 +25,19 @@ The repo takes workloads from normalized manifests through planning, real `cuTen
 
 Frozen March 14, 2026 snapshot for the canonical `real_dense_ring6_batched` run. The left panel is normalized from `execution_run.failure_detail_json.phase_times` in the [public evidence index](docs/reports/first_real_profiler_slice_index.md), using the tracked [batched execution payload](evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.execution.json); the right panel shows the matching primary nomination from the tracked [batched architecture output](evidence/first_real_profiler_slice/real_dense_ring6_batched.arch.json).
 
+## Capability Matrix
+
+This table is the compact truth pass for public claims. The longer audit lives in [docs/reports/current_state_truth_pass.md](docs/reports/current_state_truth_pass.md).
+
+| Area | Manifest/schema allows | Actually implemented | Real measured evidence exists | Proof file | Claim allowed in README |
+| --- | --- | --- | --- | --- | --- |
+| Manifest ontology | `qiskit`, `cirq`, `stim`, `cudaq`, `normalized_ir`; broad semantic targets | Broad schema only; executable implementation is narrower | N/A | [Truth pass report](docs/reports/current_state_truth_pass.md) | Describe breadth as schema vocabulary, not working backend support |
+| Normalize + features | All workload manifests | `qiskit` OpenQASM2 imports and family-backed `normalized_ir` manifests | Yes | [Profiler slice index](docs/reports/first_real_profiler_slice_index.md) | Claim deterministic normalization for implemented source paths only |
+| Structural probe + planner | Any benchmark/workload combination | `qiskit` or supported `normalized_ir` families with `state`, `amplitude`, `batched_amplitudes`, `expectation` | Yes | [Profiler slice index](docs/reports/first_real_profiler_slice_index.md) | Claim exact-TN planning for the implemented subset only |
+| Real cuTensorNet execution | Any manifest can declare real intent | Single-GPU `qiskit` workloads for `amplitude` and `batched_amplitudes` only | Yes | [Tracked `nsys` execution payload](evidence/first_real_profiler_slice/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.execution.json) | Claim real measured execution only for the single-GPU Qiskit/OpenQASM2 path |
+| Profiler reduction | Profiler metadata can be attached to runs | Nsight Systems reduction is mature; Nsight Compute reduction exists but remains metrics-thin | Yes | [Tracked `ncu` profile summary](evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json) | Claim real profiler-backed summaries and note NCU depth limits explicitly |
+| Architecture nominations | Any profiled run can be analyzed | Profiler-backed nominations for launch/setup, memory bandwidth, reuse, planner ROI, capacity, and communication | Yes | [Profiler slice index](docs/reports/first_real_profiler_slice_index.md) | Claim measured nomination reasoning, not exhaustive diagnosis |
+
 ## 60-Second CPU Quickstart
 
 The CPU path is meant to prove the end-to-end workflow without requiring Qiskit, CUDA, or Nsight.
@@ -34,6 +47,7 @@ python -m pip install -e .[dev,db]
 python scripts/init_db.py --db benchmarks/warehouse/aqs.duckdb --schema benchmarks/warehouse/schema.sql
 
 python -m aqs manifest validate \
+  --mode implemented \
   workloads/manifests/generated/dense_universal_smoke.yaml \
   configs/systems/cpu_probe.yml
 
@@ -69,6 +83,7 @@ Public repo policy:
 
 ## Technical Appendix
 
+- Capability truth pass: [`docs/reports/current_state_truth_pass.md`](docs/reports/current_state_truth_pass.md)
 - Public evidence index: [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md)
 - Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)
 - Canonical OVH session summary: [`docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md`](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md)

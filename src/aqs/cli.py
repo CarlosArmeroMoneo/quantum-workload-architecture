@@ -89,7 +89,7 @@ def _cmd_manifest_validate(args: argparse.Namespace) -> int:
     for manifest_path in args.paths:
         path = Path(manifest_path)
         manifest = load_yaml(path)
-        errors = validate_manifest(manifest)
+        errors = validate_manifest(manifest, mode=args.mode)
         if errors:
             exit_code = 1
             print(f"[FAIL] {path}")
@@ -387,6 +387,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     validate = manifest_sub.add_parser("validate", help="Validate one or more manifests")
     validate.add_argument("paths", nargs="+", help="YAML manifest paths")
+    validate.add_argument("--mode", default="schema", choices=["schema", "implemented", "real"], help="Validation strictness")
     validate.add_argument("--fix-workload-ids", action="store_true", help="Rewrite canonical workload IDs for valid workload manifests")
     validate.set_defaults(func=_cmd_manifest_validate)
 

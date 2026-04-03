@@ -6,6 +6,7 @@ from typing import Any
 
 import yaml
 
+from .capabilities import validate_implemented_workload, validate_real_workload
 from .utils import canonical_json, sha256_text
 
 
@@ -312,10 +313,18 @@ def validate_benchmark_manifest(manifest: dict[str, Any]) -> list[str]:
     return errors
 
 
-def validate_manifest(manifest: dict[str, Any]) -> list[str]:
+def validate_manifest(manifest: dict[str, Any], *, mode: str = "schema") -> list[str]:
+    if mode not in {"schema", "implemented", "real"}:
+        return [f"unsupported validation mode: {mode!r}"]
+
     api_version = manifest.get("api_version")
     if api_version == "aqs.workload.v1":
-        return validate_workload_manifest(manifest)
+        errors = validate_workload_manifest(manifest)
+        if errors or mode == "schema":
+            return errors
+        if mode == "implemented":
+            return validate_implemented_workload(manifest)
+        return validate_real_workload(manifest)
     if api_version == "aqs.system.v1":
         return validate_system_manifest(manifest)
     if api_version == "aqs.benchmark.v1":
