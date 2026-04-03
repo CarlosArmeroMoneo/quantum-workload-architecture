@@ -7,7 +7,9 @@ __pycache__/
 *.egg-info/
 .venv/
 benchmarks/warehouse/*.duckdb
-artifacts/
+artifacts/*
+!artifacts/truth_pass/
+!artifacts/truth_pass/**
 ovh.conf
 release-assets/
 *.qdstrm

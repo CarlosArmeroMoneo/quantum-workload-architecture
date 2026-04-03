@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import duckdb
 import pytest
 
 from aqs.arch import analyze_execution_payload
 from aqs.db import apply_schema
 from aqs.doctor import collect_system_profile
 from aqs.execution_real import REAL_EXECUTION_SOURCE
+
+duckdb = pytest.importorskip("duckdb")
+pytestmark = pytest.mark.db
 
 
 def _require_ovh_profile_host(profile: dict[str, object]) -> None:

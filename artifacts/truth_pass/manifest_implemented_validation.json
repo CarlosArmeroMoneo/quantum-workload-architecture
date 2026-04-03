@@ -1,0 +1,16 @@
+{
+  "mode": "implemented",
+  "status": "success",
+  "validated": [
+    {
+      "errors": [],
+      "ok": true,
+      "path": "workloads/manifests/generated/dense_universal_smoke.yaml"
+    },
+    {
+      "errors": [],
+      "ok": true,
+      "path": "workloads/manifests/imported/real_ghz3_amplitude.yaml"
+    }
+  ]
+}

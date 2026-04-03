@@ -17,7 +17,7 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .[dev,db]
+          python -m pip install -e .[dev]
       - name: Ruff
         run: python -m ruff check src tests scripts
 
@@ -31,11 +31,11 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .[dev,db]
+          python -m pip install -e .[dev]
       - name: MyPy
         run: python -m mypy src/aqs
 
-  tests:
+  test-core:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -49,9 +49,37 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
+          python -m pip install -e .[dev]
+      - name: Run core tests
+        run: make test-core
+
+  test-db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
           python -m pip install -e .[dev,db]
-      - name: Run tests
-        run: pytest -q
+      - name: Run db tests
+        run: make test-db
+
+  test-quantum:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev,quantum]
+      - name: Run quantum tests
+        run: make test-quantum
 
   cpu-smoke:
     runs-on: ubuntu-latest
@@ -69,4 +97,7 @@ jobs:
           python scripts/init_db.py --db benchmarks/warehouse/aqs.duckdb --schema benchmarks/warehouse/schema.sql
       - name: Validate manifests
         run: |
-          python -m aqs manifest validate workloads/manifests/templates/*.yaml configs/systems/*.yml benchmarks/manifests/templates/*.yaml
+          python -m aqs manifest validate --mode schema workloads/manifests/templates/*.yaml configs/systems/*.yml benchmarks/manifests/templates/*.yaml
+      - name: Core smoke tests
+        run: |
+          make test-core

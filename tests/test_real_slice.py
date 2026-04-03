@@ -245,6 +245,7 @@ def test_profile_output_prefix_is_deterministic():
     assert first != third
 
 
+@pytest.mark.db
 def test_asset_indexing_is_deterministic(tmp_path):
     db_path = tmp_path / "aqs.duckdb"
     apply_schema(db_path)

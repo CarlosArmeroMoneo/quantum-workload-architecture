@@ -93,5 +93,5 @@ Public repo policy:
 ## Repository Notes
 
 - The public project name is **Quantum Workload Architecture**; the stable Python package and CLI remain `aqs` for compatibility.
-- `artifacts/` and `release-assets/` are intentionally ignored so local reruns do not pollute the public tree.
+- Most of `artifacts/` and all of `release-assets/` are intentionally ignored so local reruns do not pollute the public tree. Small tracked truth-pass fixtures under `artifacts/truth_pass/` are the current exception.
 - `ovh.conf.example` documents the expected OVH client shape. Real credentials must live outside git.

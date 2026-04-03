@@ -1,0 +1,333 @@
+{
+  "accuracy_eval": null,
+  "candidate_count": 3,
+  "execution_run": {
+    "execution_source": "measured_structural_cpu_hybrid",
+    "failure_detail_json": {
+      "adjustment_factors": {
+        "distributed_iter_bonus": 1.0,
+        "distributed_setup_penalty": 1.0,
+        "iter_multiplier": 0.975,
+        "planning_multiplier": 1.05,
+        "workspace_ratio": 0.0
+      },
+      "base_measurement": {
+        "first_contract_s": 0.0003008,
+        "largest_intermediate": 8.0,
+        "optimizer_cost": 124.0,
+        "path_length": 8,
+        "path_s": 0.0002513,
+        "repeat_samples_ms": [
+          0.3008,
+          0.1969
+        ],
+        "steady_iter_ms": 0.1969
+      },
+      "execution_intent": "optional_real",
+      "execution_source": "measured_structural_cpu_hybrid",
+      "execution_version": "aqs.execution.v2",
+      "measured_phase_times": {
+        "build_inputs": 0.0003490999952191487,
+        "postprocess": 1.0100004146806896e-05
+      },
+      "probe_strategy": "structural_real",
+      "profile_id": "prof_8ff945d5502dc524",
+      "raw_probe_source": {
+        "execution_target": {
+          "0": 0,
+          "1": 0,
+          "2": 0
+        },
+        "family_id": "dense_universal",
+        "ignored_measurements": 0,
+        "imported_operation_count": 3,
+        "layer_count": 3,
+        "loader": "openqasm2",
+        "n_qubits": 3,
+        "observable_support": [],
+        "probe_input_kind": "interleaved",
+        "probe_source": "structural_real_circuit",
+        "semantic_target": "amplitude",
+        "source_kind": "qiskit",
+        "tensor_count": 9
+      },
+      "real_executor_fallback": {
+        "fallback_code": "real_not_requested",
+        "fallback_reason": "execution_intent=optional_real keeps the structural executor as the default path"
+      }
+    },
+    "finished_at": "2026-04-03T20:18:51.879882+00:00",
+    "gpu_seconds": 0.000557,
+    "output_digest": "out_84e0c0eafaa95a34",
+    "peak_mem_gb": 0.0,
+    "peak_workspace_gb": 0.0,
+    "plan_id": "plan_93b848700bf884d9",
+    "profile_summary": {
+      "comm_time_pct": 0.0,
+      "derived_signals_json": {
+        "communication_share_pct": 0.0,
+        "contract_share_pct": 32.005,
+        "family_id": "dense_universal",
+        "largest_intermediate": 8.0,
+        "launch_share_pct": 39.199,
+        "layer_count": 3,
+        "memory_pressure_pct": null,
+        "nvtx_phase_version": "aqs.nvtx.v1",
+        "optimizer_cost": 124.0,
+        "planner_share_pct": 28.795,
+        "probe_input_kind": "interleaved",
+        "profile_notes": "phase times are measured/model-scaled on the structural executor and are not Nsight traces",
+        "profile_source": "synthetic_phase_profile",
+        "repeat_count_hint": 1,
+        "repo_metadata": {
+          "git_branch": "stack/02-test-buckets-and-ci",
+          "git_commit": "4d1b174198dcecbdcf2e4919f0041edf5507c028",
+          "git_dirty": true,
+          "git_ref_kind": "branch",
+          "package_version": "0.5.0",
+          "python_version": "3.12.4",
+          "repo_root": "C:/Users/carlo/Downloads/quantum-workload-architecture-stack"
+        },
+        "tensor_count": 9
+      },
+      "dram_util_pct": null,
+      "ncu_asset_id": null,
+      "nsys_asset_id": null,
+      "nvtx_phase_times_json": {
+        "autotune": 0.0,
+        "build_inputs": 0.0002122,
+        "cache_orchestration": 0.0,
+        "first_contract": 0.00017827,
+        "mpi_sync": 0.0,
+        "path_search": 0.00016039,
+        "postprocess": 6.139e-06,
+        "steady_contract": 0.0
+      },
+      "occupancy_pct": 39.0,
+      "profile_id": "prof_8ff945d5502dc524",
+      "profile_version": "aqs.profile.v0",
+      "profiler_kind": "synthetic",
+      "repo_metadata": {
+        "git_branch": "stack/02-test-buckets-and-ci",
+        "git_commit": "4d1b174198dcecbdcf2e4919f0041edf5507c028",
+        "git_dirty": true,
+        "git_ref_kind": "branch",
+        "package_version": "0.5.0",
+        "python_version": "3.12.4",
+        "repo_root": "C:/Users/carlo/Downloads/quantum-workload-architecture-stack"
+      },
+      "run_id": "run_476d87da3f715cf5",
+      "sm_util_pct": 29.203,
+      "top_kernels_json": [
+        {
+          "kind": "compute_proxy",
+          "name": "contract_execute_proxy",
+          "time_pct": 32.005,
+          "time_s": 0.00017827
+        },
+        {
+          "kind": "planner_proxy",
+          "name": "contract_path_proxy",
+          "time_pct": 28.795,
+          "time_s": 0.00016039
+        },
+        {
+          "kind": "overhead_proxy",
+          "name": "launch_postprocess_proxy",
+          "time_pct": 39.199,
+          "time_s": 0.000218339
+        }
+      ]
+    },
+    "replicate_idx": 0,
+    "run_id": "run_476d87da3f715cf5",
+    "started_at": "2026-04-03T20:18:51.879882+00:00",
+    "status": "success",
+    "steady_iter_ms": 0.191977,
+    "system_id": "sys_3e352e1ee768f418",
+    "ttfr_s": 0.000557,
+    "wall_s": 0.000557,
+    "workload_id": "wkl_db16240957828e69"
+  },
+  "family_id": "dense_universal",
+  "linked_assets": [],
+  "plan_override_path": null,
+  "probe": {
+    "autotune": null,
+    "cache_workspace_gb": null,
+    "gpu_arch_target": null,
+    "hyper_samples": null,
+    "largest_intermediate": 8.0,
+    "mode": "exact_tn",
+    "mpi_ranks": null,
+    "num_slices": 1,
+    "objective": "ttfr",
+    "optimizer_cost": 124.0,
+    "precision": "complex128",
+    "predicted_error": 0.0,
+    "predicted_peak_gb": 1.19e-07,
+    "probe_id": "probe_15a417dd7cce22d1",
+    "probe_kind": "tn_contract_path",
+    "probe_strategy": "structural_real",
+    "raw_info_json": {
+      "backend": "opt_einsum",
+      "error_message": null,
+      "execution_target": {
+        "0": 0,
+        "1": 0,
+        "2": 0
+      },
+      "family_id": "dense_universal",
+      "ignored_measurements": 0,
+      "imported_operation_count": 3,
+      "layer_count": 3,
+      "loader": "openqasm2",
+      "n_qubits": 3,
+      "observable_support": [],
+      "path_length": 8,
+      "probe_input_kind": "interleaved",
+      "probe_source": "structural_real_circuit",
+      "probe_version": "aqs.tn_probe.v1",
+      "semantic_target": "amplitude",
+      "source_kind": "qiskit",
+      "tensor_count": 9
+    },
+    "reuse_cache": null,
+    "status": "success",
+    "workspace_gb": null
+  },
+  "profile_summary": {
+    "comm_time_pct": 0.0,
+    "derived_signals_json": {
+      "communication_share_pct": 0.0,
+      "contract_share_pct": 32.005,
+      "family_id": "dense_universal",
+      "largest_intermediate": 8.0,
+      "launch_share_pct": 39.199,
+      "layer_count": 3,
+      "memory_pressure_pct": null,
+      "nvtx_phase_version": "aqs.nvtx.v1",
+      "optimizer_cost": 124.0,
+      "planner_share_pct": 28.795,
+      "probe_input_kind": "interleaved",
+      "profile_notes": "phase times are measured/model-scaled on the structural executor and are not Nsight traces",
+      "profile_source": "synthetic_phase_profile",
+      "repeat_count_hint": 1,
+      "repo_metadata": {
+        "git_branch": "stack/02-test-buckets-and-ci",
+        "git_commit": "4d1b174198dcecbdcf2e4919f0041edf5507c028",
+        "git_dirty": true,
+        "git_ref_kind": "branch",
+        "package_version": "0.5.0",
+        "python_version": "3.12.4",
+        "repo_root": "C:/Users/carlo/Downloads/quantum-workload-architecture-stack"
+      },
+      "tensor_count": 9
+    },
+    "dram_util_pct": null,
+    "ncu_asset_id": null,
+    "nsys_asset_id": null,
+    "nvtx_phase_times_json": {
+      "autotune": 0.0,
+      "build_inputs": 0.0002122,
+      "cache_orchestration": 0.0,
+      "first_contract": 0.00017827,
+      "mpi_sync": 0.0,
+      "path_search": 0.00016039,
+      "postprocess": 6.139e-06,
+      "steady_contract": 0.0
+    },
+    "occupancy_pct": 39.0,
+    "profile_id": "prof_8ff945d5502dc524",
+    "profile_version": "aqs.profile.v0",
+    "profiler_kind": "synthetic",
+    "repo_metadata": {
+      "git_branch": "stack/02-test-buckets-and-ci",
+      "git_commit": "4d1b174198dcecbdcf2e4919f0041edf5507c028",
+      "git_dirty": true,
+      "git_ref_kind": "branch",
+      "package_version": "0.5.0",
+      "python_version": "3.12.4",
+      "repo_root": "C:/Users/carlo/Downloads/quantum-workload-architecture-stack"
+    },
+    "run_id": "run_476d87da3f715cf5",
+    "sm_util_pct": 29.203,
+    "top_kernels_json": [
+      {
+        "kind": "compute_proxy",
+        "name": "contract_execute_proxy",
+        "time_pct": 32.005,
+        "time_s": 0.00017827
+      },
+      {
+        "kind": "planner_proxy",
+        "name": "contract_path_proxy",
+        "time_pct": 28.795,
+        "time_s": 0.00016039
+      },
+      {
+        "kind": "overhead_proxy",
+        "name": "launch_postprocess_proxy",
+        "time_pct": 39.199,
+        "time_s": 0.000218339
+      }
+    ]
+  },
+  "repeat_count_hint": 1,
+  "repo_metadata": {
+    "git_branch": "stack/02-test-buckets-and-ci",
+    "git_commit": "4d1b174198dcecbdcf2e4919f0041edf5507c028",
+    "git_dirty": true,
+    "git_ref_kind": "branch",
+    "package_version": "0.5.0",
+    "python_version": "3.12.4",
+    "repo_root": "C:/Users/carlo/Downloads/quantum-workload-architecture-stack"
+  },
+  "selected_plan": {
+    "autotune": false,
+    "cache_workspace_gb": 0.0,
+    "explanation_json": [
+      "small planner budget prioritizes time-to-first-result over path optimality",
+      "system manifest lacks GPU capacity information, so feasibility remains uncertain"
+    ],
+    "feasibility_label": "uncertain",
+    "gpu_arch_target": "sm90",
+    "hyper_samples": 2,
+    "is_feasible": false,
+    "max_error": 0.0,
+    "mode": "exact_tn",
+    "mpi_ranks": 1,
+    "objective": "ttfr",
+    "parent_probe_ids": [
+      "probe_15a417dd7cce22d1"
+    ],
+    "plan_id": "plan_93b848700bf884d9",
+    "planner_version": "aqs.tnep_planner.v0",
+    "precision": "complex128",
+    "predicted_error": 0.0,
+    "predicted_gpu_seconds": 1.489599,
+    "predicted_iter_ms": 78.257363,
+    "predicted_peak_gb": 0.0,
+    "predicted_ttfr_s": 1.489599,
+    "project": "tnep",
+    "recommendation_rank": 1,
+    "reuse_cache": false,
+    "template_name": "quick_turnaround",
+    "workspace_gb": 0.0
+  },
+  "selection_source": "plan_rank",
+  "system_manifest": {
+    "api_version": "aqs.system.v1",
+    "gpu_arch_target": "sm90",
+    "gpu_count": 0,
+    "gpu_mem_gb": 0,
+    "gpu_model": null,
+    "interconnect": "none",
+    "node_label": "local_cpu_probe",
+    "notes": "used for CPU-side contract_path and schema smoke work",
+    "ram_gb": 64,
+    "system_name": "cpu_probe_only"
+  },
+  "system_name": "cpu_probe_only",
+  "workload_id": "wkl_db16240957828e69"
+}

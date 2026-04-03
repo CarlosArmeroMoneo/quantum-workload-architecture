@@ -5,7 +5,6 @@ import sqlite3
 import subprocess
 from pathlib import Path
 
-import duckdb
 import pytest
 
 import aqs.profiler_tools as profiler_tools
@@ -324,7 +323,9 @@ def test_run_ncu_smoke_accepts_nonempty_imported_csv_without_metric_columns(monk
     assert payload["smoke_summary"]["top_kernels_json"][0]["name"] == "contract_kernel"
 
 
+@pytest.mark.db
 def test_run_ncu_smoke_permission_denial_is_persisted(monkeypatch, tmp_path):
+    duckdb = pytest.importorskip("duckdb")
     db_path = tmp_path / "warehouse.duckdb"
     apply_schema(db_path)
     monkeypatch.setattr("aqs.profiler_tools._python_launch_env", lambda: {})

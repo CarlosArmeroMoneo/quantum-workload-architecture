@@ -45,6 +45,8 @@ version = {attr = "aqs.__version__"}
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
+  "db: requires the DuckDB Python package",
+  "quantum: requires optional quantum frontend/runtime dependencies",
   "gpu: requires a real GPU execution environment",
   "profiler: requires Nsight Systems or Nsight Compute CLIs",
 ]
