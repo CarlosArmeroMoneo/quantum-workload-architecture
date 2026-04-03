@@ -355,6 +355,12 @@ def validate_campaign_manifest(manifest: dict[str, Any]) -> list[str]:
         kind = plan_source.get("kind")
         if kind not in {"planner_templates", "explicit_matrix"}:
             errors.append("plan_source.kind must be one of planner_templates/explicit_matrix")
+        policy_path = plan_source.get("policy_path")
+        if policy_path is not None and not isinstance(policy_path, str):
+            errors.append("plan_source.policy_path must be a path string when provided")
+        policy_overrides = plan_source.get("policy_overrides")
+        if policy_overrides is not None and not isinstance(policy_overrides, dict):
+            errors.append("plan_source.policy_overrides must be a mapping when provided")
 
     matrix = manifest.get("matrix")
     allowed_matrix_keys = {

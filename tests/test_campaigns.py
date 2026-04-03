@@ -78,6 +78,21 @@ def test_campaign_rerun_discards_stale_cell_and_run_artifacts(tmp_path):
     assert not stale_run.exists()
 
 
+def test_repeat_roi_cpu_dry_run_emits_roi_metrics_and_report_scaffold(tmp_path):
+    outdir = tmp_path / "repeat_roi_cpu_dry_run_v1"
+    summary = run_campaign_manifest("configs/campaigns/repeat_roi_cpu_dry_run_v1.yaml", outdir=outdir)
+
+    assert summary["status_counts"] == {"success": summary["run_count"]}
+    assert summary["repeat_roi"]["analysis_version"] == "aqs.repeat_roi.v1"
+    assert summary["repeat_roi"]["dry_run_only"] is True
+    assert summary["repeat_roi"]["finding_count"] == summary["cell_count"]
+    assert summary["repeat_roi"]["suggested_policy_overrides"]["confidence"] == "dry_run_structural_model_only"
+    report_text = (outdir / "report.md").read_text(encoding="utf-8")
+    assert "Repeat ROI Foundation" in report_text
+    assert "Dry-run only" in report_text
+    assert (outdir / "plots" / "repeat_roi_break_even.svg").exists()
+
+
 @pytest.mark.db
 def test_campaign_run_populates_experiment_tables(tmp_path):
     duckdb = pytest.importorskip("duckdb")

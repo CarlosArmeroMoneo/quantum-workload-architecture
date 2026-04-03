@@ -18,6 +18,7 @@ class PlanConfig:
     allow_distributed: bool = True
     prefer_lower_memory: bool = False
     max_candidates: int | None = None
+    policy_overrides: dict[str, Any] | None = None
 
 
 class PlannerError(RuntimeError):
@@ -72,6 +73,20 @@ _DEF_GRID = {
         "mpi_mode": "all_gpus",
     },
 }
+
+DEFAULT_PLANNER_POLICY = {
+    "disable_autotune_below_repeat": 6,
+    "disable_reuse_cache_below_repeat": 8,
+}
+
+
+def resolve_planner_policy(policy_overrides: dict[str, Any] | None = None) -> dict[str, int]:
+    policy = dict(DEFAULT_PLANNER_POLICY)
+    for key, value in (policy_overrides or {}).items():
+        if key not in policy or value is None:
+            continue
+        policy[key] = max(1, int(value))
+    return policy
 
 
 def load_system_manifest(path: str) -> dict[str, Any]:
@@ -132,6 +147,7 @@ def _base_terms(manifest: dict[str, Any], features: dict[str, Any], probe: dict[
 
 
 def _candidate_templates(config: PlanConfig, system_manifest: dict[str, Any], repeat_count: int) -> list[dict[str, Any]]:
+    policy = resolve_planner_policy(config.policy_overrides)
     names = ["quick_turnaround", "balanced", "deep_search"]
     if config.planner_budget == "quick":
         names = ["quick_turnaround", "balanced"]
@@ -142,6 +158,7 @@ def _candidate_templates(config: PlanConfig, system_manifest: dict[str, Any], re
     templates = []
     for name in names:
         base = dict(_DEF_GRID[name])
+        policy_notes: list[str] = []
         if repeat_count <= 1:
             if name == "balanced":
                 base["autotune"] = False
@@ -152,7 +169,19 @@ def _candidate_templates(config: PlanConfig, system_manifest: dict[str, Any], re
                 base["cache_fraction"] = 0.0
         if repeat_count < 6 and name == "quick_turnaround":
             base["hyper_samples"] = 2
+        if base["autotune"] and repeat_count < policy["disable_autotune_below_repeat"]:
+            base["autotune"] = False
+            policy_notes.append(
+                f"planner policy disables autotune below repeat_count_hint={policy['disable_autotune_below_repeat']}"
+            )
+        if base["reuse_cache"] and repeat_count < policy["disable_reuse_cache_below_repeat"]:
+            base["reuse_cache"] = False
+            base["cache_fraction"] = 0.0
+            policy_notes.append(
+                f"planner policy disables reuse_cache below repeat_count_hint={policy['disable_reuse_cache_below_repeat']}"
+            )
         base["template_name"] = name
+        base["policy_notes"] = policy_notes
         templates.append(base)
     if config.max_candidates is not None:
         templates = templates[: max(1, int(config.max_candidates))]
@@ -267,6 +296,7 @@ def _predict_candidate_metrics(template: dict[str, Any], *, manifest: dict[str, 
         feasibility_label=feasibility_label,
         mode=mode,
     )
+    explanation.extend(template.get("policy_notes") or [])
 
     candidate = {
         "project": "tnep",
@@ -292,6 +322,7 @@ def _predict_candidate_metrics(template: dict[str, Any], *, manifest: dict[str, 
         "parent_probe_ids": [probe["probe_id"]],
         "template_name": template["template_name"],
         "is_feasible": feasible,
+        "policy_summary_json": resolve_planner_policy(config.policy_overrides),
     }
     payload = {
         "workload_id": manifest["ids"]["workload_id"],
@@ -356,11 +387,13 @@ def select_top_plan(candidates: list[dict[str, Any]], objective: str = "ttfr") -
 
 
 __all__ = [
+    "DEFAULT_PLANNER_POLICY",
     "PLANNER_VERSION",
     "PlanConfig",
     "PlannerError",
     "generate_plan_candidates",
     "load_system_manifest",
     "rank_plan_candidates",
+    "resolve_planner_policy",
     "select_top_plan",
 ]

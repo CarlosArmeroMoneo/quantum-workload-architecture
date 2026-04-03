@@ -1,0 +1,4 @@
+policy_version: aqs.planner_policy.v1
+disable_autotune_below_repeat: 4
+disable_reuse_cache_below_repeat: 8
+notes: Dry-run foundation policy hooks for repeat ROI analysis. These thresholds are not measured evidence.

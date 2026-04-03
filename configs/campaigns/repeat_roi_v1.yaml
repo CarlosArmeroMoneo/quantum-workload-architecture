@@ -11,6 +11,7 @@ workloads:
   - workloads/manifests/imported/real_grid_shape6_amplitude.yaml
 plan_source:
   kind: planner_templates
+  policy_path: configs/planner/repeat_roi_policy.v1.yaml
 matrix:
   planner_budget: [quick, balanced, deep]
   measurement_repeats: [2]
@@ -23,4 +24,4 @@ probe_strategy: cuquantum_if_available
 profile_policy:
   nsys: representative_only
   ncu: representative_only
-notes: Skeleton manifest for the repeated-contraction ROI campaign. Real measured execution is deferred to the remote CUDA host pass.
+notes: Skeleton manifest for the repeated-contraction ROI campaign. Real measured execution is deferred to the remote CUDA host pass; planner policy hooks are wired for later evidence updates.

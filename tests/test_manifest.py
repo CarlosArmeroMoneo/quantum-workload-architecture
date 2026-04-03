@@ -55,3 +55,8 @@ def test_real_mode_rejects_semantics_outside_real_executor():
     manifest.pop("ids", None)
     errors = validate_manifest(manifest, mode="real")
     assert errors == ["real mode supports semantic_target in ['amplitude', 'batched_amplitudes'], got 'state'"]
+
+
+def test_campaign_manifest_accepts_policy_hook_fields():
+    manifest = load_yaml("configs/campaigns/repeat_roi_cpu_dry_run_v1.yaml")
+    assert validate_manifest(manifest) == []

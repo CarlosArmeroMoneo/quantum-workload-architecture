@@ -1,0 +1,24 @@
+api_version: aqs.campaign.v1
+campaign_name: repeat_roi_cpu_dry_run_v1
+objective: ttfr
+system_manifest: configs/systems/cpu_probe.yml
+outdir: artifacts/campaigns/repeat_roi_cpu_dry_run_v1
+workloads:
+  - workloads/manifests/measured/dense_universal_tiny.yaml
+  - workloads/manifests/imported/qiskit_qasm2_ghz4_batched.yaml
+plan_source:
+  kind: planner_templates
+  policy_path: configs/planner/repeat_roi_policy.v1.yaml
+matrix:
+  planner_budget: [balanced]
+  measurement_repeats: [2]
+  repeat_count_hint: [1, 8]
+  autotune: [false, true]
+  reuse_cache: [false, true]
+replicates: 1
+execution_intent: optional_real
+probe_strategy: surrogate_only
+profile_policy:
+  nsys: never
+  ncu: never
+notes: CPU-safe repeat ROI dry run that proves matrix expansion and ROI aggregation without claiming measured GPU evidence.

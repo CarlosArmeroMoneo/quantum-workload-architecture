@@ -1,0 +1,28 @@
+api_version: aqs.workload.v1
+family_id: dense_universal
+family_version: 0.2.0
+generator_name: imported_qasm2
+generator_version: 0.2.0
+seed: 41
+source_format: qiskit
+source:
+  loader: qasm2_file
+  path: workloads/sources/openqasm/ghz4.qasm
+semantic_target: batched_amplitudes
+execution_target:
+  kind: batched_amplitudes
+  fixed_qubits:
+    '0': 0
+    '3': 1
+reference_tier: smoke
+split_tag: demo
+repeat_count_hint: 8
+parameters:
+  n_qubits: 4
+  depth: 4
+  topology: ring
+  two_qubit_density: medium
+  measurement_pattern: terminal_observable_only
+ids:
+  workload_id: wkl_8603f429c4c7403e
+  source_hash: 8603f429c4c7403ed2d7c2a12f893ea8fa2e2a316e94d751ee66cebe42ab754f

@@ -8,6 +8,7 @@ from itertools import product
 from pathlib import Path
 from typing import Any
 
+from .campaign_metrics import build_campaign_metrics
 from .db import (
     apply_schema,
     insert_accuracy_eval,
@@ -110,6 +111,22 @@ def _load_plan_from_json(path: str | Path) -> dict[str, Any]:
     raise CampaignError(f"Plan JSON at {path} must decode to a mapping")
 
 
+def _resolve_policy_overrides(plan_source: dict[str, Any]) -> dict[str, Any]:
+    merged: dict[str, Any] = {}
+    policy_path = plan_source.get("policy_path")
+    if policy_path:
+        payload = load_yaml(_resolve_repo_path(policy_path))
+        if not isinstance(payload, dict):
+            raise CampaignError(f"Planner policy payload at {policy_path} must be a mapping")
+        merged.update({key: value for key, value in payload.items() if key != "policy_version"})
+    inline = plan_source.get("policy_overrides")
+    if inline is not None:
+        if not isinstance(inline, dict):
+            raise CampaignError("plan_source.policy_overrides must be a mapping when provided")
+        merged.update(inline)
+    return merged
+
+
 def _materialize_plan(
     campaign: dict[str, Any],
     workload_manifest: dict[str, Any],
@@ -130,6 +147,7 @@ def _materialize_plan(
                 planner_budget=str(params.get("planner_budget") or "balanced"),
                 allow_distributed=bool(params.get("allow_distributed", False)),
                 max_candidates=params.get("max_candidates"),
+                policy_overrides=dict(campaign.get("planner_policy") or {}),
             ),
         )
         base_plan = select_top_plan(candidates, objective=str(campaign["objective"])) or (candidates[0] if candidates else {})
@@ -223,6 +241,7 @@ def enumerate_campaign_cells(campaign_manifest_path: str | Path) -> dict[str, An
         "objective": campaign["objective"],
         "execution_intent": campaign["execution_intent"],
         "probe_strategy": campaign["probe_strategy"],
+        "planner_policy": _resolve_policy_overrides(campaign["plan_source"]),
         "profile_policy": campaign.get("profile_policy") or {},
         "repo_metadata": repo_metadata,
         "cells": cells,
@@ -290,6 +309,15 @@ def _status_plot(path: Path, counts: dict[str, int]) -> None:
     _svg_bar_chart(path, "Run Status Counts", rows)
 
 
+def _repeat_roi_break_even_plot(path: Path, findings: list[dict[str, Any]]) -> None:
+    rows = [
+        (finding["cell_id"], float(finding["break_even_extra_repeats"]))
+        for finding in findings
+        if finding.get("break_even_extra_repeats") is not None and finding.get("roi_label") == "positive"
+    ]
+    _svg_bar_chart(path, "Repeat ROI Break-Even (Extra Repeats)", rows or [("no_positive_roi", 0.0)])
+
+
 def _profile_recommendations(rows: list[dict[str, Any]], profile_policy: dict[str, Any]) -> dict[str, list[str]]:
     successful = [row for row in rows if row["status"] == "success"]
     by_cell: dict[str, dict[str, Any]] = {}
@@ -342,11 +370,14 @@ def _summarize_outputs(preview: dict[str, Any], outdir: Path) -> dict[str, Any]:
             payload = json.loads(run_file.read_text(encoding="utf-8"))
             run = payload["execution_run"]
             params = cell["parameter_json"]
+            profile = payload.get("profile_summary") or {}
+            derived = profile.get("derived_signals_json") or {}
             run_rows.append(
                 {
                     "campaign_id": cell["campaign_id"],
                     "campaign_name": cell["campaign_name"],
                     "cell_id": cell["cell_id"],
+                    "manifest_path": cell["manifest_path"],
                     "workload_id": cell["workload_id"],
                     "plan_id": cell["plan_json"]["plan_id"],
                     "run_id": run["run_id"],
@@ -357,9 +388,17 @@ def _summarize_outputs(preview: dict[str, Any], outdir: Path) -> dict[str, Any]:
                     "measurement_repeats": int(params.get("measurement_repeats", 3)),
                     "autotune": params.get("autotune"),
                     "reuse_cache": params.get("reuse_cache"),
+                    "execution_source": run.get("execution_source"),
                     "ttfr_s": run.get("ttfr_s"),
                     "steady_iter_ms": run.get("steady_iter_ms"),
+                    "wall_s": run.get("wall_s"),
                     "gpu_seconds": run.get("gpu_seconds"),
+                    "predicted_ttfr_s": cell["plan_json"].get("predicted_ttfr_s"),
+                    "predicted_iter_ms": cell["plan_json"].get("predicted_iter_ms"),
+                    "predicted_gpu_seconds": cell["plan_json"].get("predicted_gpu_seconds"),
+                    "planner_share_pct": derived.get("planner_share_pct"),
+                    "launch_share_pct": derived.get("launch_share_pct"),
+                    "contract_share_pct": derived.get("contract_share_pct"),
                 }
             )
 
@@ -379,6 +418,7 @@ def _summarize_outputs(preview: dict[str, Any], outdir: Path) -> dict[str, Any]:
         seen_cells.setdefault(row["cell_id"], []).append(float(row["ttfr_s"]))
     for cell_id, values in sorted(seen_cells.items()):
         ttfr_by_cell.append((cell_id, sum(values) / len(values)))
+    metrics = build_campaign_metrics(cell_specs, run_rows)
 
     summary = {
         "campaign_id": preview["campaign_id"],
@@ -389,6 +429,7 @@ def _summarize_outputs(preview: dict[str, Any], outdir: Path) -> dict[str, Any]:
         "objective": preview["objective"],
         "execution_intent": preview["execution_intent"],
         "probe_strategy": preview["probe_strategy"],
+        "planner_policy": preview.get("planner_policy") or {},
         "system_manifest": preview["system_manifest"],
         "outdir": str(outdir).replace("\\", "/"),
         "repo_metadata": preview["repo_metadata"],
@@ -397,11 +438,13 @@ def _summarize_outputs(preview: dict[str, Any], outdir: Path) -> dict[str, Any]:
         "status_counts": status_counts,
         "profile_recommendations": profile_recommendations,
         "cells": cell_specs,
+        **metrics,
     }
     dump_json(summary, outdir / "summary.json")
     _write_csv(outdir / "results.csv", run_rows)
     _svg_bar_chart(outdir / "plots" / "ttfr_by_cell.svg", "Average TTFR by Cell", ttfr_by_cell or [("no_successful_runs", 0.0)])
     _status_plot(outdir / "plots" / "status_counts.svg", status_counts or {"no_runs": 0})
+    _repeat_roi_break_even_plot(outdir / "plots" / "repeat_roi_break_even.svg", summary["repeat_roi"]["findings"])
 
     report_lines = [
         f"# Campaign Report: {preview['campaign_name']}",
@@ -411,6 +454,7 @@ def _summarize_outputs(preview: dict[str, Any], outdir: Path) -> dict[str, Any]:
         f"- Cell count: `{len(cell_specs)}`",
         f"- Run count: `{len(run_rows)}`",
         f"- Status counts: `{status_counts}`",
+        f"- Planner policy hooks: `{preview.get('planner_policy') or {}}`",
         f"- Recommended `nsys` follow-up cells: `{profile_recommendations.get('nsys', [])}`",
         f"- Recommended `ncu` follow-up cells: `{profile_recommendations.get('ncu', [])}`",
         "",
@@ -420,6 +464,28 @@ def _summarize_outputs(preview: dict[str, Any], outdir: Path) -> dict[str, Any]:
     for cell in cell_specs[:12]:
         report_lines.append(
             f"- `{cell['cell_id']}`: workload `{cell['workload_id']}`, params `{cell['parameter_json']}`, plan `{cell['plan_json']['plan_id']}`"
+        )
+    report_lines.extend(
+        [
+            "",
+            "## Repeat ROI Foundation",
+            "",
+            "- This report is a structural/local dry run unless the execution source is the real cuTensorNet GPU backend.",
+            f"- Dry-run only: `{summary['repeat_roi']['dry_run_only']}`",
+            f"- Suggested planner policy overrides: `{summary['repeat_roi']['suggested_policy_overrides']}`",
+            "",
+            "### Top Findings",
+            "",
+        ]
+    )
+    for finding in summary["repeat_roi"]["findings"][:12]:
+        report_lines.append(
+            "- "
+            + (
+                f"`{finding['cell_id']}` repeat={finding['repeat_count_hint']} autotune={finding['autotune']} "
+                f"reuse_cache={finding['reuse_cache']} roi={finding['roi_label']} "
+                f"break_even_extra_repeats={finding['break_even_extra_repeats']}"
+            )
         )
     (outdir / "report.md").write_text("\n".join(report_lines) + "\n", encoding="utf-8")
     return summary
