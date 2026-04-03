@@ -10,6 +10,7 @@ CREATE SCHEMA IF NOT EXISTS planning;
 CREATE SCHEMA IF NOT EXISTS execution;
 CREATE SCHEMA IF NOT EXISTS profiling;
 CREATE SCHEMA IF NOT EXISTS arch;
+CREATE SCHEMA IF NOT EXISTS experiment;
 CREATE SCHEMA IF NOT EXISTS marts;
 
 CREATE TABLE IF NOT EXISTS meta.schema_registry (
@@ -365,6 +366,48 @@ CREATE TABLE IF NOT EXISTS arch.counterfactual_result (
     predicted_boundary_shift_json JSON,
     validation_json JSON,
     created_at TIMESTAMP NOT NULL DEFAULT current_timestamp
+);
+
+CREATE TABLE IF NOT EXISTS experiment.campaign_registry (
+    campaign_id VARCHAR PRIMARY KEY,
+    campaign_name VARCHAR NOT NULL,
+    api_version VARCHAR NOT NULL,
+    manifest_path VARCHAR,
+    objective VARCHAR,
+    system_manifest_path VARCHAR,
+    outdir VARCHAR,
+    repo_commit VARCHAR,
+    repo_dirty BOOLEAN,
+    summary_json JSON,
+    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp
+);
+
+CREATE TABLE IF NOT EXISTS experiment.campaign_cell (
+    cell_id VARCHAR PRIMARY KEY,
+    campaign_id VARCHAR NOT NULL,
+    workload_id VARCHAR NOT NULL,
+    replicate_count INTEGER NOT NULL,
+    parameter_json JSON NOT NULL,
+    plan_json JSON NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp
+);
+
+CREATE TABLE IF NOT EXISTS experiment.campaign_run (
+    campaign_id VARCHAR NOT NULL,
+    cell_id VARCHAR NOT NULL,
+    run_id VARCHAR NOT NULL,
+    replicate_idx INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY (campaign_id, cell_id, run_id)
+);
+
+CREATE TABLE IF NOT EXISTS experiment.campaign_profile (
+    campaign_id VARCHAR NOT NULL,
+    cell_id VARCHAR NOT NULL,
+    profile_id VARCHAR NOT NULL,
+    profiler_kind VARCHAR NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    PRIMARY KEY (campaign_id, cell_id, profile_id)
 );
 
 

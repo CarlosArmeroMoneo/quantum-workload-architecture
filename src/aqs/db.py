@@ -497,6 +497,89 @@ def insert_profiler_attempt(db_path: str | Path, attempt: dict[str, Any]) -> Non
         conn.close()
 
 
+def insert_campaign_registry(db_path: str | Path, campaign: dict[str, Any]) -> None:
+    duckdb = _require_duckdb()
+    conn = duckdb.connect(str(Path(db_path)))
+    try:
+        repo_metadata = campaign.get("repo_metadata") or {}
+        row = {
+            "campaign_id": campaign["campaign_id"],
+            "campaign_name": campaign["campaign_name"],
+            "api_version": campaign.get("api_version", "aqs.campaign.v1"),
+            "manifest_path": campaign.get("manifest_path"),
+            "objective": campaign.get("objective"),
+            "system_manifest_path": campaign.get("system_manifest"),
+            "outdir": campaign.get("outdir"),
+            "repo_commit": repo_metadata.get("git_commit"),
+            "repo_dirty": repo_metadata.get("git_dirty"),
+            "summary_json": _json(campaign.get("summary_json")),
+        }
+        _replace_row(conn, "experiment.campaign_registry", "campaign_id", row)
+    finally:
+        conn.close()
+
+
+def insert_campaign_cell(db_path: str | Path, cell: dict[str, Any]) -> None:
+    duckdb = _require_duckdb()
+    conn = duckdb.connect(str(Path(db_path)))
+    try:
+        row = {
+            "cell_id": cell["cell_id"],
+            "campaign_id": cell["campaign_id"],
+            "workload_id": cell["workload_id"],
+            "replicate_count": int(cell["replicate_count"]),
+            "parameter_json": _json(cell.get("parameter_json") or {}),
+            "plan_json": _json(cell.get("plan_json") or {}),
+        }
+        _replace_row(conn, "experiment.campaign_cell", "cell_id", row)
+    finally:
+        conn.close()
+
+
+def insert_campaign_run(db_path: str | Path, campaign_id: str, cell_id: str, run: dict[str, Any]) -> None:
+    duckdb = _require_duckdb()
+    conn = duckdb.connect(str(Path(db_path)))
+    try:
+        row = {
+            "campaign_id": campaign_id,
+            "cell_id": cell_id,
+            "run_id": run["run_id"],
+            "replicate_idx": int(run.get("replicate_idx", 0)),
+        }
+        conn.execute(
+            "DELETE FROM experiment.campaign_run WHERE campaign_id = ? AND cell_id = ? AND run_id = ?",
+            [row["campaign_id"], row["cell_id"], row["run_id"]],
+        )
+        conn.execute(
+            "INSERT INTO experiment.campaign_run (campaign_id, cell_id, run_id, replicate_idx) VALUES (?, ?, ?, ?)",
+            [row["campaign_id"], row["cell_id"], row["run_id"], row["replicate_idx"]],
+        )
+    finally:
+        conn.close()
+
+
+def insert_campaign_profile(
+    db_path: str | Path,
+    campaign_id: str,
+    cell_id: str,
+    profile_id: str,
+    profiler_kind: str,
+) -> None:
+    duckdb = _require_duckdb()
+    conn = duckdb.connect(str(Path(db_path)))
+    try:
+        conn.execute(
+            "DELETE FROM experiment.campaign_profile WHERE campaign_id = ? AND cell_id = ? AND profile_id = ?",
+            [campaign_id, cell_id, profile_id],
+        )
+        conn.execute(
+            "INSERT INTO experiment.campaign_profile (campaign_id, cell_id, profile_id, profiler_kind) VALUES (?, ?, ?, ?)",
+            [campaign_id, cell_id, profile_id, profiler_kind],
+        )
+    finally:
+        conn.close()
+
+
 def insert_bottleneck_case(db_path: str | Path, case: dict[str, Any]) -> None:
     duckdb = _require_duckdb()
     conn = duckdb.connect(str(Path(db_path)))

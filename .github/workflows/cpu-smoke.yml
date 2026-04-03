@@ -97,7 +97,7 @@ jobs:
           python scripts/init_db.py --db benchmarks/warehouse/aqs.duckdb --schema benchmarks/warehouse/schema.sql
       - name: Validate manifests
         run: |
-          python -m aqs manifest validate --mode schema workloads/manifests/templates/*.yaml configs/systems/*.yml benchmarks/manifests/templates/*.yaml
+          python -m aqs manifest validate --mode schema workloads/manifests/templates/*.yaml configs/systems/*.yml benchmarks/manifests/templates/*.yaml configs/campaigns/*.yaml
       - name: Core smoke tests
         run: |
           make test-core

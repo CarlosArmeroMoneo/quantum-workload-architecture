@@ -7,7 +7,7 @@ doctor:
 	python -m aqs doctor --db benchmarks/warehouse/aqs.duckdb
 
 validate-smoke:
-	python -m aqs manifest validate workloads/manifests/templates/*.yaml configs/systems/*.yml benchmarks/manifests/templates/*.yaml
+	python -m aqs manifest validate workloads/manifests/templates/*.yaml configs/systems/*.yml benchmarks/manifests/templates/*.yaml configs/campaigns/*.yaml
 
 test-core:
 	pytest -q -m "not db and not quantum and not gpu and not profiler" tests

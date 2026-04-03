@@ -1,5 +1,6 @@
 from importlib.metadata import version as dist_version
 from pathlib import Path
+import shutil
 
 from aqs import __version__
 from aqs.cli import _json_safe, build_parser, main
@@ -41,3 +42,13 @@ def test_cli_description_uses_public_project_name():
 def test_main_reports_cli_version(capsys):
     assert main(["--version"]) == 0
     assert capsys.readouterr().out.strip() == f"aqs {__version__}"
+
+
+def test_manifest_validate_expands_globs(capsys, monkeypatch, tmp_path):
+    source = Path("workloads/manifests/templates/dense_universal.template.yaml")
+    copied = tmp_path / source.name
+    shutil.copyfile(source, copied)
+    monkeypatch.chdir(tmp_path)
+
+    assert main(["manifest", "validate", "*.yaml"]) == 0
+    assert f"[OK] {copied.name}" in capsys.readouterr().out

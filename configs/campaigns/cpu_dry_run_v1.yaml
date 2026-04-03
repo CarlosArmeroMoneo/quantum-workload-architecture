@@ -1,0 +1,23 @@
+api_version: aqs.campaign.v1
+campaign_name: cpu_dry_run_v1
+objective: ttfr
+system_manifest: configs/systems/cpu_probe.yml
+outdir: artifacts/campaigns/cpu_dry_run_v1
+workloads:
+  - workloads/manifests/generated/dense_universal_smoke.yaml
+  - workloads/manifests/imported/qiskit_qasm2_ghz3.yaml
+plan_source:
+  kind: planner_templates
+matrix:
+  planner_budget: [quick, balanced]
+  measurement_repeats: [2]
+  repeat_count_hint: [1, 4]
+  autotune: [false]
+  reuse_cache: [false]
+replicates: 2
+execution_intent: optional_real
+probe_strategy: structural_real
+profile_policy:
+  nsys: never
+  ncu: never
+notes: Deterministic CPU-safe dry run for campaign enumeration, aggregation, and DB insertion.

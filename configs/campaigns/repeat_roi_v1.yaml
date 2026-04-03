@@ -1,0 +1,26 @@
+api_version: aqs.campaign.v1
+campaign_name: repeat_roi_v1
+objective: ttfr
+system_manifest: configs/systems/ovh_gra9_rtx5000_28.yml
+outdir: artifacts/campaigns/repeat_roi_v1
+workloads:
+  - workloads/manifests/imported/real_ghz3_amplitude.yaml
+  - workloads/manifests/imported/real_dense_ring6_amplitude.yaml
+  - workloads/manifests/imported/real_dense_ring6_batched.yaml
+  - workloads/manifests/imported/real_qaoa_ring4_batched.yaml
+  - workloads/manifests/imported/real_grid_shape6_amplitude.yaml
+plan_source:
+  kind: planner_templates
+matrix:
+  planner_budget: [quick, balanced, deep]
+  measurement_repeats: [2]
+  repeat_count_hint: [1, 2, 4, 8, 16, 32]
+  autotune: [false, true]
+  reuse_cache: [false, true]
+replicates: 3
+execution_intent: require_real
+probe_strategy: cuquantum_if_available
+profile_policy:
+  nsys: representative_only
+  ncu: representative_only
+notes: Skeleton manifest for the repeated-contraction ROI campaign. Real measured execution is deferred to the remote CUDA host pass.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import sys
 from pathlib import Path
@@ -86,8 +87,14 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
 
 def _cmd_manifest_validate(args: argparse.Namespace) -> int:
     exit_code = 0
+    expanded_paths: list[Path] = []
     for manifest_path in args.paths:
-        path = Path(manifest_path)
+        matches = [Path(match) for match in glob.glob(manifest_path)]
+        if matches:
+            expanded_paths.extend(matches)
+        else:
+            expanded_paths.append(Path(manifest_path))
+    for path in expanded_paths:
         manifest = load_yaml(path)
         errors = validate_manifest(manifest, mode=args.mode)
         if errors:

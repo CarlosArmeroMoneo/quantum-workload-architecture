@@ -108,6 +108,20 @@ BENCHMARK_REQUIRED = {
     "allowed_modes",
 }
 
+CAMPAIGN_REQUIRED = {
+    "api_version",
+    "campaign_name",
+    "objective",
+    "system_manifest",
+    "outdir",
+    "workloads",
+    "plan_source",
+    "matrix",
+    "replicates",
+    "execution_intent",
+    "probe_strategy",
+}
+
 
 def load_yaml(path: str | Path) -> dict[str, Any]:
     with Path(path).open("r", encoding="utf-8") as handle:
@@ -313,6 +327,81 @@ def validate_benchmark_manifest(manifest: dict[str, Any]) -> list[str]:
     return errors
 
 
+def validate_campaign_manifest(manifest: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    missing = sorted(CAMPAIGN_REQUIRED - set(manifest.keys()))
+    if missing:
+        errors.append(f"missing required fields: {missing}")
+        return errors
+    if manifest.get("api_version") != "aqs.campaign.v1":
+        errors.append("api_version must be 'aqs.campaign.v1'")
+    if not isinstance(manifest.get("campaign_name"), str) or not str(manifest.get("campaign_name")).strip():
+        errors.append("campaign_name must be a non-empty string")
+    if manifest.get("objective") not in {"ttfr", "steady_state", "gpu_seconds"}:
+        errors.append("objective must be one of ttfr/steady_state/gpu_seconds")
+    if not isinstance(manifest.get("system_manifest"), str) or not manifest.get("system_manifest"):
+        errors.append("system_manifest must be a non-empty path string")
+    if not isinstance(manifest.get("outdir"), str) or not manifest.get("outdir"):
+        errors.append("outdir must be a non-empty path string")
+
+    workloads = manifest.get("workloads")
+    if not isinstance(workloads, list) or not workloads or not all(isinstance(path, str) and path for path in workloads):
+        errors.append("workloads must be a non-empty list of manifest path strings")
+
+    plan_source = manifest.get("plan_source")
+    if not isinstance(plan_source, dict):
+        errors.append("plan_source must be a mapping")
+    else:
+        kind = plan_source.get("kind")
+        if kind not in {"planner_templates", "explicit_matrix"}:
+            errors.append("plan_source.kind must be one of planner_templates/explicit_matrix")
+
+    matrix = manifest.get("matrix")
+    allowed_matrix_keys = {
+        "planner_budget",
+        "repeat_count_hint",
+        "autotune",
+        "reuse_cache",
+        "workspace_gb",
+        "cache_workspace_gb",
+        "hyper_samples",
+        "precision",
+        "mode",
+        "measurement_repeats",
+        "plan_json",
+    }
+    if not isinstance(matrix, dict) or not matrix:
+        errors.append("matrix must be a non-empty mapping of parameter name to value list")
+    else:
+        for key, values in matrix.items():
+            if key not in allowed_matrix_keys:
+                errors.append(f"matrix contains unsupported key {key!r}")
+                continue
+            if not isinstance(values, list) or not values:
+                errors.append(f"matrix.{key} must be a non-empty list")
+
+    replicates = manifest.get("replicates")
+    if not isinstance(replicates, int) or replicates < 1:
+        errors.append("replicates must be an integer >= 1")
+
+    if manifest.get("execution_intent") not in EXECUTION_INTENTS:
+        errors.append(f"execution_intent must be one of {sorted(EXECUTION_INTENTS)}")
+    if manifest.get("probe_strategy") not in PROBE_STRATEGIES:
+        errors.append(f"probe_strategy must be one of {sorted(PROBE_STRATEGIES)}")
+
+    profile_policy = manifest.get("profile_policy")
+    if profile_policy is not None:
+        if not isinstance(profile_policy, dict):
+            errors.append("profile_policy must be a mapping when provided")
+        else:
+            allowed_policy = {"never", "representative_only", "all"}
+            for key in ("nsys", "ncu"):
+                value = profile_policy.get(key)
+                if value is not None and value not in allowed_policy:
+                    errors.append(f"profile_policy.{key} must be one of {sorted(allowed_policy)}")
+    return errors
+
+
 def validate_manifest(manifest: dict[str, Any], *, mode: str = "schema") -> list[str]:
     if mode not in {"schema", "implemented", "real"}:
         return [f"unsupported validation mode: {mode!r}"]
@@ -329,4 +418,6 @@ def validate_manifest(manifest: dict[str, Any], *, mode: str = "schema") -> list
         return validate_system_manifest(manifest)
     if api_version == "aqs.benchmark.v1":
         return validate_benchmark_manifest(manifest)
+    if api_version == "aqs.campaign.v1":
+        return validate_campaign_manifest(manifest)
     return [f"unsupported api_version: {api_version!r}"]
