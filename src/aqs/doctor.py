@@ -12,6 +12,7 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from .repo_metadata import capture_repo_metadata
 from .utils import run_command
 
 
@@ -154,6 +155,7 @@ def collect_system_profile() -> dict[str, Any]:
         "driver_version": gpu["driver_version"],
     }
     system_id = "sys_" + hashlib.sha256(json.dumps(system_id_basis, sort_keys=True).encode("utf-8")).hexdigest()[:16]
+    repo_metadata = capture_repo_metadata()
 
     return {
         "system_id": system_id,
@@ -183,6 +185,7 @@ def collect_system_profile() -> dict[str, Any]:
         "mpi_impl": _tool_version([*_resolve_tool_command("mpirun"), "--version"]),
         "os_release": _read_os_release(),
         "container_runtime": _container_runtime(),
+        "repo_metadata": repo_metadata,
         "notes": None,
     }
 
@@ -195,8 +198,9 @@ def collect_doctor_report(
     db_path: str | Path | None = None,
 ) -> dict[str, Any]:
     profile = collect_system_profile()
+    repo_metadata = profile.get("repo_metadata") or capture_repo_metadata()
     if not profiling:
-        return {"system_profile": profile}
+        return {"system_profile": profile, "repo_metadata": repo_metadata}
     from .profiler_tools import collect_profiling_readiness
 
     readiness = collect_profiling_readiness(
@@ -208,4 +212,5 @@ def collect_doctor_report(
     return {
         "system_profile": profile,
         "profiling_readiness": readiness,
+        "repo_metadata": repo_metadata,
     }

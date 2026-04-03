@@ -6,6 +6,7 @@ from typing import Any
 import time
 
 from .nvtx import NVTX_PHASE_VERSION, nvtx_range
+from .repo_metadata import capture_repo_metadata
 from .utils import canonical_json, sha256_text
 
 PROFILE_VERSION = "aqs.profile.v0"
@@ -186,6 +187,7 @@ def build_synthetic_profile_summary(
             }
         )
     )[:16]
+    repo_metadata = capture_repo_metadata()
     return {
         "profile_id": profile_id,
         "run_id": run["run_id"],
@@ -199,9 +201,11 @@ def build_synthetic_profile_summary(
         "nsys_asset_id": None,
         "ncu_asset_id": None,
         "profile_version": PROFILE_VERSION,
+        "repo_metadata": repo_metadata,
         "derived_signals_json": {
             **derived_signals,
             "nvtx_phase_version": NVTX_PHASE_VERSION,
+            "repo_metadata": repo_metadata,
         },
     }
 

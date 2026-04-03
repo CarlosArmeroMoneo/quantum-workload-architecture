@@ -12,7 +12,9 @@ def test_execute_selected_plan_emits_profile_summary():
     assert profile['profiler_kind'] == 'synthetic'
     assert 'path_search' in profile['nvtx_phase_times_json']
     assert 'derived_signals_json' in profile
+    assert profile['repo_metadata']['package_version']
     derived = profile['derived_signals_json']
     assert derived['profile_source'] == 'synthetic_phase_profile'
     assert derived['planner_share_pct'] >= 0.0
     assert derived['contract_share_pct'] >= 0.0
+    assert derived['repo_metadata']['package_version'] == profile['repo_metadata']['package_version']

@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 import math
 import statistics
 import time
+import json
+from pathlib import Path
 from typing import Any
 
 import opt_einsum as oe
@@ -20,6 +22,7 @@ from .manifest import load_yaml
 from .normalize import normalize_workload_manifest
 from .planner import PlanConfig, generate_plan_candidates, load_system_manifest, select_top_plan
 from .profiling import PhaseRecorder, build_synthetic_profile_summary
+from .repo_metadata import capture_repo_metadata
 from .tnprobe import ProbeConfig, _dtype_from_precision, _select_probe_input, run_exact_tn_probe
 from .utils import canonical_json, sha256_text
 
@@ -36,6 +39,7 @@ class ExecutionConfig:
     max_tensor_count: int = 64
     max_qubits: int = 12
     execution_intent: str = "optional_real"
+    replicate_idx: int = 0
 
 
 class ExecutionError(RuntimeError):
@@ -169,6 +173,7 @@ def _failure_run(
     workload_manifest: dict[str, Any],
     system_profile: dict[str, Any],
     *,
+    replicate_idx: int,
     execution_source: str,
     status: str,
     detail: dict[str, Any],
@@ -177,7 +182,7 @@ def _failure_run(
         "plan_id": plan["plan_id"],
         "workload_id": workload_manifest["ids"]["workload_id"],
         "system_id": system_profile["system_id"],
-        "replicate_idx": 0,
+        "replicate_idx": replicate_idx,
         "status": status,
         "started_at": _utc_now_iso(),
         "finished_at": _utc_now_iso(),
@@ -274,7 +279,7 @@ def _execute_structural_plan_candidate_bundle(
         "plan_id": plan["plan_id"],
         "workload_id": workload_manifest["ids"]["workload_id"],
         "system_id": system_profile["system_id"],
-        "replicate_idx": 0,
+        "replicate_idx": config.replicate_idx,
         "status": status,
         "started_at": started_at,
         "finished_at": finished_at,
@@ -365,7 +370,15 @@ def execute_plan_candidate_bundle(
                     "fallback_reason": detail["reason"],
                 },
             )
-        run = _failure_run(plan, workload_manifest, system_profile, execution_source=REAL_EXECUTION_SOURCE, status="unsupported_semantics", detail=detail)
+        run = _failure_run(
+            plan,
+            workload_manifest,
+            system_profile,
+            replicate_idx=config.replicate_idx,
+            execution_source=REAL_EXECUTION_SOURCE,
+            status="unsupported_semantics",
+            detail=detail,
+        )
         return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": []}
 
     try:
@@ -405,7 +418,15 @@ def execute_plan_candidate_bundle(
                     "fallback_reason": exc.message,
                 },
             )
-        run = _failure_run(plan, workload_manifest, system_profile, execution_source=REAL_EXECUTION_SOURCE, status=exc.status, detail=detail)
+        run = _failure_run(
+            plan,
+            workload_manifest,
+            system_profile,
+            replicate_idx=config.replicate_idx,
+            execution_source=REAL_EXECUTION_SOURCE,
+            status=exc.status,
+            detail=detail,
+        )
         return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": []}
     except Exception as exc:
         detail = {
@@ -415,7 +436,15 @@ def execute_plan_candidate_bundle(
             "execution_version": EXECUTION_VERSION,
             "execution_intent": config.execution_intent,
         }
-        run = _failure_run(plan, workload_manifest, system_profile, execution_source=REAL_EXECUTION_SOURCE, status="runtime_error", detail=detail)
+        run = _failure_run(
+            plan,
+            workload_manifest,
+            system_profile,
+            replicate_idx=config.replicate_idx,
+            execution_source=REAL_EXECUTION_SOURCE,
+            status="runtime_error",
+            detail=detail,
+        )
         return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": []}
 
 
@@ -438,6 +467,42 @@ def execute_plan_candidate(
     )["execution_run"]
 
 
+def _load_plan_override(path: str | Path) -> dict[str, Any]:
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if isinstance(payload, dict):
+        if isinstance(payload.get("selected_plan"), dict):
+            return dict(payload["selected_plan"])
+        if isinstance(payload.get("plan"), dict):
+            return dict(payload["plan"])
+        return dict(payload)
+    raise ExecutionError(f"Plan override at {path} must decode to a JSON object")
+
+
+def _normalize_plan_override(plan: dict[str, Any], workload_manifest: dict[str, Any], *, objective: str) -> dict[str, Any]:
+    normalized = dict(plan)
+    normalized.setdefault(
+        "plan_id",
+        "plan_" + sha256_text(
+            canonical_json(
+                {
+                    "workload_id": workload_manifest["ids"]["workload_id"],
+                    "objective": objective,
+                    "plan": normalized,
+                }
+            )
+        )[:16],
+    )
+    normalized.setdefault("project", "tnep")
+    normalized.setdefault("planner_version", "aqs.plan_override.v1")
+    normalized.setdefault("objective", objective)
+    normalized.setdefault("mode", "exact_tn")
+    normalized.setdefault("precision", "complex128")
+    normalized.setdefault("feasibility_label", "feasible")
+    normalized.setdefault("explanation_json", [{"kind": "plan_override", "message": "explicit plan override supplied via CLI"}])
+    normalized.setdefault("parent_probe_ids", [])
+    return normalized
+
+
 def execute_selected_plan(
     workload_manifest_path: str,
     system_manifest_path: str,
@@ -450,30 +515,40 @@ def execute_selected_plan(
     max_candidates: int | None = None,
     measurement_repeats: int = 3,
     execution_intent: str = "optional_real",
+    replicate_idx: int = 0,
+    plan_json_path: str | None = None,
 ) -> dict[str, Any]:
     manifest = load_yaml(workload_manifest_path)
     system_manifest = load_system_manifest(system_manifest_path)
     system_profile = collect_system_profile()
+    repo_metadata = capture_repo_metadata()
     ir = normalize_workload_manifest(manifest)
     features = extract_feature_snapshot(manifest, ir)
     probe = run_exact_tn_probe(manifest, ProbeConfig(objective=objective, probe_strategy=probe_strategy))
-    candidates = generate_plan_candidates(
-        manifest,
-        features,
-        probe,
-        system_manifest,
-        config=PlanConfig(
-            objective=objective,
-            planner_budget=planner_budget,
-            allow_distributed=allow_distributed,
-            max_candidates=max_candidates,
-        ),
-    )
-    chosen = next((candidate for candidate in candidates if int(candidate.get("recommendation_rank", 9999)) == plan_rank), None)
-    if chosen is None:
-        chosen = select_top_plan(candidates, objective=objective)
-    if chosen is None:
-        raise ExecutionError("No plan candidate available for execution")
+    candidates: list[dict[str, Any]] = []
+    selected_by = "plan_rank"
+    if plan_json_path:
+        chosen = _normalize_plan_override(_load_plan_override(plan_json_path), manifest, objective=objective)
+        selected_by = "plan_override"
+    else:
+        candidates = generate_plan_candidates(
+            manifest,
+            features,
+            probe,
+            system_manifest,
+            config=PlanConfig(
+                objective=objective,
+                planner_budget=planner_budget,
+                allow_distributed=allow_distributed,
+                max_candidates=max_candidates,
+            ),
+        )
+        chosen = next((candidate for candidate in candidates if int(candidate.get("recommendation_rank", 9999)) == plan_rank), None)
+        if chosen is None:
+            chosen = select_top_plan(candidates, objective=objective)
+            selected_by = "planner_top_pick"
+        if chosen is None:
+            raise ExecutionError("No plan candidate available for execution")
     bundle = execute_plan_candidate_bundle(
         manifest,
         chosen,
@@ -486,6 +561,7 @@ def execute_selected_plan(
             probe_strategy=probe_strategy,
             measurement_repeats=measurement_repeats,
             execution_intent=execution_intent,
+            replicate_idx=replicate_idx,
         ),
     )
     return {
@@ -494,8 +570,11 @@ def execute_selected_plan(
         "repeat_count_hint": manifest.get("repeat_count_hint", 1),
         "system_name": system_manifest["system_name"],
         "system_manifest": system_manifest,
+        "repo_metadata": repo_metadata,
         "probe": probe,
         "selected_plan": chosen,
+        "selection_source": selected_by,
+        "plan_override_path": str(plan_json_path).replace("\\", "/") if plan_json_path else None,
         "profile_summary": bundle.get("profile_summary"),
         "accuracy_eval": bundle.get("accuracy_eval"),
         "execution_run": bundle["execution_run"],

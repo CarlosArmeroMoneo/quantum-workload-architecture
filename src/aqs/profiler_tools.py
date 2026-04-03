@@ -22,6 +22,7 @@ from .db import (
 )
 from .nvtx import NVTX_PHASE_VERSION
 from .paths import repo_root
+from .repo_metadata import capture_repo_metadata
 from .utils import canonical_json, sha256_text
 
 PROFILE_REDUCTION_VERSION = "aqs.profile.real.v1"
@@ -342,6 +343,7 @@ def reduce_nsys_artifacts(execution_payload: dict[str, Any], sqlite_path: Path, 
 
     cuda_api_total = sum(_csv_time_s(row) or 0.0 for row in api_rows)
     run = execution_payload["execution_run"]
+    repo_metadata = execution_payload.get("repo_metadata") or capture_repo_metadata()
     profile_id = "prof_" + sha256_text(canonical_json({"run_id": run["run_id"], "kind": "nsys", "version": PROFILE_REDUCTION_VERSION}))[:16]
     return {
         "profile_id": profile_id,
@@ -356,6 +358,7 @@ def reduce_nsys_artifacts(execution_payload: dict[str, Any], sqlite_path: Path, 
         "nsys_asset_id": None,
         "ncu_asset_id": None,
         "profile_version": PROFILE_REDUCTION_VERSION,
+        "repo_metadata": repo_metadata,
         "derived_signals_json": {
             "profile_source": "real_nsys_profile",
             "nvtx_phase_version": NVTX_PHASE_VERSION,
@@ -363,6 +366,7 @@ def reduce_nsys_artifacts(execution_payload: dict[str, Any], sqlite_path: Path, 
             "nsys_sqlite_tables": _read_sqlite_tables(sqlite_path),
             "cuda_api_total_time": cuda_api_total,
             "stats_csv": {name: str(path).replace("\\", "/") for name, path in stats_csv.items()},
+            "repo_metadata": repo_metadata,
         },
     }
 
@@ -386,6 +390,7 @@ def reduce_ncu_artifacts(execution_payload: dict[str, Any], ncu_csv_path: Path, 
         occupancy = occupancy if occupancy is not None else _csv_float(row, "Achieved Occupancy %", "sm__warps_active.avg.pct_of_peak_sustained_active")
 
     run = execution_payload["execution_run"]
+    repo_metadata = execution_payload.get("repo_metadata") or capture_repo_metadata()
     profile_id = "prof_" + sha256_text(canonical_json({"run_id": run["run_id"], "kind": "ncu", "version": PROFILE_REDUCTION_VERSION}))[:16]
     header_fields = list(rows[0].keys()) if rows else []
     return {
@@ -401,6 +406,7 @@ def reduce_ncu_artifacts(execution_payload: dict[str, Any], ncu_csv_path: Path, 
         "nsys_asset_id": None,
         "ncu_asset_id": None,
         "profile_version": PROFILE_REDUCTION_VERSION,
+        "repo_metadata": repo_metadata,
         "derived_signals_json": {
             "profile_source": "real_ncu_profile",
             "nvtx_phase_version": NVTX_PHASE_VERSION,
@@ -409,6 +415,7 @@ def reduce_ncu_artifacts(execution_payload: dict[str, Any], ncu_csv_path: Path, 
             "csv_row_count": len(rows),
             "csv_header_fields": header_fields[:64],
             "csv_nonempty": bool(rows),
+            "repo_metadata": repo_metadata,
         },
     }
 
@@ -427,6 +434,7 @@ def _attempt_id(tool_kind: str, attempt_role: str, command: list[str], stem: str
 
 def _new_attempt(*, tool_kind: str, attempt_role: str, command: list[str], stem: str, tool_version: str | None, importer_version: str | None = None) -> dict[str, Any]:
     states = NSYS_ATTEMPT_STATES if tool_kind == "nsys" else NCU_ATTEMPT_STATES
+    repo_metadata = capture_repo_metadata()
     return {
         "attempt_id": _attempt_id(tool_kind, attempt_role, command, stem),
         "attempt_version": PROFILER_ATTEMPT_VERSION,
@@ -444,6 +452,7 @@ def _new_attempt(*, tool_kind: str, attempt_role: str, command: list[str], stem:
         "state_json": {state: False for state in states},
         "artifact_presence_json": {},
         "remediation": [],
+        "repo_metadata": repo_metadata,
         "notes": None,
         "run_id": None,
         "attempt_asset_id": None,

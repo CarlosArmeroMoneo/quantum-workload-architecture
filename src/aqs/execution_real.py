@@ -337,7 +337,7 @@ def execute_real_plan_candidate(
         "plan_id": plan["plan_id"],
         "workload_id": workload_manifest["ids"]["workload_id"],
         "system_id": system_profile["system_id"],
-        "replicate_idx": 0,
+        "replicate_idx": int(getattr(config, "replicate_idx", 0)),
         "status": "success",
         "started_at": started_at,
         "finished_at": finished_at,

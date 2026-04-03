@@ -234,6 +234,8 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
         max_candidates=args.max_candidates,
         measurement_repeats=args.measurement_repeats,
         execution_intent=args.execution_intent,
+        replicate_idx=args.replicate_idx,
+        plan_json_path=args.plan_json,
     )
     _print_json(payload)
     if args.out:
@@ -454,9 +456,11 @@ def build_parser() -> argparse.ArgumentParser:
     execute_tnep.add_argument("--system-manifest", required=True, help="Path to the system manifest")
     execute_tnep.add_argument("--plan-rank", type=int, default=1, help="Recommendation rank to execute")
     execute_tnep.add_argument("--objective", choices=["ttfr", "steady_state", "gpu_seconds"], default="ttfr")
+    execute_tnep.add_argument("--plan-json", help="Optional JSON file containing an explicit plan object to execute")
     execute_tnep.add_argument("--probe-strategy", choices=["surrogate_only", "structural_real", "real_if_available", "cuquantum_if_available", "cuquantum_required"], default="structural_real")
     execute_tnep.add_argument("--planner-budget", choices=["quick", "balanced", "deep"], default="balanced")
     execute_tnep.add_argument("--measurement-repeats", type=int, default=3)
+    execute_tnep.add_argument("--replicate-idx", type=int, default=0)
     execute_tnep.add_argument("--execution-intent", choices=["optional_real", "prefer_real", "require_real"], default="optional_real")
     execute_tnep.add_argument("--allow-distributed", action=argparse.BooleanOptionalAction, default=True)
     execute_tnep.add_argument("--max-candidates", type=int)
