@@ -160,6 +160,13 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
     launch_share_pct = float(derived.get("launch_share_pct") or 0.0)
     comm_share_pct = float(derived.get("communication_share_pct") or profile.get("comm_time_pct") or 0.0)
     memory_pressure_pct = derived.get("memory_pressure_pct")
+    planner_proxy_pct = float(derived.get("planner_proxy_pct") or 0.0)
+    launch_proxy_pct = float(derived.get("launch_proxy_pct") or 0.0)
+    cold_to_steady_ratio = derived.get("cold_to_steady_ratio")
+    memory_bound_signal = str(derived.get("memory_bound_signal") or "")
+    reuse_signal = str(derived.get("reuse_signal") or "")
+    avg_kernel_time_ms = derived.get("avg_kernel_time_ms")
+    kernel_count = int(derived.get("kernel_count") or len(profile.get("top_kernels_json") or []))
     mode = selected_plan.get("mode")
     mpi_ranks = max(1, int(selected_plan.get("mpi_ranks") or 1))
     wall_s = float(run.get("wall_s") or 0.0)
@@ -198,15 +205,28 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
         planner_share_pct = 100.0 * planner_time_s / total_profiled_s
         setup_share_pct = 100.0 * setup_time_s / total_profiled_s
         warm_ratio = first_contract_s / max(warm_contract_s, 1e-9) if warm_contract_s > 0.0 else None
+        if not phase_times:
+            planner_share_pct = max(planner_share_pct, planner_proxy_pct)
+            setup_share_pct = max(setup_share_pct, launch_proxy_pct)
+        elif planner_proxy_pct > 0.0 or launch_proxy_pct > 0.0:
+            planner_share_pct = max(planner_share_pct, planner_proxy_pct)
+            setup_share_pct = max(setup_share_pct, launch_proxy_pct)
+        if warm_ratio is None and cold_to_steady_ratio is not None:
+            try:
+                warm_ratio = float(cold_to_steady_ratio)
+            except Exception:
+                warm_ratio = None
 
         if planner_share_pct >= 15.0:
             nominate(
                 "planner_roi",
                 min(1.0, planner_share_pct / 60.0),
                 {
-                    "reason": "real NVTX timings show path search/autotune taking a material share of the profiled run",
+                    "reason": "real profiling shows path search/autotune or one-time orchestration taking a material share of the run",
                     "planner_share_pct": round(planner_share_pct, 6),
                     "planner_time_s": round(planner_time_s, 9),
+                    "planner_proxy_pct": round(planner_proxy_pct, 6),
+                    "ttfr_residual_ratio": None if ttfr_residual_ratio is None else round(ttfr_residual_ratio, 6),
                     "repeat_count_hint": repeat_count,
                 },
                 nomination_source="real_profiler_analysis",
@@ -217,9 +237,12 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
                 "launch_overhead",
                 min(1.0, setup_share_pct / 55.0),
                 {
-                    "reason": "real NVTX timings show load/convert/postprocess overhead consuming a meaningful share",
+                    "reason": "real profiling shows load/convert/postprocess or short-kernel launch overhead consuming a meaningful share",
                     "setup_share_pct": round(setup_share_pct, 6),
                     "setup_time_s": round(setup_time_s, 9),
+                    "launch_proxy_pct": round(launch_proxy_pct, 6),
+                    "avg_kernel_time_ms": avg_kernel_time_ms,
+                    "kernel_count": kernel_count,
                 },
                 nomination_source="real_profiler_analysis",
             )
@@ -229,10 +252,12 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
                 "reuse_cache",
                 min(1.0, (warm_ratio - 1.0) / 1.5),
                 {
-                    "reason": "real cold-vs-warm contraction timings show measurable amortization potential",
+                    "reason": "real cold-vs-warm contraction timings or NCU repeat proxies show measurable amortization potential",
                     "first_contract_s": round(first_contract_s, 9),
                     "warm_contract_total_s": round(warm_contract_s, 9),
                     "cold_warm_ratio": round(warm_ratio, 6),
+                    "reuse_signal": reuse_signal,
+                    "repeat_count_hint": repeat_count,
                 },
                 nomination_source="real_profiler_analysis",
             )
@@ -245,9 +270,11 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
                     "memory_bandwidth",
                     min(1.0, dram_util_pct / 100.0),
                     {
-                        "reason": "Nsight Compute indicates elevated DRAM utilization relative to SM utilization",
+                        "reason": "Nsight Compute indicates elevated DRAM utilization relative to SM utilization and kernel occupancy",
                         "dram_util_pct": dram_util_pct,
                         "sm_util_pct": sm_util_pct,
+                        "occupancy_pct": profile.get("occupancy_pct"),
+                        "memory_bound_signal": memory_bound_signal,
                         "top_kernels": profile.get("top_kernels_json") or [],
                     },
                     nomination_source="real_profiler_analysis",

@@ -130,3 +130,51 @@ def test_arch_real_profile_falls_back_to_execution_phase_times_when_summary_is_s
     assert launch['nomination_source'] == 'real_profiler_analysis'
     assert launch['supporting_profile_ids'] == ['prof_sparse']
     assert launch['nomination_reason_json']['setup_share_pct'] > 20.0
+
+
+def test_arch_real_ncu_profile_uses_proxy_signals_when_nvtx_ranges_are_sparse():
+    payload = {
+        'workload_id': 'wkl_ncu_proxy',
+        'family_id': 'dense_universal',
+        'repeat_count_hint': 12,
+        'selected_plan': {
+            'mode': 'exact_tn',
+            'predicted_ttfr_s': 0.05,
+        },
+        'execution_run': {
+            'run_id': 'run_ncu_proxy',
+            'ttfr_s': 0.09,
+            'wall_s': 0.12,
+            'steady_iter_ms': 5.0,
+            'failure_detail_json': {},
+        },
+        'profile_summary': {
+            'profile_id': 'prof_ncu_proxy',
+            'profile_version': 'aqs.profile.real.v1',
+            'profiler_kind': 'ncu',
+            'nvtx_phase_times_json': {},
+            'top_kernels_json': [{'name': 'kernel_a', 'time_s': 0.02}],
+            'dram_util_pct': 76.0,
+            'sm_util_pct': 44.0,
+            'occupancy_pct': 41.0,
+            'comm_time_pct': 0.0,
+            'derived_signals_json': {
+                'profile_source': 'real_ncu_profile',
+                'planner_proxy_pct': 24.0,
+                'launch_proxy_pct': 31.0,
+                'cold_to_steady_ratio': 18.0,
+                'memory_bound_signal': 'high',
+                'reuse_signal': 'likely',
+                'avg_kernel_time_ms': 0.45,
+                'kernel_count': 3,
+            },
+        },
+        'probe': {'raw_info_json': {'family_id': 'dense_universal'}},
+        'system_manifest': {'gpu_mem_gb': 15.0},
+    }
+
+    analysis = analyze_execution_payload(payload, top_k=4)
+    families = {row['bottleneck_family'] for row in analysis['nominations']}
+
+    assert analysis['source_profile_id'] == 'prof_ncu_proxy'
+    assert {'planner_roi', 'launch_overhead', 'reuse_cache', 'memory_bandwidth'} <= families

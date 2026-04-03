@@ -310,15 +310,59 @@ def test_reduce_ncu_artifacts_from_fixture_csv(tmp_path):
         )
 
     summary = reduce_ncu_artifacts(
-        {"execution_run": {"run_id": "run_fixture"}},
-        csv_path,
+        {
+            "execution_run": {
+                "run_id": "run_fixture",
+                "wall_s": 0.012,
+                "ttfr_s": 0.003,
+                "steady_iter_ms": 0.9,
+                "failure_detail_json": {
+                    "phase_times": {
+                        "contract_path": 0.0004,
+                        "contract_first": 0.0012,
+                    }
+                },
+            },
+            "repeat_count_hint": 8,
+        },
         tmp_path / "sample.ncu-rep",
+        csv_path,
+        profile_mode="diagnostic",
+        metric_config={"set": "full", "replay_mode": "kernel"},
     )
     assert summary["profiler_kind"] == "ncu"
     assert summary["top_kernels_json"][0]["name"] == "contract_kernel"
     assert summary["dram_util_pct"] == pytest.approx(72.5)
     assert summary["sm_util_pct"] == pytest.approx(51.0)
     assert summary["occupancy_pct"] == pytest.approx(48.0)
+    assert summary["nvtx_phase_times_json"]["contract_path"] == pytest.approx(0.0004)
+    assert summary["derived_signals_json"]["profile_mode"] == "diagnostic"
+    assert summary["derived_signals_json"]["ncu_parse_source"] == "csv_fallback"
+    assert summary["derived_signals_json"]["memory_bound_signal"] == "high"
+
+
+def test_reduce_ncu_artifacts_prefers_report_import_text_over_csv_fallback(tmp_path):
+    csv_path = tmp_path / "sample.ncu.csv"
+    csv_path.write_text("Kernel Name,Kernel Time (ns)\ncsv_kernel,1000\n", encoding="utf-8")
+    summary = reduce_ncu_artifacts(
+        {
+            "execution_run": {
+                "run_id": "run_fixture",
+                "wall_s": 0.01,
+                "ttfr_s": 0.004,
+                "steady_iter_ms": 1.2,
+                "failure_detail_json": {},
+            },
+            "repeat_count_hint": 4,
+        },
+        tmp_path / "sample.ncu-rep",
+        csv_path,
+        imported_csv_text="Kernel Name,Kernel Time (ns)\nreport_kernel,4000\n",
+        profile_mode="basic",
+        metric_config={"set": "basic", "replay_mode": "kernel"},
+    )
+    assert summary["top_kernels_json"][0]["name"] == "report_kernel"
+    assert summary["derived_signals_json"]["ncu_parse_source"] == "ncu_report_import"
 
 
 @pytest.mark.gpu

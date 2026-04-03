@@ -304,6 +304,7 @@ def _cmd_profile_ncu(args: argparse.Namespace) -> int:
             allow_distributed=args.allow_distributed,
             measurement_repeats=args.measurement_repeats,
             execution_intent=args.execution_intent,
+            profile_mode=args.profile_mode,
             db_path=args.db,
         )
         _print_json(payload)
@@ -544,6 +545,7 @@ def build_parser() -> argparse.ArgumentParser:
     profile_ncu.add_argument("--planner-budget", choices=["quick", "balanced", "deep"], default="balanced")
     profile_ncu.add_argument("--measurement-repeats", type=int, default=3)
     profile_ncu.add_argument("--execution-intent", choices=["optional_real", "prefer_real", "require_real"], default="require_real")
+    profile_ncu.add_argument("--profile-mode", choices=["basic", "diagnostic", "deep"], default="basic")
     profile_ncu.add_argument("--allow-distributed", action=argparse.BooleanOptionalAction, default=False)
     profile_ncu.add_argument("--outdir")
     profile_ncu.add_argument("--db")

@@ -69,3 +69,20 @@ def test_campaign_cli_validate_and_run(capsys, tmp_path):
     assert main(["campaign", "summarize", "--manifest", "configs/campaigns/cpu_dry_run_v1.yaml", "--outdir", str(outdir)]) == 0
     summarize_payload = json.loads(capsys.readouterr().out)
     assert summarize_payload["campaign_id"] == run_payload["campaign_id"]
+
+
+def test_profile_ncu_cli_accepts_profile_mode():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "profile",
+            "ncu",
+            "--manifest",
+            "workloads/manifests/imported/real_dense_ring6_batched.yaml",
+            "--system-manifest",
+            "configs/systems/ovh_gra9_rtx5000_28.yml",
+            "--profile-mode",
+            "diagnostic",
+        ]
+    )
+    assert args.profile_mode == "diagnostic"

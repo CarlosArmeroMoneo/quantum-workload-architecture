@@ -1,4 +1,0 @@
-set = "full"
-target_processes = "all"
-replay_mode = "kernel"
-import_source = false

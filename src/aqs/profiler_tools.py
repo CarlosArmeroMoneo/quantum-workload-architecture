@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+from io import StringIO
 import json
 import os
 from pathlib import Path
@@ -20,6 +21,7 @@ from .db import (
     link_run_asset,
     upsert_asset_file,
 )
+from .manifest import load_yaml
 from .nvtx import NVTX_PHASE_VERSION
 from .paths import repo_root
 from .repo_metadata import capture_repo_metadata
@@ -61,6 +63,8 @@ TOOL_FALLBACKS: dict[str, list[str]] = {
         "/usr/lib/nsight-systems/host-linux-x64/QdstrmImporter",
     ],
 }
+
+NCU_PROFILE_MODE_CONFIG = repo_root() / "configs" / "profiling" / "ncu_metric_sets.yaml"
 
 
 class ProfileToolError(RuntimeError):
@@ -247,6 +251,34 @@ def _load_csv_rows(path: Path) -> list[dict[str, str]]:
         return [dict(row) for row in reader]
 
 
+def _load_csv_text_rows(text: str | None) -> list[dict[str, str]]:
+    payload = (text or "").strip()
+    if not payload:
+        return []
+    handle = StringIO(payload)
+    reader = csv.DictReader(handle)
+    return [dict(row) for row in reader]
+
+
+def _load_ncu_profile_mode(profile_mode: str) -> dict[str, Any]:
+    config = load_yaml(NCU_PROFILE_MODE_CONFIG)
+    modes = config.get("profile_modes")
+    if not isinstance(modes, dict):
+        raise ProfileToolError(f"invalid NCU profile mode config at {NCU_PROFILE_MODE_CONFIG}")
+    selected = modes.get(profile_mode)
+    if not isinstance(selected, dict):
+        raise ProfileToolError(f"unsupported NCU profile mode {profile_mode!r}")
+    return {
+        "profile_mode": profile_mode,
+        "set": str(selected.get("set") or "basic"),
+        "target_processes": str(selected.get("target_processes") or "all"),
+        "replay_mode": str(selected.get("replay_mode") or "kernel"),
+        "import_page": str(selected.get("import_page") or "raw"),
+        "notes": str(selected.get("notes") or ""),
+        "config_path": str(NCU_PROFILE_MODE_CONFIG).replace("\\", "/"),
+    }
+
+
 def _try_locate_artifact(preferred_path: Path) -> Path | None:
     if preferred_path.exists():
         return preferred_path
@@ -371,16 +403,32 @@ def reduce_nsys_artifacts(execution_payload: dict[str, Any], sqlite_path: Path, 
     }
 
 
-def reduce_ncu_artifacts(execution_payload: dict[str, Any], ncu_csv_path: Path, ncu_rep: Path) -> dict[str, Any]:
-    rows = _load_csv_rows(ncu_csv_path)
+def reduce_ncu_artifacts(
+    execution_payload: dict[str, Any],
+    ncu_rep: Path,
+    ncu_csv_path: Path | None = None,
+    *,
+    imported_csv_text: str | None = None,
+    profile_mode: str = "basic",
+    metric_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    rows = _load_csv_text_rows(imported_csv_text)
+    parse_source = "ncu_report_import" if rows else "csv_fallback"
+    if not rows and ncu_csv_path is not None:
+        rows = _load_csv_rows(ncu_csv_path)
+    if not rows and imported_csv_text:
+        parse_source = "report_import_empty"
     top_kernels = []
     dram_util = None
     sm_util = None
     occupancy = None
-    for row in rows[:5]:
+    kernel_times: list[float] = []
+    for idx, row in enumerate(rows):
         name = _csv_name(row, "Kernel Name", "Name", "ID")
         time_s = _csv_time_s(row)
-        if name is not None:
+        if time_s is not None:
+            kernel_times.append(time_s)
+        if name is not None and idx < 5:
             entry: dict[str, Any] = {"name": name, "kind": "gpu_kernel"}
             if time_s is not None:
                 entry["time_s"] = time_s
@@ -389,15 +437,40 @@ def reduce_ncu_artifacts(execution_payload: dict[str, Any], ncu_csv_path: Path, 
         sm_util = sm_util if sm_util is not None else _csv_float(row, "SM Throughput %", "sm__throughput.avg.pct_of_peak_sustained_elapsed")
         occupancy = occupancy if occupancy is not None else _csv_float(row, "Achieved Occupancy %", "sm__warps_active.avg.pct_of_peak_sustained_active")
 
+    total_kernel_time_s = round(sum(kernel_times), 9) if kernel_times else None
+    for entry in top_kernels:
+        if total_kernel_time_s and entry.get("time_s") is not None:
+            entry["time_pct"] = round((float(entry["time_s"]) / total_kernel_time_s) * 100.0, 6)
+
     run = execution_payload["execution_run"]
+    execution_detail = _dict_or_empty(run.get("failure_detail_json"))
+    nvtx_phase_times = _dict_or_empty(execution_detail.get("phase_times"))
+    wall_s = float(run.get("wall_s") or 0.0)
+    ttfr_s = float(run.get("ttfr_s") or 0.0)
+    steady_iter_ms = float(run.get("steady_iter_ms") or 0.0)
+    repeat_count = int(execution_payload.get("repeat_count_hint") or 1)
+    launch_proxy_pct = round(max(0.0, ((wall_s - float(total_kernel_time_s or 0.0)) / wall_s) * 100.0), 6) if wall_s > 0.0 else None
+    planner_proxy_pct = round(max(0.0, ((ttfr_s - float(total_kernel_time_s or 0.0)) / ttfr_s) * 100.0), 6) if ttfr_s > 0.0 else None
+    avg_kernel_time_ms = round((sum(kernel_times) / len(kernel_times)) * 1000.0, 6) if kernel_times else None
+    cold_to_steady_ratio = round((ttfr_s * 1000.0) / steady_iter_ms, 6) if ttfr_s > 0.0 and steady_iter_ms > 0.0 else None
+    memory_bound_signal = "low"
+    if dram_util is not None and sm_util is not None:
+        if float(dram_util) >= 70.0 and float(sm_util) <= float(dram_util) - 10.0:
+            memory_bound_signal = "high"
+        elif float(dram_util) >= 55.0:
+            memory_bound_signal = "medium"
+    launch_bound_signal = "high" if launch_proxy_pct is not None and avg_kernel_time_ms is not None and launch_proxy_pct >= 30.0 and avg_kernel_time_ms <= 0.75 else "low"
+    reuse_signal = "likely" if cold_to_steady_ratio is not None and repeat_count >= 8 and cold_to_steady_ratio >= 1.2 else "unlikely"
+
     repo_metadata = execution_payload.get("repo_metadata") or capture_repo_metadata()
     profile_id = "prof_" + sha256_text(canonical_json({"run_id": run["run_id"], "kind": "ncu", "version": PROFILE_REDUCTION_VERSION}))[:16]
     header_fields = list(rows[0].keys()) if rows else []
+    mode_config = metric_config or _load_ncu_profile_mode(profile_mode)
     return {
         "profile_id": profile_id,
         "run_id": run["run_id"],
         "profiler_kind": "ncu",
-        "nvtx_phase_times_json": {},
+        "nvtx_phase_times_json": nvtx_phase_times,
         "top_kernels_json": top_kernels,
         "dram_util_pct": dram_util,
         "sm_util_pct": sm_util,
@@ -411,10 +484,23 @@ def reduce_ncu_artifacts(execution_payload: dict[str, Any], ncu_csv_path: Path, 
             "profile_source": "real_ncu_profile",
             "nvtx_phase_version": NVTX_PHASE_VERSION,
             "ncu_rep_path": str(ncu_rep).replace("\\", "/"),
-            "ncu_csv_path": str(ncu_csv_path).replace("\\", "/"),
+            "ncu_csv_path": str(ncu_csv_path).replace("\\", "/") if ncu_csv_path is not None else None,
+            "ncu_parse_source": parse_source,
+            "profile_mode": profile_mode,
+            "ncu_metric_set": mode_config.get("set"),
+            "ncu_replay_mode": mode_config.get("replay_mode"),
             "csv_row_count": len(rows),
             "csv_header_fields": header_fields[:64],
             "csv_nonempty": bool(rows),
+            "kernel_count": len(kernel_times),
+            "kernel_time_total_s": total_kernel_time_s,
+            "avg_kernel_time_ms": avg_kernel_time_ms,
+            "planner_proxy_pct": planner_proxy_pct,
+            "launch_proxy_pct": launch_proxy_pct,
+            "cold_to_steady_ratio": cold_to_steady_ratio,
+            "memory_bound_signal": memory_bound_signal,
+            "launch_bound_signal": launch_bound_signal,
+            "reuse_signal": reuse_signal,
             "repo_metadata": repo_metadata,
         },
     }
@@ -829,6 +915,7 @@ def run_ncu_smoke(*, outdir: str | Path | None = None, db_path: str | Path | Non
     outdir = _ensure_dir(Path(outdir) if outdir else repo_root() / "artifacts" / "profiler_smoke" / "ncu")
     profiler_env = _python_launch_env()
     tool_version = _tool_version("ncu", env=profiler_env)
+    mode_config = _load_ncu_profile_mode("basic")
     stem = "profiler_smoke.ncu"
     smoke_payload_path = outdir / f"{stem}.smoke.json"
     report_path = outdir / f"{stem}.ncu-rep"
@@ -839,8 +926,9 @@ def run_ncu_smoke(*, outdir: str | Path | None = None, db_path: str | Path | Non
     # and smoke should prove host capability rather than exact range syntax.
     command = [
         *_resolve_tool_command("ncu", env=profiler_env),
-        "--set", "basic",
-        "--target-processes", "all",
+        "--set", mode_config["set"],
+        "--target-processes", mode_config["target_processes"],
+        "--replay-mode", mode_config["replay_mode"],
         "--export", str(report_path),
         *_smoke_runner_command(smoke_payload_path),
     ]
@@ -863,12 +951,23 @@ def run_ncu_smoke(*, outdir: str | Path | None = None, db_path: str | Path | Non
     attempt["artifact_presence_json"] = _artifact_presence({"smoke_payload": smoke_payload_path, "report": report_path, "csv": csv_path, "summary": summary_json_path})
     smoke_summary = None
     if attempt["state_json"]["report_written"]:
-        import_completed = _run([*_resolve_tool_command("ncu", env=profiler_env), "--import", str(report_path), "--csv", "--page", "raw"], cwd=repo_root(), env=profiler_env)
+        import_completed = _run(
+            [*_resolve_tool_command("ncu", env=profiler_env), "--import", str(report_path), "--csv", "--page", mode_config["import_page"]],
+            cwd=repo_root(),
+            env=profiler_env,
+        )
         import_text = _record_completed_process(attempt, import_completed, append=True, label="ncu_import")
         if import_completed.returncode == 0 and import_text.strip():
             csv_path.write_text(import_text, encoding="utf-8")
             attempt["state_json"]["metrics_collected"] = True
-            smoke_summary = reduce_ncu_artifacts(_smoke_execution_payload("ncu"), csv_path, report_path)
+            smoke_summary = reduce_ncu_artifacts(
+                _smoke_execution_payload("ncu"),
+                report_path,
+                csv_path,
+                imported_csv_text=import_text,
+                profile_mode="basic",
+                metric_config=mode_config,
+            )
             _write_json(summary_json_path, smoke_summary)
     attempt["artifact_presence_json"] = _artifact_presence({"smoke_payload": smoke_payload_path, "report": report_path, "csv": csv_path, "summary": summary_json_path})
     attempt["usability_state"] = _highest_state("ncu", attempt["state_json"])
@@ -1209,11 +1308,13 @@ def run_ncu_profile(
     allow_distributed: bool = False,
     measurement_repeats: int = 3,
     execution_intent: str = "require_real",
+    profile_mode: str = "basic",
     db_path: str | Path | None = None,
 ) -> dict[str, Any]:
     outdir = _ensure_dir(Path(outdir) if outdir else repo_root() / "artifacts" / "profiles" / "ncu")
     profiler_env = _python_launch_env()
     tool_version = _tool_version("ncu", env=profiler_env)
+    mode_config = _load_ncu_profile_mode(profile_mode)
     stem = _profile_output_prefix("ncu", manifest_path, plan_rank)
     execution_payload_path = outdir / f"{stem}.execution.json"
     profile_json_path = outdir / f"{stem}.profile_summary.json"
@@ -1237,9 +1338,11 @@ def run_ncu_profile(
     command = [
         *_resolve_tool_command("ncu", env=profiler_env),
         "--set",
-        "basic",
+        mode_config["set"],
         "--target-processes",
-        "all",
+        mode_config["target_processes"],
+        "--replay-mode",
+        mode_config["replay_mode"],
         "--export",
         str(report_prefix),
         *execute_command,
@@ -1266,7 +1369,7 @@ def run_ncu_profile(
     attempt["artifact_presence_json"] = _artifact_presence({"execution_payload": execution_payload_path, "report": report_path, "csv": csv_path})
     if attempt["state_json"]["report_written"]:
         import_completed = _run(
-            [*_resolve_tool_command("ncu", env=profiler_env), "--import", str(report_path), "--csv", "--page", "raw"],
+            [*_resolve_tool_command("ncu", env=profiler_env), "--import", str(report_path), "--csv", "--page", mode_config["import_page"]],
             cwd=repo_root(),
             env=profiler_env,
         )
@@ -1286,7 +1389,14 @@ def run_ncu_profile(
         attempt["remediation"] = remediation
         _raise_with_attempt(message, attempt, outdir, stem, db_path=db_path, run_payload=run_payload)
 
-    profile_summary = reduce_ncu_artifacts(run_payload, csv_path, report_path)
+    profile_summary = reduce_ncu_artifacts(
+        run_payload,
+        report_path,
+        csv_path,
+        imported_csv_text=import_text if 'import_text' in locals() else None,
+        profile_mode=profile_mode,
+        metric_config=mode_config,
+    )
     if not _ncu_summary_non_empty(profile_summary):
         attempt["failure_class"] = "summary_empty"
         attempt["remediation"] = ["Nsight Compute produced artifacts, but the parsed metrics summary was empty. A usable .ncu-rep for this milestone requires a non-empty summary."]

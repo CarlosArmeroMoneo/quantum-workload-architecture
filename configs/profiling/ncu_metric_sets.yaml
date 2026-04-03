@@ -1,0 +1,19 @@
+profile_modes:
+  basic:
+    set: basic
+    target_processes: all
+    replay_mode: kernel
+    import_page: raw
+    notes: Minimal Nsight Compute capture for quick validation.
+  diagnostic:
+    set: full
+    target_processes: all
+    replay_mode: kernel
+    import_page: raw
+    notes: Wider metric capture intended for branch-06 diagnostic summaries.
+  deep:
+    set: full
+    target_processes: all
+    replay_mode: application
+    import_page: raw
+    notes: Heaviest local capture mode; expect higher overhead and larger reports.
