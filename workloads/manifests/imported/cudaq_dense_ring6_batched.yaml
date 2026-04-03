@@ -1,0 +1,28 @@
+api_version: aqs.workload.v1
+family_id: dense_universal
+family_version: 0.2.0
+generator_name: imported_cudaq
+generator_version: 0.1.0
+seed: 17
+source_format: cudaq
+source:
+  loader: cudaq_python_file
+  path: workloads/sources/cudaq/dense_ring6.py
+semantic_target: batched_amplitudes
+execution_target:
+  kind: batched_amplitudes
+  fixed_qubits:
+    '0': 0
+    '3': 1
+reference_tier: exact_ref
+split_tag: train
+repeat_count_hint: 12
+parameters:
+  n_qubits: 6
+  depth: 6
+  topology: ring
+  two_qubit_density: medium
+  measurement_pattern: terminal_observable_only
+ids:
+  workload_id: wkl_a50a079ac003c66d
+  source_hash: a50a079ac003c66dc82d005ff2451c313581887bcaaa2115267114922f3b551c

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +8,7 @@ import re
 
 import networkx as nx
 
+from .cudaq_adapter import CudaqAdapterError, load_cudaq_program
 from .paths import repo_root
 
 
@@ -195,6 +196,31 @@ def _load_openqasm2_text(source: dict[str, Any]) -> str:
     raise SourceLoadError(f"Unsupported qiskit source loader: {loader!r}")
 
 
+def _load_cudaq_summary(source: dict[str, Any]) -> CircuitSummary:
+    loader = source.get("loader")
+    if loader != "cudaq_python_file":
+        raise SourceLoadError(f"Unsupported cudaq source loader: {loader!r}")
+    if not source.get("path"):
+        raise SourceLoadError("source.path is required for loader=cudaq_python_file")
+    try:
+        adapter_payload = load_cudaq_program(source["path"])
+    except CudaqAdapterError as exc:
+        raise SourceLoadError(str(exc)) from exc
+    summary = parse_openqasm2_summary(adapter_payload["openqasm2"], source_kind=str(adapter_payload["source_kind"]))
+    return replace(
+        summary,
+        loader="cudaq_python_file",
+        graph_kind="imported_cudaq_adapter",
+        metadata={
+            **(summary.metadata or {}),
+            "adapter_api_version": adapter_payload["api_version"],
+            "adapter_program_name": adapter_payload["program_name"],
+            "adapter_source_path": adapter_payload["path"],
+            "adapter_metadata": adapter_payload["metadata"],
+        },
+    )
+
+
 def load_circuit_summary(manifest: dict[str, Any]) -> CircuitSummary | None:
     source_format = manifest.get("source_format")
     if source_format == "normalized_ir":
@@ -204,6 +230,8 @@ def load_circuit_summary(manifest: dict[str, Any]) -> CircuitSummary | None:
     if source_format == "qiskit":
         text = _load_openqasm2_text(source)
         return parse_openqasm2_summary(text, source_kind="qiskit")
+    if source_format == "cudaq":
+        return _load_cudaq_summary(source)
 
     raise SourceLoadError(f"Source format {source_format!r} is not implemented in this scaffold")
 

@@ -9,8 +9,8 @@ The rule for this document is simple: schema breadth is allowed to be wider than
 | Area | Manifest/schema allows | Actually implemented | Real measured evidence exists | Proof file | Claim allowed in README |
 | --- | --- | --- | --- | --- | --- |
 | Manifest ontology | `qiskit`, `cirq`, `stim`, `cudaq`, `normalized_ir`; broad semantic targets including `samples` and `detectors` | Broad schema only; executable implementation is narrower | N/A | This report | Talk about ontology breadth only as vocabulary |
-| Normalize + features | All workload manifests | `qiskit` OpenQASM2 imports and family-backed `normalized_ir` manifests | Yes | [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md) | Claim deterministic normalization for implemented source paths only |
-| Structural probe + planner | Any benchmark/workload combination | `qiskit` or supported `normalized_ir` families with `state`, `amplitude`, `batched_amplitudes`, `expectation` | Yes | [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md) | Claim exact-TN planning for the implemented subset only |
+| Normalize + features | All workload manifests | `qiskit` OpenQASM2 imports, adapter-backed `cudaq` manifests, and family-backed `normalized_ir` manifests | Yes | [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md) | Claim deterministic normalization for implemented source paths only, and call CUDA-Q adapter-backed |
+| Structural probe + planner | Any benchmark/workload combination | `qiskit`, adapter-backed `cudaq`, or supported `normalized_ir` families with `state`, `amplitude`, `batched_amplitudes`, `expectation` | Yes | [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md) | Claim exact-TN planning for the implemented subset only, and keep CUDA-Q marked adapter-backed |
 | Real cuTensorNet execution | Any manifest can declare real intent | Single-GPU `qiskit` workloads for `amplitude` and `batched_amplitudes` only | Yes | [`evidence/first_real_profiler_slice/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.execution.json`](../../evidence/first_real_profiler_slice/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.execution.json) | Claim real measured execution only for this single-GPU Qiskit/OpenQASM2 path |
 | Profiler reduction | Profiler metadata can be attached to runs | Nsight Systems reduction is mature; Nsight Compute reduction exists but remains metrics-thin | Yes | [`evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json`](../../evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json) | Claim real profiler-backed summaries and call out NCU limits |
 | Architecture nominations | Any profiled run can be analyzed | Profiler-backed nominations for launch/setup, memory bandwidth, reuse, planner ROI, capacity, and communication | Yes | [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md) | Claim measured nomination reasoning, not exhaustive diagnosis |
@@ -23,11 +23,12 @@ The rule for this document is simple: schema breadth is allowed to be wider than
 - `implemented`: rejects workload combinations that the repo does not implement end to end today.
 - `real`: rejects workload combinations that the real single-GPU cuTensorNet executor does not support.
 
-That means examples such as `source_format='cirq'`, `source_format='stim'`, `source_format='cudaq'`, or unsupported semantic targets can remain in the ontology without being misrepresented as executable.
+That means examples such as `source_format='cirq'`, `source_format='stim'`, or unsupported semantic targets can remain in the ontology without being misrepresented as executable, while `source_format='cudaq'` is now handled only through the adapter-backed path described below.
 
 ## Explicit Limits
 
-- `cirq`, `stim`, and `cudaq` remain schema vocabulary only in the current branch.
+- `cirq` and `stim` remain schema vocabulary only in the current branch.
+- `cudaq` is adapter-backed for normalization and structural planning, but it does not yet have separate measured CUDA-Q execution evidence.
 - `samples`, `detectors`, and `syndrome_summary` remain schema vocabulary only for the execution path.
 - Family-backed `normalized_ir` execution is currently limited to `dense_universal`, `qaoa_graph`, `trotter_1d`, and `grid_2d_shallow`.
 - Real measured execution is currently limited to the single-GPU Qiskit/OpenQASM2 path for `amplitude` and `batched_amplitudes`.

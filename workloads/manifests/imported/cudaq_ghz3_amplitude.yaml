@@ -1,0 +1,26 @@
+api_version: aqs.workload.v1
+family_id: dense_universal
+family_version: 0.1.0
+generator_name: imported_cudaq
+generator_version: 0.1.0
+seed: 0
+source_format: cudaq
+source:
+  loader: cudaq_python_file
+  path: workloads/sources/cudaq/ghz3.py
+semantic_target: amplitude
+execution_target:
+  kind: amplitude
+  bitstring: '000'
+reference_tier: exact_ref
+split_tag: demo
+repeat_count_hint: 1
+parameters:
+  n_qubits: 3
+  depth: 3
+  topology: ring
+  two_qubit_density: medium
+  measurement_pattern: terminal_observable_only
+ids:
+  workload_id: wkl_50b90fe6c6562df0
+  source_hash: 50b90fe6c6562df0f0cc9d36f379ad1a801b15cc7e210744348d8f48fee09096

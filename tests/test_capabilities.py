@@ -15,13 +15,18 @@ def test_capability_matrix_rows_expose_readme_truth_fields():
 
 
 def test_implemented_support_matches_stage_zero_truth_subset():
-    assert IMPLEMENTED_SUPPORT["normalization"]["source_formats"] == {"qiskit", "normalized_ir"}
+    assert IMPLEMENTED_SUPPORT["normalization"]["source_formats"] == {"qiskit", "cudaq", "normalized_ir"}
     assert IMPLEMENTED_SUPPORT["real_execution"]["source_formats"] == {"qiskit"}
     assert IMPLEMENTED_SUPPORT["real_execution"]["semantic_targets"] == {"amplitude", "batched_amplitudes"}
 
 
 def test_implemented_mode_accepts_cpu_smoke_manifest():
     manifest = load_yaml(Path("workloads/manifests/generated/dense_universal_smoke.yaml"))
+    assert validate_manifest(manifest, mode="implemented") == []
+
+
+def test_implemented_mode_accepts_adapter_backed_cudaq_manifest():
+    manifest = load_yaml(Path("workloads/manifests/imported/cudaq_ghz3_amplitude.yaml"))
     assert validate_manifest(manifest, mode="implemented") == []
 
 

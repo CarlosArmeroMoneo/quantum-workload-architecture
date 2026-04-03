@@ -14,7 +14,7 @@ IMPLEMENTED_WORKFLOW_FAMILIES = {
     "grid_2d_shallow",
 }
 
-IMPLEMENTED_SOURCE_FORMATS = {"qiskit", "normalized_ir"}
+IMPLEMENTED_SOURCE_FORMATS = {"qiskit", "cudaq", "normalized_ir"}
 IMPLEMENTED_SEMANTIC_TARGETS = {"state", "amplitude", "batched_amplitudes", "expectation"}
 REAL_SOURCE_FORMATS = {"qiskit"}
 REAL_SEMANTIC_TARGETS = {"amplitude", "batched_amplitudes"}
@@ -95,18 +95,18 @@ CAPABILITY_MATRIX: tuple[CapabilityRow, ...] = (
     CapabilityRow(
         area="Normalize + features",
         schema_allows="All workload manifests",
-        implemented="`qiskit` OpenQASM2 imports and family-backed `normalized_ir` manifests",
+        implemented="`qiskit` OpenQASM2 imports, adapter-backed `cudaq` manifests, and family-backed `normalized_ir` manifests",
         measured_evidence="Yes",
         proof_path=CAPABILITY_PROOF_PATHS["real_execution"],
-        readme_claim="Claim deterministic normalization for the implemented source paths only.",
+        readme_claim="Claim deterministic normalization for the implemented source paths only, and call CUDA-Q adapter-backed.",
     ),
     CapabilityRow(
         area="Structural probe + planner",
         schema_allows="Any benchmark/workload combination",
-        implemented="`qiskit` or supported `normalized_ir` families with `state`, `amplitude`, `batched_amplitudes`, `expectation`",
+        implemented="`qiskit`, adapter-backed `cudaq`, or supported `normalized_ir` families with `state`, `amplitude`, `batched_amplitudes`, `expectation`",
         measured_evidence="Yes",
         proof_path=CAPABILITY_PROOF_PATHS["real_execution"],
-        readme_claim="Claim exact-TN planning for the implemented subset only.",
+        readme_claim="Claim exact-TN planning for the implemented subset only, and keep CUDA-Q marked adapter-backed.",
     ),
     CapabilityRow(
         area="Real cuTensorNet execution",
@@ -175,11 +175,12 @@ def validate_implemented_workload(manifest: dict[str, Any]) -> list[str]:
             f"{sorted(IMPLEMENTED_WORKFLOW_FAMILIES)}, got {family_id!r}"
         )
 
-    if source_format == "qiskit":
+    if source_format in {"qiskit", "cudaq"}:
         try:
             load_circuit_summary(manifest)
         except SourceLoadError as exc:
-            errors.append(f"implemented mode could not load the qiskit/OpenQASM2 source: {exc}")
+            source_label = "qiskit/OpenQASM2" if source_format == "qiskit" else "adapter-backed cudaq"
+            errors.append(f"implemented mode could not load the {source_label} source: {exc}")
 
     return errors
 

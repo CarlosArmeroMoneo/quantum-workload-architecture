@@ -39,13 +39,19 @@ def test_validate_manifest_rejects_unknown_mode():
     assert errors == ["unsupported validation mode: 'nonsense'"]
 
 
-def test_implemented_mode_rejects_schema_only_source_formats():
-    manifest = load_yaml("workloads/manifests/imported/real_ghz3_amplitude.yaml")
-    manifest["source_format"] = "cudaq"
-    manifest["source"] = {"loader": "cudaq_python_file", "path": "workloads/sources/cudaq/ghz3.py"}
+def test_implemented_mode_accepts_adapter_backed_cudaq_source():
+    manifest = load_yaml("workloads/manifests/imported/cudaq_ghz3_amplitude.yaml")
+    assert validate_manifest(manifest, mode="implemented") == []
+
+
+def test_implemented_mode_rejects_broken_cudaq_adapter_path():
+    manifest = load_yaml("workloads/manifests/imported/cudaq_ghz3_amplitude.yaml")
+    manifest["source"] = {"loader": "cudaq_python_file", "path": "workloads/sources/cudaq/missing.py"}
     manifest.pop("ids", None)
     errors = validate_manifest(manifest, mode="implemented")
-    assert "implemented mode supports source_format" in errors[0]
+    assert len(errors) == 1
+    assert "implemented mode could not load the adapter-backed cudaq source" in errors[0]
+    assert "workloads/sources/cudaq/missing.py" in errors[0].replace("\\", "/")
 
 
 def test_real_mode_rejects_semantics_outside_real_executor():
