@@ -1,0 +1,56 @@
+{
+  "api_version": "aqs.portfolio_release.v1",
+  "snapshot_date": "2026-04-03",
+  "artifacts": [
+    {
+      "path": "docs/reports/current_state_truth_pass.md",
+      "role": "truth_pass",
+      "status": "complete"
+    },
+    {
+      "path": "docs/reports/first_real_profiler_slice_index.md",
+      "role": "canonical_real_evidence_index",
+      "status": "complete"
+    },
+    {
+      "path": "docs/reports/repeat_roi_foundation.md",
+      "role": "repeat_roi_foundation",
+      "status": "complete"
+    },
+    {
+      "path": "docs/reports/portfolio_index.md",
+      "role": "portfolio_index",
+      "status": "complete"
+    },
+    {
+      "path": "docs/reports/remote_repeat_roi_results_blocked.md",
+      "role": "remote_result_blocker",
+      "status": "blocked_remote"
+    },
+    {
+      "path": "docs/reports/remote_ncu_and_graphs_results_blocked.md",
+      "role": "remote_result_blocker",
+      "status": "blocked_remote"
+    },
+    {
+      "path": "docs/reports/remote_cudaq_and_sidecar_results_blocked.md",
+      "role": "remote_result_blocker",
+      "status": "blocked_remote"
+    },
+    {
+      "path": "docs/reports/assets/portfolio_status.svg",
+      "role": "portfolio_status_asset",
+      "status": "complete"
+    },
+    {
+      "path": "docs/runbooks/portfolio_demo.md",
+      "role": "demo_runbook",
+      "status": "complete"
+    },
+    {
+      "path": "sidecars/tiny_mnk_lab/config/observed_tiny_mnk_kernels.json",
+      "role": "sidecar_reference_catalog",
+      "status": "complete"
+    }
+  ]
+}
