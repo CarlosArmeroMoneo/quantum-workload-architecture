@@ -1,4 +1,5 @@
 from importlib.metadata import version as dist_version
+import json
 from pathlib import Path
 import shutil
 
@@ -52,3 +53,19 @@ def test_manifest_validate_expands_globs(capsys, monkeypatch, tmp_path):
 
     assert main(["manifest", "validate", "*.yaml"]) == 0
     assert f"[OK] {copied.name}" in capsys.readouterr().out
+
+
+def test_campaign_cli_validate_and_run(capsys, tmp_path):
+    assert main(["campaign", "validate", "--manifest", "configs/campaigns/cpu_dry_run_v1.yaml"]) == 0
+    validate_payload = json.loads(capsys.readouterr().out)
+    assert validate_payload["cell_count"] == 8
+
+    outdir = tmp_path / "campaign"
+    assert main(["campaign", "run", "--manifest", "configs/campaigns/cpu_dry_run_v1.yaml", "--outdir", str(outdir)]) == 0
+    run_payload = json.loads(capsys.readouterr().out)
+    assert run_payload["status_counts"] == {"success": 16}
+    assert (outdir / "summary.json").exists()
+
+    assert main(["campaign", "summarize", "--manifest", "configs/campaigns/cpu_dry_run_v1.yaml", "--outdir", str(outdir)]) == 0
+    summarize_payload = json.loads(capsys.readouterr().out)
+    assert summarize_payload["campaign_id"] == run_payload["campaign_id"]

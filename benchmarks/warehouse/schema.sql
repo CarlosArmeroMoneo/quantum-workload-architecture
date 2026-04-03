@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS corpus.normalized_ir (
     execution_target_json JSON,
     interaction_graph_json JSON,
     source_summary_json JSON,
-    ir_hash VARCHAR NOT NULL UNIQUE,
+    ir_hash VARCHAR NOT NULL,
     normalized_at TIMESTAMP NOT NULL DEFAULT current_timestamp
 );
 

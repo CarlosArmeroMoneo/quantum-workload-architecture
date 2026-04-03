@@ -10,6 +10,7 @@ from typing import Any
 from . import __version__
 from .arch import analyze_execution_json, analyze_validation_json
 from .benchmark import run_benchmark_manifest
+from .campaigns import CampaignError, run_campaign_manifest, summarize_campaign_manifest, validate_campaign
 from .db import (
     apply_schema,
     insert_accuracy_eval,
@@ -372,6 +373,36 @@ def _cmd_benchmark_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_campaign_validate(args: argparse.Namespace) -> int:
+    try:
+        summary = validate_campaign(args.manifest)
+    except CampaignError as exc:
+        _print_json({"error": str(exc)})
+        return 1
+    _print_json(summary)
+    return 0
+
+
+def _cmd_campaign_run(args: argparse.Namespace) -> int:
+    try:
+        summary = run_campaign_manifest(args.manifest, db_path=args.db, outdir=args.outdir)
+    except CampaignError as exc:
+        _print_json({"error": str(exc)})
+        return 1
+    _print_json(summary)
+    return 0
+
+
+def _cmd_campaign_summarize(args: argparse.Namespace) -> int:
+    try:
+        summary = summarize_campaign_manifest(args.manifest, outdir=args.outdir)
+    except CampaignError as exc:
+        _print_json({"error": str(exc)})
+        return 1
+    _print_json(summary)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="aqs", description="Quantum Workload Architecture CLI")
     parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
@@ -546,6 +577,24 @@ def build_parser() -> argparse.ArgumentParser:
     bench_run.add_argument("--db")
     bench_run.add_argument("--outdir")
     bench_run.set_defaults(func=_cmd_benchmark_run)
+
+    campaign = sub.add_parser("campaign", help="Campaign manifest runners")
+    campaign_sub = campaign.add_subparsers(dest="campaign_command", required=True)
+
+    campaign_validate = campaign_sub.add_parser("validate", help="Validate and enumerate a campaign manifest")
+    campaign_validate.add_argument("--manifest", required=True)
+    campaign_validate.set_defaults(func=_cmd_campaign_validate)
+
+    campaign_run = campaign_sub.add_parser("run", help="Run a campaign manifest")
+    campaign_run.add_argument("--manifest", required=True)
+    campaign_run.add_argument("--db")
+    campaign_run.add_argument("--outdir")
+    campaign_run.set_defaults(func=_cmd_campaign_run)
+
+    campaign_summarize = campaign_sub.add_parser("summarize", help="Render campaign outputs from existing cell artifacts")
+    campaign_summarize.add_argument("--manifest", required=True)
+    campaign_summarize.add_argument("--outdir")
+    campaign_summarize.set_defaults(func=_cmd_campaign_summarize)
 
     return parser
 
