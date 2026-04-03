@@ -7,6 +7,7 @@ from typing import Any
 import yaml
 
 from .capabilities import validate_implemented_workload, validate_real_workload
+from .graph_modes import GRAPH_MODES
 from .utils import canonical_json, sha256_text
 
 
@@ -375,6 +376,7 @@ def validate_campaign_manifest(manifest: dict[str, Any]) -> list[str]:
         "mode",
         "measurement_repeats",
         "plan_json",
+        "graph_mode",
     }
     if not isinstance(matrix, dict) or not matrix:
         errors.append("matrix must be a non-empty mapping of parameter name to value list")
@@ -385,6 +387,11 @@ def validate_campaign_manifest(manifest: dict[str, Any]) -> list[str]:
                 continue
             if not isinstance(values, list) or not values:
                 errors.append(f"matrix.{key} must be a non-empty list")
+                continue
+            if key == "graph_mode":
+                invalid = [value for value in values if value not in GRAPH_MODES]
+                if invalid:
+                    errors.append(f"matrix.graph_mode values must be drawn from {list(GRAPH_MODES)}, got {invalid!r}")
 
     replicates = manifest.get("replicates")
     if not isinstance(replicates, int) or replicates < 1:

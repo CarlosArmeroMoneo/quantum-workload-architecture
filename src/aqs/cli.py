@@ -29,6 +29,7 @@ from .doctor import collect_doctor_report, collect_system_profile
 from .execution import execute_selected_plan
 from .features import extract_feature_snapshot
 from .generators import PRESETS, generate_workload_manifest
+from .graph_modes import GRAPH_MODES
 from .io import dump_json
 from .manifest import dump_yaml, finalize_workload_manifest, load_yaml, validate_manifest
 from .normalize import normalize_workload_manifest
@@ -244,6 +245,7 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
         execution_intent=args.execution_intent,
         replicate_idx=args.replicate_idx,
         plan_json_path=args.plan_json,
+        graph_mode=args.graph_mode,
     )
     _print_json(payload)
     if args.out:
@@ -282,6 +284,7 @@ def _cmd_profile_nsys(args: argparse.Namespace) -> int:
             allow_distributed=args.allow_distributed,
             measurement_repeats=args.measurement_repeats,
             execution_intent=args.execution_intent,
+            graph_mode=args.graph_mode,
             db_path=args.db,
         )
         _print_json(payload)
@@ -305,6 +308,7 @@ def _cmd_profile_ncu(args: argparse.Namespace) -> int:
             measurement_repeats=args.measurement_repeats,
             execution_intent=args.execution_intent,
             profile_mode=args.profile_mode,
+            graph_mode=args.graph_mode,
             db_path=args.db,
         )
         _print_json(payload)
@@ -500,6 +504,7 @@ def build_parser() -> argparse.ArgumentParser:
     execute_tnep.add_argument("--planner-budget", choices=["quick", "balanced", "deep"], default="balanced")
     execute_tnep.add_argument("--measurement-repeats", type=int, default=3)
     execute_tnep.add_argument("--replicate-idx", type=int, default=0)
+    execute_tnep.add_argument("--graph-mode", choices=list(GRAPH_MODES), default=None, help="Optional CUDA Graph execution mode override")
     execute_tnep.add_argument("--execution-intent", choices=["optional_real", "prefer_real", "require_real"], default="optional_real")
     execute_tnep.add_argument("--allow-distributed", action=argparse.BooleanOptionalAction, default=True)
     execute_tnep.add_argument("--max-candidates", type=int)
@@ -530,6 +535,7 @@ def build_parser() -> argparse.ArgumentParser:
     profile_nsys.add_argument("--probe-strategy", choices=["surrogate_only", "structural_real", "real_if_available", "cuquantum_if_available", "cuquantum_required"], default="structural_real")
     profile_nsys.add_argument("--planner-budget", choices=["quick", "balanced", "deep"], default="balanced")
     profile_nsys.add_argument("--measurement-repeats", type=int, default=3)
+    profile_nsys.add_argument("--graph-mode", choices=list(GRAPH_MODES), default=None, help="Optional CUDA Graph execution mode override")
     profile_nsys.add_argument("--execution-intent", choices=["optional_real", "prefer_real", "require_real"], default="require_real")
     profile_nsys.add_argument("--allow-distributed", action=argparse.BooleanOptionalAction, default=False)
     profile_nsys.add_argument("--outdir")
@@ -546,6 +552,7 @@ def build_parser() -> argparse.ArgumentParser:
     profile_ncu.add_argument("--measurement-repeats", type=int, default=3)
     profile_ncu.add_argument("--execution-intent", choices=["optional_real", "prefer_real", "require_real"], default="require_real")
     profile_ncu.add_argument("--profile-mode", choices=["basic", "diagnostic", "deep"], default="basic")
+    profile_ncu.add_argument("--graph-mode", choices=list(GRAPH_MODES), default=None, help="Optional CUDA Graph execution mode override")
     profile_ncu.add_argument("--allow-distributed", action=argparse.BooleanOptionalAction, default=False)
     profile_ncu.add_argument("--outdir")
     profile_ncu.add_argument("--db")

@@ -83,6 +83,26 @@ def test_profile_ncu_cli_accepts_profile_mode():
             "configs/systems/ovh_gra9_rtx5000_28.yml",
             "--profile-mode",
             "diagnostic",
+            "--graph-mode",
+            "steady_state",
         ]
     )
     assert args.profile_mode == "diagnostic"
+    assert args.graph_mode == "steady_state"
+
+
+def test_tnep_execute_cli_accepts_graph_mode():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "tnep",
+            "execute",
+            "--manifest",
+            "workloads/manifests/imported/qiskit_qasm2_ghz3.yaml",
+            "--system-manifest",
+            "configs/systems/cpu_probe.yml",
+            "--graph-mode",
+            "warm_only",
+        ]
+    )
+    assert args.graph_mode == "warm_only"

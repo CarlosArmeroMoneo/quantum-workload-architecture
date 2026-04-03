@@ -60,3 +60,8 @@ def test_real_mode_rejects_semantics_outside_real_executor():
 def test_campaign_manifest_accepts_policy_hook_fields():
     manifest = load_yaml("configs/campaigns/repeat_roi_cpu_dry_run_v1.yaml")
     assert validate_manifest(manifest) == []
+
+
+def test_campaign_manifest_accepts_graph_mode_matrix():
+    manifest = load_yaml("configs/campaigns/cuda_graphs_ablation_v1.yaml")
+    assert validate_manifest(manifest) == []

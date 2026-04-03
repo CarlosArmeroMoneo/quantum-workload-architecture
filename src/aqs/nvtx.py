@@ -11,7 +11,10 @@ NVTX_PHASES = (
     "contract_path",
     "autotune",
     "contract_first",
+    "graph_capture",
     "contract_warm",
+    "graph_replay_warm",
+    "graph_replay_steady",
     "postprocess",
 )
 

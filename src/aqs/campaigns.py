@@ -158,7 +158,7 @@ def _materialize_plan(
         base_plan = _load_plan_from_json(params["plan_json"]) if params.get("plan_json") else {}
 
     plan = dict(base_plan)
-    for key in ("mode", "precision", "workspace_gb", "cache_workspace_gb", "hyper_samples", "autotune", "reuse_cache", "mpi_ranks"):
+    for key in ("mode", "precision", "workspace_gb", "cache_workspace_gb", "hyper_samples", "autotune", "reuse_cache", "mpi_ranks", "graph_mode"):
         if key in params:
             plan[key] = params[key]
     plan.setdefault("project", "tnep")
@@ -389,6 +389,7 @@ def _summarize_outputs(preview: dict[str, Any], outdir: Path) -> dict[str, Any]:
                     "autotune": params.get("autotune"),
                     "reuse_cache": params.get("reuse_cache"),
                     "execution_source": run.get("execution_source"),
+                    "graph_mode": run.get("graph_mode") or params.get("graph_mode") or cell["plan_json"].get("graph_mode") or "off",
                     "ttfr_s": run.get("ttfr_s"),
                     "steady_iter_ms": run.get("steady_iter_ms"),
                     "wall_s": run.get("wall_s"),
@@ -570,6 +571,7 @@ def run_campaign_manifest(
                     measurement_repeats=cell["measurement_repeats"],
                     execution_intent=str(preview["execution_intent"]),
                     replicate_idx=replicate_idx,
+                    graph_mode=str(cell["plan_json"].get("graph_mode") or "off"),
                 ),
             )
             payload = {

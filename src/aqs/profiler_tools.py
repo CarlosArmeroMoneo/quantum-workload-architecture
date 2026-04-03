@@ -78,9 +78,26 @@ def _ensure_dir(path: Path) -> Path:
     return path
 
 
-def _profile_output_prefix(kind: str, manifest_path: str | Path, plan_rank: int) -> str:
+def _profile_output_prefix(
+    kind: str,
+    manifest_path: str | Path,
+    plan_rank: int,
+    *,
+    graph_mode: str = "off",
+    variant: str | None = None,
+) -> str:
     manifest_path = str(manifest_path).replace("\\", "/")
-    digest = sha256_text(canonical_json({"kind": kind, "manifest": manifest_path, "plan_rank": plan_rank}))[:16]
+    digest = sha256_text(
+        canonical_json(
+            {
+                "kind": kind,
+                "manifest": manifest_path,
+                "plan_rank": plan_rank,
+                "graph_mode": graph_mode,
+                "variant": variant,
+            }
+        )
+    )[:16]
     stem = Path(manifest_path).stem
     return f"{stem}.{kind}.{digest}"
 
@@ -375,6 +392,7 @@ def reduce_nsys_artifacts(execution_payload: dict[str, Any], sqlite_path: Path, 
 
     cuda_api_total = sum(_csv_time_s(row) or 0.0 for row in api_rows)
     run = execution_payload["execution_run"]
+    execution_detail = _dict_or_empty(run.get("failure_detail_json"))
     repo_metadata = execution_payload.get("repo_metadata") or capture_repo_metadata()
     profile_id = "prof_" + sha256_text(canonical_json({"run_id": run["run_id"], "kind": "nsys", "version": PROFILE_REDUCTION_VERSION}))[:16]
     return {
@@ -398,6 +416,7 @@ def reduce_nsys_artifacts(execution_payload: dict[str, Any], sqlite_path: Path, 
             "nsys_sqlite_tables": _read_sqlite_tables(sqlite_path),
             "cuda_api_total_time": cuda_api_total,
             "stats_csv": {name: str(path).replace("\\", "/") for name, path in stats_csv.items()},
+            "graph_mode": run.get("graph_mode") or execution_detail.get("graph_mode") or "off",
             "repo_metadata": repo_metadata,
         },
     }
@@ -489,6 +508,7 @@ def reduce_ncu_artifacts(
             "profile_mode": profile_mode,
             "ncu_metric_set": mode_config.get("set"),
             "ncu_replay_mode": mode_config.get("replay_mode"),
+            "graph_mode": run.get("graph_mode") or execution_detail.get("graph_mode") or "off",
             "csv_row_count": len(rows),
             "csv_header_fields": header_fields[:64],
             "csv_nonempty": bool(rows),
@@ -684,6 +704,7 @@ def _execution_entrypoint_command(
     allow_distributed: bool,
     measurement_repeats: int,
     execution_intent: str,
+    graph_mode: str | None,
     out_path: Path,
 ) -> list[str]:
     command = [
@@ -712,6 +733,8 @@ def _execution_entrypoint_command(
         str(out_path),
         "--allow-distributed" if allow_distributed else "--no-allow-distributed",
     ]
+    if graph_mode is not None:
+        command.extend(["--graph-mode", str(graph_mode)])
     return command
 
 
@@ -1139,13 +1162,14 @@ def run_nsys_profile(
     allow_distributed: bool = False,
     measurement_repeats: int = 3,
     execution_intent: str = "require_real",
+    graph_mode: str | None = None,
     db_path: str | Path | None = None,
 ) -> dict[str, Any]:
     outdir = _ensure_dir(Path(outdir) if outdir else repo_root() / "artifacts" / "profiles" / "nsys")
     profiler_env = _python_launch_env()
     tool_version = _tool_version("nsys", env=profiler_env)
     importer_version = _tool_version("QdstrmImporter", env=profiler_env)
-    stem = _profile_output_prefix("nsys", manifest_path, plan_rank)
+    stem = _profile_output_prefix("nsys", manifest_path, plan_rank, graph_mode=graph_mode or "off")
     execution_payload_path = outdir / f"{stem}.execution.json"
     profile_json_path = outdir / f"{stem}.profile_summary.json"
     report_prefix = outdir / stem
@@ -1168,6 +1192,7 @@ def run_nsys_profile(
         allow_distributed=allow_distributed,
         measurement_repeats=measurement_repeats,
         execution_intent=execution_intent,
+        graph_mode=graph_mode,
         out_path=execution_payload_path,
     )
     command = [
@@ -1309,13 +1334,14 @@ def run_ncu_profile(
     measurement_repeats: int = 3,
     execution_intent: str = "require_real",
     profile_mode: str = "basic",
+    graph_mode: str | None = None,
     db_path: str | Path | None = None,
 ) -> dict[str, Any]:
     outdir = _ensure_dir(Path(outdir) if outdir else repo_root() / "artifacts" / "profiles" / "ncu")
     profiler_env = _python_launch_env()
     tool_version = _tool_version("ncu", env=profiler_env)
     mode_config = _load_ncu_profile_mode(profile_mode)
-    stem = _profile_output_prefix("ncu", manifest_path, plan_rank)
+    stem = _profile_output_prefix("ncu", manifest_path, plan_rank, graph_mode=graph_mode or "off", variant=profile_mode)
     execution_payload_path = outdir / f"{stem}.execution.json"
     profile_json_path = outdir / f"{stem}.profile_summary.json"
     report_prefix = outdir / stem
@@ -1331,6 +1357,7 @@ def run_ncu_profile(
         allow_distributed=allow_distributed,
         measurement_repeats=measurement_repeats,
         execution_intent=execution_intent,
+        graph_mode=graph_mode,
         out_path=execution_payload_path,
     )
     # Keep the first real ncu slice unfiltered by default. This host/toolchain combination

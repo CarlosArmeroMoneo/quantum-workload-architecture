@@ -15,13 +15,14 @@ from .exact_tn_targets import (
     ExecutionTargetError,
     canonical_execution_target,
 )
+from .graph_modes import normalize_graph_mode
 from .nvtx import NVTX_PHASE_VERSION
 from .profiling import PhaseRecorder
 from .source_adapters import load_circuit_summary, maybe_load_qiskit_circuit
 from .utils import canonical_json, sha256_text
 
 REAL_EXECUTION_SOURCE = "cuquantum_tensornet_gpu"
-REAL_EXECUTION_VERSION = "aqs.execution.real.v1"
+REAL_EXECUTION_VERSION = "aqs.execution.real.v2"
 
 REAL_RECOVERABLE_CODES = {
     "missing_gpu",
@@ -35,6 +36,9 @@ REAL_RECOVERABLE_CODES = {
     "reset_present",
     "intermediate_measurement_present",
     "unsupported_gate_arity",
+    "graph_capture_unavailable",
+    "graph_capture_failed",
+    "graph_launch_failed",
 }
 
 
@@ -133,6 +137,87 @@ def _sync_cupy(cupy: Any) -> None:
     null_stream = getattr(getattr(cupy.cuda, "Stream", None), "null", None)
     if null_stream is not None:
         null_stream.synchronize()
+
+
+def _current_cupy_stream(cupy: Any) -> Any:
+    stream_getter = getattr(cupy.cuda, "get_current_stream", None)
+    if callable(stream_getter):
+        stream = stream_getter()
+        if stream is not None:
+            return stream
+    null_stream = getattr(getattr(cupy.cuda, "Stream", None), "null", None)
+    if null_stream is not None:
+        return null_stream
+    raise RealExecutionError("graph_capture_unavailable", "CUDA Graph capture requires a CuPy stream implementation with capture support")
+
+
+def _begin_graph_capture(stream: Any, cupy: Any) -> None:
+    try:
+        stream.begin_capture()
+        return
+    except TypeError:
+        capture_mode = getattr(getattr(cupy.cuda, "stream", None), "CaptureMode", None)
+        for candidate in ("RELAXED", "GLOBAL"):
+            mode = getattr(capture_mode, candidate, None)
+            if mode is None:
+                continue
+            stream.begin_capture(mode)
+            return
+    except AttributeError as exc:
+        raise RealExecutionError("graph_capture_unavailable", "CUDA Graph capture requested but this CuPy runtime does not expose stream capture APIs") from exc
+    raise RealExecutionError("graph_capture_unavailable", "CUDA Graph capture requested but no compatible stream capture mode was found")
+
+
+def _instantiate_captured_graph(graph: Any) -> Any:
+    instantiate = getattr(graph, "instantiate", None)
+    if callable(instantiate):
+        return instantiate()
+    return graph
+
+
+def _capture_contract_graph(cupy: Any, contract_call: Any) -> tuple[Any, Any]:
+    try:
+        stream = _current_cupy_stream(cupy)
+        _begin_graph_capture(stream, cupy)
+        capture_result = contract_call(release_workspace=False)
+        graph = stream.end_capture()
+        _sync_cupy(cupy)
+        return _instantiate_captured_graph(graph), capture_result
+    except RealExecutionError:
+        raise
+    except AttributeError as exc:
+        raise RealExecutionError("graph_capture_unavailable", "CUDA Graph capture requested but the current CuPy stream does not support begin/end capture") from exc
+    except Exception as exc:
+        raise RealExecutionError("graph_capture_failed", f"CUDA Graph capture failed: {exc}") from exc
+
+
+def _launch_captured_graph(cupy: Any, captured_graph: Any) -> Any:
+    launch_method = None
+    for candidate in ("launch", "replay", "run"):
+        maybe_method = getattr(captured_graph, candidate, None)
+        if callable(maybe_method):
+            launch_method = maybe_method
+            break
+    if launch_method is None:
+        raise RealExecutionError("graph_launch_failed", "captured CUDA Graph does not expose a callable launch/replay entrypoint")
+
+    stream = _current_cupy_stream(cupy)
+    launch_attempts = [
+        ((), {}),
+        ((stream,), {}),
+        ((), {"stream": stream}),
+    ]
+    last_error: Exception | None = None
+    for args, kwargs in launch_attempts:
+        try:
+            result = launch_method(*args, **kwargs)
+            _sync_cupy(cupy)
+            return result
+        except TypeError as exc:
+            last_error = exc
+        except Exception as exc:
+            raise RealExecutionError("graph_launch_failed", f"captured CUDA Graph replay failed: {exc}") from exc
+    raise RealExecutionError("graph_launch_failed", f"captured CUDA Graph replay could not match the runtime launch signature: {last_error}") from last_error
 
 
 def _network_options_candidates(plan: dict[str, Any]) -> list[dict[str, Any]]:
@@ -239,6 +324,10 @@ def execute_real_plan_candidate(
     precision = str(getattr(config, "precision", "complex128"))
     if precision not in {"fp64", "complex128"}:
         raise RealExecutionError("unsupported_semantic_target", f"real cuTensorNet execution currently supports fp64/complex128 only, got {precision!r}")
+    try:
+        graph_mode = normalize_graph_mode(getattr(config, "graph_mode", None), default="off")
+    except ValueError as exc:
+        raise RealExecutionError("runtime_error", str(exc), recoverable=False) from exc
 
     warm_repeats = min(5, max(2, int(getattr(config, "measurement_repeats", 3))))
     profiler = PhaseRecorder()
@@ -266,6 +355,7 @@ def execute_real_plan_candidate(
         "execution_target": execution_target,
         "network_options": network_options,
         "probe_strategy": getattr(config, "probe_strategy", None),
+        "graph_mode": graph_mode,
         "capabilities": {
             "gpu_present": bool(system_profile.get("gpu_present")),
             "cupy_present": bool(system_profile.get("cupy_present")),
@@ -310,12 +400,52 @@ def execute_real_plan_candidate(
 
         warm_samples_ms: list[float] = []
         warm_result = first_result
-        for _ in range(warm_repeats):
-            with profiler.phase("contract_warm", emit_nvtx=True):
+        raw_details["graph_capture_status"] = "disabled"
+        raw_details["graph_capture_time_s"] = 0.0
+        raw_details["graph_replay_phase"] = None
+        raw_details["graph_replay_launch_count"] = 0
+
+        if graph_mode == "off":
+            for _ in range(warm_repeats):
+                with profiler.phase("contract_warm", emit_nvtx=True):
+                    t0 = time.perf_counter()
+                    warm_result = _call_network_method(managed_network.contract, release_workspace=False)
+                    _sync_cupy(cupy)
+                    warm_samples_ms.append(round(max(time.perf_counter() - t0, 0.0) * 1000.0, 6))
+        else:
+            if graph_mode == "warm_only":
+                with profiler.phase("contract_warm", emit_nvtx=True):
+                    t0 = time.perf_counter()
+                    warm_result = _call_network_method(managed_network.contract, release_workspace=False)
+                    _sync_cupy(cupy)
+                    warm_samples_ms.append(round(max(time.perf_counter() - t0, 0.0) * 1000.0, 6))
+                replay_phase = "graph_replay_warm"
+                replay_count = max(1, warm_repeats - 1)
+            else:
+                replay_phase = "graph_replay_steady"
+                replay_count = warm_repeats
+
+            with profiler.phase("graph_capture", emit_nvtx=True):
                 t0 = time.perf_counter()
-                warm_result = _call_network_method(managed_network.contract, release_workspace=False)
-                _sync_cupy(cupy)
-                warm_samples_ms.append(round(max(time.perf_counter() - t0, 0.0) * 1000.0, 6))
+                captured_graph, capture_result = _capture_contract_graph(
+                    cupy,
+                    lambda release_workspace=False: _call_network_method(
+                        managed_network.contract,
+                        release_workspace=release_workspace,
+                    ),
+                )
+                raw_details["graph_capture_time_s"] = round(max(time.perf_counter() - t0, 0.0), 9)
+            raw_details["graph_capture_status"] = "captured"
+            raw_details["graph_replay_phase"] = replay_phase
+            raw_details["graph_replay_launch_count"] = replay_count
+
+            warm_result = capture_result
+            for _ in range(replay_count):
+                with profiler.phase(replay_phase, emit_nvtx=True):
+                    t0 = time.perf_counter()
+                    replay_result = _launch_captured_graph(cupy, captured_graph)
+                    warm_result = capture_result if replay_result is None else replay_result
+                    warm_samples_ms.append(round(max(time.perf_counter() - t0, 0.0) * 1000.0, 6))
         t0 = time.perf_counter()
         _ = _call_network_method(managed_network.contract, release_workspace=True)
         _sync_cupy(cupy)
@@ -338,6 +468,7 @@ def execute_real_plan_candidate(
         "workload_id": workload_manifest["ids"]["workload_id"],
         "system_id": system_profile["system_id"],
         "replicate_idx": int(getattr(config, "replicate_idx", 0)),
+        "graph_mode": graph_mode,
         "status": "success",
         "started_at": started_at,
         "finished_at": finished_at,
@@ -361,6 +492,7 @@ def execute_real_plan_candidate(
                 "plan_id": payload["plan_id"],
                 "system_id": payload["system_id"],
                 "replicate_idx": payload["replicate_idx"],
+                "graph_mode": payload.get("graph_mode") or "off",
                 "status": payload["status"],
                 "execution_source": payload["execution_source"],
             }

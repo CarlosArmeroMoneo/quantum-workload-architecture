@@ -62,6 +62,7 @@ def build_synthetic_profile_summary(
     raw_source = raw_source or {}
     system_manifest = system_manifest or {}
     wall_s = float(run.get("wall_s") or 0.0)
+    execution_detail = run.get("failure_detail_json") or {}
 
     build_inputs_s = float(measured_phase_times.get("build_inputs") or 0.0)
     postprocess_s = float(measured_phase_times.get("postprocess") or 0.0)
@@ -175,6 +176,7 @@ def build_synthetic_profile_summary(
         "probe_input_kind": raw_source.get("probe_input_kind"),
         "largest_intermediate": base_measurement.get("largest_intermediate"),
         "optimizer_cost": base_measurement.get("optimizer_cost"),
+        "graph_mode": run.get("graph_mode") or execution_detail.get("graph_mode") or plan.get("graph_mode") or "off",
     }
 
     profile_id = "prof_" + sha256_text(

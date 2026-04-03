@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import sqlite3
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -17,7 +18,7 @@ from aqs.execution_real import (
 )
 from aqs.manifest import load_yaml, validate_workload_manifest
 from aqs.nvtx import NVTX_DOMAIN, NVTX_PHASES, NVTX_PHASE_VERSION
-from aqs.profiler_tools import _profile_output_prefix, reduce_ncu_artifacts, reduce_nsys_artifacts
+from aqs.profiler_tools import _execution_entrypoint_command, _profile_output_prefix, reduce_ncu_artifacts, reduce_nsys_artifacts
 from aqs.tnprobe import ProbeConfig, run_exact_tn_probe
 
 
@@ -232,7 +233,10 @@ def test_nvtx_phase_names_are_stable():
         "contract_path",
         "autotune",
         "contract_first",
+        "graph_capture",
         "contract_warm",
+        "graph_replay_warm",
+        "graph_replay_steady",
         "postprocess",
     )
 
@@ -240,9 +244,29 @@ def test_nvtx_phase_names_are_stable():
 def test_profile_output_prefix_is_deterministic():
     first = _profile_output_prefix("nsys", "workloads/manifests/imported/real_ghz3_amplitude.yaml", 1)
     second = _profile_output_prefix("nsys", "workloads/manifests/imported/real_ghz3_amplitude.yaml", 1)
-    third = _profile_output_prefix("ncu", "workloads/manifests/imported/real_dense_ring6_batched.yaml", 1)
+    third = _profile_output_prefix("nsys", "workloads/manifests/imported/real_ghz3_amplitude.yaml", 1, graph_mode="steady_state")
+    fourth = _profile_output_prefix("ncu", "workloads/manifests/imported/real_dense_ring6_batched.yaml", 1, graph_mode="steady_state", variant="diagnostic")
     assert first == second
     assert first != third
+    assert third != fourth
+
+
+def test_profiler_execution_entrypoint_carries_graph_mode():
+    command = _execution_entrypoint_command(
+        manifest_path="workloads/manifests/imported/real_ghz3_amplitude.yaml",
+        system_manifest_path="configs/systems/ovh_gra9_rtx5000_28.yml",
+        plan_rank=1,
+        objective="ttfr",
+        probe_strategy="structural_real",
+        planner_budget="balanced",
+        allow_distributed=False,
+        measurement_repeats=2,
+        execution_intent="require_real",
+        graph_mode="warm_only",
+        out_path=Path("artifacts/profiles/run.execution.json"),
+    )
+    assert "--graph-mode" in command
+    assert "warm_only" in command
 
 
 @pytest.mark.db
@@ -280,7 +304,7 @@ def test_reduce_nsys_artifacts_from_fixture_exports(tmp_path):
         writer.writerow({"Name": "cudaLaunchKernel", "Total Time (ns)": "3000"})
 
     summary = reduce_nsys_artifacts(
-        {"execution_run": {"run_id": "run_fixture", "failure_detail_json": {}}},
+        {"execution_run": {"run_id": "run_fixture", "graph_mode": "warm_only", "failure_detail_json": {}}},
         sqlite_path,
         {"nvtxsum": nvtx_csv, "gpukernsum": kern_csv, "cudaapisum": api_csv},
         tmp_path / "sample.nsys-rep",
@@ -288,6 +312,7 @@ def test_reduce_nsys_artifacts_from_fixture_exports(tmp_path):
     assert summary["profiler_kind"] == "nsys"
     assert summary["nvtx_phase_times_json"]["contract_first"] == pytest.approx(1.0e-6)
     assert summary["top_kernels_json"][0]["name"] == "kernel_a"
+    assert summary["derived_signals_json"]["graph_mode"] == "warm_only"
     assert "sample" in summary["derived_signals_json"]["nsys_sqlite_tables"]
 
 
@@ -313,6 +338,7 @@ def test_reduce_ncu_artifacts_from_fixture_csv(tmp_path):
         {
             "execution_run": {
                 "run_id": "run_fixture",
+                "graph_mode": "steady_state",
                 "wall_s": 0.012,
                 "ttfr_s": 0.003,
                 "steady_iter_ms": 0.9,
@@ -337,6 +363,7 @@ def test_reduce_ncu_artifacts_from_fixture_csv(tmp_path):
     assert summary["occupancy_pct"] == pytest.approx(48.0)
     assert summary["nvtx_phase_times_json"]["contract_path"] == pytest.approx(0.0004)
     assert summary["derived_signals_json"]["profile_mode"] == "diagnostic"
+    assert summary["derived_signals_json"]["graph_mode"] == "steady_state"
     assert summary["derived_signals_json"]["ncu_parse_source"] == "csv_fallback"
     assert summary["derived_signals_json"]["memory_bound_signal"] == "high"
 
@@ -348,6 +375,7 @@ def test_reduce_ncu_artifacts_prefers_report_import_text_over_csv_fallback(tmp_p
         {
             "execution_run": {
                 "run_id": "run_fixture",
+                "graph_mode": "warm_only",
                 "wall_s": 0.01,
                 "ttfr_s": 0.004,
                 "steady_iter_ms": 1.2,
@@ -363,6 +391,135 @@ def test_reduce_ncu_artifacts_prefers_report_import_text_over_csv_fallback(tmp_p
     )
     assert summary["top_kernels_json"][0]["name"] == "report_kernel"
     assert summary["derived_signals_json"]["ncu_parse_source"] == "ncu_report_import"
+
+
+def test_real_executor_graph_mode_captures_and_replays(monkeypatch):
+    manifest = load_yaml("workloads/manifests/imported/qiskit_qasm2_ghz3.yaml")
+    reference_result = np.asarray(1.0 + 0.0j, dtype=np.complex128)
+
+    class FakeCapturedGraph:
+        def __init__(self):
+            self.launch_calls = 0
+
+        def launch(self, stream=None):
+            self.launch_calls += 1
+            return np.asarray(reference_result)
+
+    class FakeStream:
+        def __init__(self):
+            self.graph = FakeCapturedGraph()
+            self.capture_calls = 0
+            self.end_calls = 0
+
+        def begin_capture(self, mode=None):
+            self.capture_calls += 1
+            return None
+
+        def end_capture(self):
+            self.end_calls += 1
+            return self.graph
+
+        def synchronize(self):
+            return None
+
+    class FakePool:
+        def used_bytes(self) -> int:
+            return 1024 * 1024
+
+    class FakeCuPy:
+        def __init__(self):
+            self._stream = FakeStream()
+            self.cuda = type("Cuda", (), {"get_current_stream": lambda _self: self._stream})()
+
+        def get_default_memory_pool(self) -> FakePool:
+            return FakePool()
+
+    fake_cupy = FakeCuPy()
+
+    class FakeCircuit:
+        qubits = [0, 1, 2]
+
+    class FakeConverter:
+        def __init__(self, circuit, dtype, backend):
+            self.circuit = circuit
+            self.dtype = dtype
+            self.backend = backend
+
+        def amplitude(self, bitstring):
+            assert bitstring == "000"
+            return "abc->", [np.ones((1,), dtype=np.complex128)]
+
+    class FakeNetwork:
+        instances: list["FakeNetwork"] = []
+
+        def __init__(self, expr, *operands, options=None):
+            self.expr = expr
+            self.operands = operands
+            self.options = options
+            self.release_workspace_flags: list[bool] = []
+            FakeNetwork.instances.append(self)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return None
+
+        def contract_path(self, optimize=None):
+            return ([], type("Info", (), {"largest_intermediate": 4, "opt_cost": 7.0, "num_slices": 1})())
+
+        def contract(self, release_workspace=False):
+            self.release_workspace_flags.append(bool(release_workspace))
+            return np.asarray(reference_result)
+
+    monkeypatch.setattr("aqs.execution_real.maybe_load_qiskit_circuit", lambda manifest: FakeCircuit())
+    monkeypatch.setattr("aqs.execution_real._import_real_stack", lambda: (fake_cupy, FakeNetwork, FakeConverter))
+    monkeypatch.setattr("aqs.execution_real._reference_result_from_qiskit_circuit", lambda circuit, target: reference_result)
+
+    bundle = execute_real_plan_candidate(
+        manifest,
+        {
+            "plan_id": "plan_real_graph_fake",
+            "mode": "exact_tn",
+            "workspace_gb": 1.0,
+            "hyper_samples": 4,
+            "autotune": False,
+            "precision": "complex128",
+        },
+        system_profile={
+            "system_id": "sys_fake",
+            "gpu_present": True,
+            "cupy_present": True,
+            "cuquantum_present": True,
+            "qiskit_present": True,
+            "nsys_present": False,
+            "ncu_present": False,
+        },
+        config=type(
+            "Cfg",
+            (),
+            {
+                "precision": "complex128",
+                "measurement_repeats": 3,
+                "probe_strategy": "structural_real",
+                "graph_mode": "steady_state",
+            },
+        )(),
+    )
+
+    run = bundle["execution_run"]
+    details = run["failure_detail_json"]
+    fake_network = FakeNetwork.instances[-1]
+    assert run["graph_mode"] == "steady_state"
+    assert details["graph_capture_status"] == "captured"
+    assert details["graph_replay_phase"] == "graph_replay_steady"
+    assert details["graph_replay_launch_count"] == 3
+    assert "graph_capture" in details["phase_times"]
+    assert "graph_replay_steady" in details["phase_times"]
+    assert fake_network.release_workspace_flags == [False, False, True]
+    assert fake_cupy._stream.capture_calls == 1
+    assert fake_cupy._stream.end_calls == 1
+    assert fake_cupy._stream.graph.launch_calls == 3
 
 
 @pytest.mark.gpu

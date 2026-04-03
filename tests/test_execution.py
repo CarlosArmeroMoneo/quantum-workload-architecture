@@ -27,7 +27,9 @@ def test_execute_selected_plan_supports_plan_override_and_replicate_lineage(tmp_
         allow_distributed=False,
     )
     plan_path = tmp_path / 'selected_plan.json'
-    plan_path.write_text(json.dumps({"selected_plan": baseline["selected_plan"]}), encoding='utf-8')
+    overridden_plan = dict(baseline["selected_plan"])
+    overridden_plan["graph_mode"] = "steady_state"
+    plan_path.write_text(json.dumps({"selected_plan": overridden_plan}), encoding='utf-8')
 
     overridden = execute_selected_plan(
         'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
@@ -42,4 +44,28 @@ def test_execute_selected_plan_supports_plan_override_and_replicate_lineage(tmp_
     assert overridden['candidate_count'] == 0
     assert overridden['plan_override_path'].endswith('selected_plan.json')
     assert overridden['execution_run']['replicate_idx'] == 1
+    assert overridden['execution_run']['graph_mode'] == 'steady_state'
+    assert overridden['execution_run']['failure_detail_json']['graph_mode'] == 'steady_state'
     assert overridden['execution_run']['run_id'] != baseline['execution_run']['run_id']
+
+
+def test_execute_selected_plan_tracks_graph_mode_in_lineage_and_profile():
+    baseline = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+    )
+    warm_only = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        graph_mode='warm_only',
+    )
+
+    assert baseline['execution_run']['graph_mode'] == 'off'
+    assert warm_only['execution_run']['graph_mode'] == 'warm_only'
+    assert warm_only['execution_run']['failure_detail_json']['graph_mode'] == 'warm_only'
+    assert warm_only['profile_summary']['derived_signals_json']['graph_mode'] == 'warm_only'
+    assert warm_only['execution_run']['run_id'] != baseline['execution_run']['run_id']

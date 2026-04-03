@@ -93,6 +93,15 @@ def test_repeat_roi_cpu_dry_run_emits_roi_metrics_and_report_scaffold(tmp_path):
     assert (outdir / "plots" / "repeat_roi_break_even.svg").exists()
 
 
+def test_cuda_graphs_ablation_enumerates_graph_mode_cells():
+    preview = enumerate_campaign_cells("configs/campaigns/cuda_graphs_ablation_v1.yaml")
+
+    assert preview["campaign_name"] == "cuda_graphs_ablation_v1"
+    assert {cell["parameter_json"]["graph_mode"] for cell in preview["cells"]} == {"off", "warm_only", "steady_state"}
+    assert len({cell["cell_id"] for cell in preview["cells"]}) == len(preview["cells"])
+    assert all(cell["plan_json"].get("graph_mode") == cell["parameter_json"]["graph_mode"] for cell in preview["cells"])
+
+
 @pytest.mark.db
 def test_campaign_run_populates_experiment_tables(tmp_path):
     duckdb = pytest.importorskip("duckdb")

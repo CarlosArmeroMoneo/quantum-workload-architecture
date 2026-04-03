@@ -18,6 +18,7 @@ from .execution_real import (
     execute_real_plan_candidate,
 )
 from .features import extract_feature_snapshot
+from .graph_modes import normalize_graph_mode
 from .manifest import load_yaml
 from .normalize import normalize_workload_manifest
 from .planner import PlanConfig, generate_plan_candidates, load_system_manifest, select_top_plan
@@ -40,6 +41,7 @@ class ExecutionConfig:
     max_qubits: int = 12
     execution_intent: str = "optional_real"
     replicate_idx: int = 0
+    graph_mode: str = "off"
 
 
 class ExecutionError(RuntimeError):
@@ -161,6 +163,7 @@ def _build_run_id(payload: dict[str, Any]) -> str:
                 "plan_id": payload["plan_id"],
                 "system_id": payload["system_id"],
                 "replicate_idx": payload["replicate_idx"],
+                "graph_mode": payload.get("graph_mode") or "off",
                 "status": payload["status"],
                 "execution_source": payload["execution_source"],
             }
@@ -178,11 +181,13 @@ def _failure_run(
     status: str,
     detail: dict[str, Any],
 ) -> dict[str, Any]:
+    graph_mode = str(detail.get("graph_mode") or "off")
     payload = {
         "plan_id": plan["plan_id"],
         "workload_id": workload_manifest["ids"]["workload_id"],
         "system_id": system_profile["system_id"],
         "replicate_idx": replicate_idx,
+        "graph_mode": graph_mode,
         "status": status,
         "started_at": _utc_now_iso(),
         "finished_at": _utc_now_iso(),
@@ -236,6 +241,7 @@ def _execute_structural_plan_candidate_bundle(
         failure_detail_json = {
             "reason": f"measured executor currently supports exact TN modes only, got {plan.get('mode')!r}",
             "execution_version": EXECUTION_VERSION,
+            "graph_mode": config.graph_mode,
         }
     else:
         try:
@@ -248,6 +254,7 @@ def _execute_structural_plan_candidate_bundle(
                     "reason": guardrail_error,
                     "raw_probe_source": raw,
                     "execution_version": EXECUTION_VERSION,
+                    "graph_mode": config.graph_mode,
                 }
             else:
                 base, result = _measure_base_contract(args, config.measurement_repeats)
@@ -259,6 +266,7 @@ def _execute_structural_plan_candidate_bundle(
                     "execution_version": EXECUTION_VERSION,
                     "probe_strategy": config.probe_strategy,
                     "execution_intent": config.execution_intent,
+                    "graph_mode": config.graph_mode,
                     "raw_probe_source": raw,
                     "base_measurement": base,
                     "adjustment_factors": factors,
@@ -271,6 +279,7 @@ def _execute_structural_plan_candidate_bundle(
                 "execution_source": STRUCTURAL_EXECUTION_SOURCE,
                 "execution_version": EXECUTION_VERSION,
                 "execution_intent": config.execution_intent,
+                "graph_mode": config.graph_mode,
                 "measured_phase_times": profiler.phase_times,
             }
 
@@ -280,6 +289,7 @@ def _execute_structural_plan_candidate_bundle(
         "workload_id": workload_manifest["ids"]["workload_id"],
         "system_id": system_profile["system_id"],
         "replicate_idx": config.replicate_idx,
+        "graph_mode": config.graph_mode,
         "status": status,
         "started_at": started_at,
         "finished_at": finished_at,
@@ -331,7 +341,11 @@ def execute_plan_candidate_bundle(
     probe: dict[str, Any] | None = None,
     config: ExecutionConfig | None = None,
 ) -> dict[str, Any]:
-    config = config or ExecutionConfig(objective=str(plan.get("objective") or "ttfr"), precision=str(plan.get("precision") or "complex128"))
+    config = config or ExecutionConfig(
+        objective=str(plan.get("objective") or "ttfr"),
+        precision=str(plan.get("precision") or "complex128"),
+        graph_mode=normalize_graph_mode(plan.get("graph_mode"), default="off"),
+    )
     system_profile = system_profile or collect_system_profile()
 
     if config.execution_intent == "optional_real":
@@ -356,6 +370,7 @@ def execute_plan_candidate_bundle(
             "execution_source": REAL_EXECUTION_SOURCE,
             "execution_version": EXECUTION_VERSION,
             "execution_intent": config.execution_intent,
+            "graph_mode": config.graph_mode,
         }
         if config.execution_intent == "prefer_real":
             return _execute_structural_plan_candidate_bundle(
@@ -392,6 +407,7 @@ def execute_plan_candidate_bundle(
         run["failure_detail_json"] = {
             **(run.get("failure_detail_json") or {}),
             "execution_intent": config.execution_intent,
+            "graph_mode": run.get("graph_mode") or config.graph_mode,
         }
         return {
             **real_bundle,
@@ -404,6 +420,7 @@ def execute_plan_candidate_bundle(
             "execution_source": REAL_EXECUTION_SOURCE,
             "execution_version": EXECUTION_VERSION,
             "execution_intent": config.execution_intent,
+            "graph_mode": config.graph_mode,
         }
         if config.execution_intent == "prefer_real" and exc.recoverable:
             return _execute_structural_plan_candidate_bundle(
@@ -435,6 +452,7 @@ def execute_plan_candidate_bundle(
             "execution_source": REAL_EXECUTION_SOURCE,
             "execution_version": EXECUTION_VERSION,
             "execution_intent": config.execution_intent,
+            "graph_mode": config.graph_mode,
         }
         run = _failure_run(
             plan,
@@ -517,6 +535,7 @@ def execute_selected_plan(
     execution_intent: str = "optional_real",
     replicate_idx: int = 0,
     plan_json_path: str | None = None,
+    graph_mode: str | None = None,
 ) -> dict[str, Any]:
     manifest = load_yaml(workload_manifest_path)
     system_manifest = load_system_manifest(system_manifest_path)
@@ -549,6 +568,7 @@ def execute_selected_plan(
             selected_by = "planner_top_pick"
         if chosen is None:
             raise ExecutionError("No plan candidate available for execution")
+    resolved_graph_mode = normalize_graph_mode(graph_mode if graph_mode is not None else chosen.get("graph_mode"), default="off")
     bundle = execute_plan_candidate_bundle(
         manifest,
         chosen,
@@ -562,6 +582,7 @@ def execute_selected_plan(
             measurement_repeats=measurement_repeats,
             execution_intent=execution_intent,
             replicate_idx=replicate_idx,
+            graph_mode=resolved_graph_mode,
         ),
     )
     return {
