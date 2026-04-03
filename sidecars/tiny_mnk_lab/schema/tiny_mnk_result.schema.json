@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tiny-MNK Sidecar Summary",
+  "type": "object",
+  "required": [
+    "api_version",
+    "reference_json_path",
+    "benchmark_csv_path",
+    "benchmark_run_count",
+    "shape_count",
+    "reference_shape_keys",
+    "benchmark_shape_keys",
+    "matched_reference_shape_keys",
+    "reference_kernels",
+    "aggregates"
+  ],
+  "properties": {
+    "api_version": {
+      "const": "aqs.tiny_mnk_sidecar.v1"
+    },
+    "reference_json_path": {
+      "type": "string"
+    },
+    "benchmark_csv_path": {
+      "type": "string"
+    },
+    "ncu_csv_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "benchmark_run_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "shape_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "reference_shape_keys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "benchmark_shape_keys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "profile_shape_keys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "matched_reference_shape_keys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reference_kernels": {
+      "type": "array"
+    },
+    "profile_kernels": {
+      "type": "array"
+    },
+    "aggregates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "shape_key",
+          "m",
+          "n",
+          "k",
+          "run_count",
+          "latency_ms_min",
+          "latency_ms_median",
+          "latency_ms_max",
+          "gflops_max",
+          "labels",
+          "status_counts"
+        ],
+        "properties": {
+          "shape_key": {
+            "type": "string"
+          },
+          "m": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "k": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "run_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "latency_ms_min": {
+            "type": "number"
+          },
+          "latency_ms_median": {
+            "type": "number"
+          },
+          "latency_ms_max": {
+            "type": "number"
+          },
+          "gflops_max": {
+            "type": "number"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status_counts": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

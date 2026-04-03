@@ -1,0 +1,36 @@
+{
+  "api_version": "aqs.tiny_mnk_reference.v1",
+  "reference_kernels": [
+    {
+      "block_size": "(256, 1, 1)",
+      "grid_size": "(1, 1, 1)",
+      "k": 75,
+      "kernel_family": "cutensor_internal_tiny_mnk",
+      "kernel_ids": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "kernel_name": "void cutensor_internal_namespace::tiny_mnk::contraction_tiny_mnk_kernel<double2, double2, double2, double2, double2, (cutensorOperator_t)1, (cutensorOperator_t)1, (cutensorOperator_t)1, (int)32, (int)256, (int)75>(T5, const T1 *, const T2 *, T5, const T3 *, T3 *, cutensor_internal_namespace::ContractionAlgoTinyMNK::ParallelParams)",
+      "m": 32,
+      "n": 256,
+      "occurrences": 100,
+      "shape_key": "m32_n256_k75"
+    }
+  ],
+  "source_ncu_csv": "evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.ncu.csv",
+  "source_profile_summary": "evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json"
+}
