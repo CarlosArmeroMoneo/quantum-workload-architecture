@@ -123,3 +123,103 @@ def test_confidence_downgrades_when_replicates_flip_the_stored_winner():
     row = annotated["results"][0]
     assert row["selection_confidence"] == "medium"
     assert row["replicate_conclusion"] == "winner_flipped_vs_single_shot"
+
+
+def test_high_confidence_top1_accuracy_counts_only_high_rows_when_correct():
+    replicate_lookup = build_replicate_lookup(
+        [
+            {
+                "workload_id": "wkl_high_correct",
+                "left_template": "quick_turnaround",
+                "right_template": "balanced",
+                "uncertainty_band_s": 0.001,
+                "conclusion": "winner_stable",
+            }
+        ]
+    )
+    results = [
+        {
+            "workload_id": "wkl_high_correct",
+            "selected_plan_id": "plan_balanced",
+            "oracle_best_plan_id": "plan_balanced",
+            "evaluations": [
+                _evaluation("plan_quick", "quick_turnaround", 0.0150),
+                _evaluation("plan_balanced", "balanced", 0.0100),
+            ],
+        },
+        {
+            "workload_id": "wkl_medium_correct",
+            "selected_plan_id": "plan_balanced_m",
+            "oracle_best_plan_id": "plan_balanced_m",
+            "evaluations": [
+                _evaluation("plan_quick_m", "quick_turnaround", 0.0150),
+                _evaluation("plan_balanced_m", "balanced", 0.0100),
+            ],
+        },
+    ]
+    annotated = annotate_validation_results(results, objective="ttfr", replicate_lookup=replicate_lookup)
+    assert annotated["selection_confidence_counts"] == {"low": 0, "medium": 1, "high": 1}
+    assert annotated["high_confidence_top1_accuracy"] == 1.0
+
+
+def test_high_confidence_top1_accuracy_counts_only_high_rows_when_wrong():
+    replicate_lookup = build_replicate_lookup(
+        [
+            {
+                "workload_id": "wkl_high_wrong",
+                "left_template": "quick_turnaround",
+                "right_template": "balanced",
+                "uncertainty_band_s": 0.001,
+                "conclusion": "winner_stable",
+            }
+        ]
+    )
+    results = [
+        {
+            "workload_id": "wkl_high_wrong",
+            "selected_plan_id": "plan_quick",
+            "oracle_best_plan_id": "plan_balanced",
+            "evaluations": [
+                _evaluation("plan_quick", "quick_turnaround", 0.0150),
+                _evaluation("plan_balanced", "balanced", 0.0100),
+            ],
+        },
+        {
+            "workload_id": "wkl_medium_correct",
+            "selected_plan_id": "plan_balanced_m",
+            "oracle_best_plan_id": "plan_balanced_m",
+            "evaluations": [
+                _evaluation("plan_quick_m", "quick_turnaround", 0.0150),
+                _evaluation("plan_balanced_m", "balanced", 0.0100),
+            ],
+        },
+    ]
+    annotated = annotate_validation_results(results, objective="ttfr", replicate_lookup=replicate_lookup)
+    assert annotated["selection_confidence_counts"] == {"low": 0, "medium": 1, "high": 1}
+    assert annotated["high_confidence_top1_accuracy"] == 0.0
+
+
+def test_high_confidence_top1_accuracy_is_none_when_no_high_rows_exist():
+    results = [
+        {
+            "workload_id": "wkl_medium",
+            "selected_plan_id": "plan_balanced",
+            "oracle_best_plan_id": "plan_balanced",
+            "evaluations": [
+                _evaluation("plan_quick", "quick_turnaround", 0.0150),
+                _evaluation("plan_balanced", "balanced", 0.0100),
+            ],
+        },
+        {
+            "workload_id": "wkl_low",
+            "selected_plan_id": "plan_quick_low",
+            "oracle_best_plan_id": "plan_balanced_low",
+            "evaluations": [
+                _evaluation("plan_quick_low", "quick_turnaround", 0.0108),
+                _evaluation("plan_balanced_low", "balanced", 0.0100),
+            ],
+        },
+    ]
+    annotated = annotate_validation_results(results, objective="ttfr")
+    assert annotated["selection_confidence_counts"] == {"low": 1, "medium": 1, "high": 0}
+    assert annotated["high_confidence_top1_accuracy"] is None
