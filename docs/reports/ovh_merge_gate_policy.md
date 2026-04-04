@@ -27,5 +27,6 @@ A future planner change may land only if all of the following are true:
 
 - Gate A remains the official benchmark for deployment-style planner behavior.
 - Gate B is the diagnostic benchmark used to decide whether a change is fixing calibration or merely reshuffling near-ties.
+- Confidence-aware reporting for future planner changes should include `top1_within_1ms_rate`, `top1_within_3pct_rate`, and `high_confidence_top1_accuracy` alongside the existing benchmark metrics.
 - Until `heldout_workload_count >= 5`, heldout metrics are descriptive and should not be treated as a sole merge blocker.
 - Host-specific evidence should prefer manifest-level calibration controls over GPU-name string special cases wherever possible.

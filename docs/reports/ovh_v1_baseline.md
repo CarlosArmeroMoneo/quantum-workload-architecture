@@ -4,9 +4,11 @@ This report freezes the current OVH real-host measured-validation result as the 
 
 ## Baseline Artifacts
 
+- Frozen git tag: `ovh-v1-baseline`
 - Official top-2 `require_real` summary: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v1/summary.json`
 - Official top-2 architecture aggregation: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v1/validation_arch.json`
 - Full-menu top-3 diagnostic summary: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_top3_v1/summary.json`
+- Reconcile note for the top-3 interpretation: `docs/reports/ovh_top3_reconcile_note.md`
 
 ## Frozen Baseline Claims
 
@@ -26,3 +28,4 @@ This report freezes the current OVH real-host measured-validation result as the 
 - The current OVH result looks more like a calibration / confidence / overhead-modeling problem than a missing major candidate family.
 - The top-3 pass does not show evidence that the official top-2 benchmark is hiding a large third-template winner on this host.
 - The baseline is therefore suitable as the frozen `v1` real-host reference for future calibration diagnostics and merge gates.
+- Heldout metrics remain descriptive until the heldout slice is expanded to at least `5` heldout workloads.

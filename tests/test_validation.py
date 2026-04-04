@@ -34,10 +34,15 @@ def test_validation_manifest_reports_holdout_and_regret(tmp_path, monkeypatch):
     assert summary['workload_count'] >= 4
     assert summary['heldout_workload_count'] >= 1
     assert 0.0 <= summary['top1_accuracy'] <= 1.0
+    assert 0.0 <= summary['top1_within_1ms_rate'] <= 1.0
+    assert 0.0 <= summary['top1_within_3pct_rate'] <= 1.0
     assert summary['mean_regret'] is None or summary['mean_regret'] >= 0.0
+    assert summary['confidence_version'] == 'aqs.validation_confidence.v1'
+    assert summary['selection_confidence_counts'].keys() == {'low', 'medium', 'high'}
     assert isinstance(summary.get('warnings'), list)
     if summary['heldout_workload_count'] < 5:
         assert any('heldout_workload_count=' in warning for warning in summary['warnings'])
     assert any(row['split_tag'] == 'heldout_family' for row in summary['results'])
+    assert all('selection_confidence' in row for row in summary['results'])
     assert Path(tmp_path / 'validation' / 'summary.json').exists()
     assert any(row['regret'] is not None for row in summary['results'])

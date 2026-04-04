@@ -144,6 +144,18 @@ Current tracked calibration summary outputs live in:
 - `artifacts/measured_validation_runs/ovh_v1_calibration/ttfr_replicate_summary.md`
 - `artifacts/measured_validation_runs/ovh_v1_calibration/ttfr_replicate_summary.json`
 
+For the official top-2 miss pair on the frozen OVH baseline, use the targeted pair runner:
+
+```bash
+python scripts/run_targeted_ttfr_replicates.py \
+  --summary artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v1/summary.json \
+  --manifest workloads/manifests/imported/real_dense_ring6_amplitude.yaml \
+  --left-template quick_turnaround \
+  --right-template balanced \
+  --system-manifest configs/systems/ovh_gra9_rtx5000_28.yml \
+  --outdir artifacts/measured_validation_runs/ovh_v1_confidence/official_miss_dense_ring6_amplitude
+```
+
 ## Public Evidence Layout
 
 - Curated summaries are tracked in `evidence/first_real_profiler_slice/`.

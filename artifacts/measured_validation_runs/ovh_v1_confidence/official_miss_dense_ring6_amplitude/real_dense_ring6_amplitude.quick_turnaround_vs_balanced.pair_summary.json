@@ -1,0 +1,30 @@
+{
+  "baseline_left_ttfr_s": 0.049814673,
+  "baseline_right_ttfr_s": 0.040310939,
+  "baseline_winner_template": "balanced",
+  "conclusion": "winner_flipped_vs_single_shot",
+  "family_id": "dense_universal",
+  "left_template": "quick_turnaround",
+  "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_amplitude.yaml",
+  "pair_lookup_key": {
+    "templates": [
+      "balanced",
+      "quick_turnaround"
+    ],
+    "workload_id": "wkl_888bce118ad39b04"
+  },
+  "payload_paths": {
+    "left": "/home/ubuntu/quantum-workload-architecture/artifacts/measured_validation_runs/ovh_v1_confidence/official_miss_dense_ring6_amplitude/real_dense_ring6_amplitude.quick_turnaround.execute.json",
+    "right": "/home/ubuntu/quantum-workload-architecture/artifacts/measured_validation_runs/ovh_v1_confidence/official_miss_dense_ring6_amplitude/real_dense_ring6_amplitude.balanced.execute.json"
+  },
+  "repeat_count_hint": 2,
+  "replicate_left_median_ttfr_s": 0.038456746,
+  "replicate_right_median_ttfr_s": 0.045912905,
+  "replicate_winner_template": "quick_turnaround",
+  "right_template": "balanced",
+  "source": "targeted_ttfr_replicates",
+  "uncertainty_band_s": 0.003466303,
+  "winner_gap_pct": 0.193884,
+  "winner_gap_s": 0.007456159,
+  "workload_id": "wkl_888bce118ad39b04"
+}

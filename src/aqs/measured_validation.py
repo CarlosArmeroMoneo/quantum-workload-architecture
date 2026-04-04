@@ -25,6 +25,7 @@ from .paths import repo_root
 from .planner import PlanConfig, generate_plan_candidates, load_system_manifest, select_top_plan
 from .tnprobe import ProbeConfig, run_exact_tn_probe
 from .utils import canonical_json, sha256_text
+from .validation_confidence import annotate_validation_results
 
 MEASURED_VALIDATION_VERSION = "aqs.tnep_measured_validation.v1"
 
@@ -240,6 +241,8 @@ def validate_measured_manifest(
         "evaluation_source": "measured",
     }))[:16]
 
+    confidence = annotate_validation_results(results, objective=objective)
+
     summary = {
         "validation_run_id": validation_run_id,
         "planner_version": MEASURED_VALIDATION_VERSION,
@@ -257,8 +260,13 @@ def validate_measured_manifest(
         "top1_accuracy": round(top1_hits / max(top1_count, 1), 6),
         "mean_regret": round(sum(regrets) / len(regrets), 6) if regrets else None,
         "heldout_mean_regret": round(sum(heldout_regrets) / len(heldout_regrets), 6) if heldout_regrets else None,
+        "confidence_version": confidence["confidence_version"],
+        "top1_within_1ms_rate": confidence["top1_within_1ms_rate"],
+        "top1_within_3pct_rate": confidence["top1_within_3pct_rate"],
+        "high_confidence_top1_accuracy": confidence["high_confidence_top1_accuracy"],
+        "selection_confidence_counts": confidence["selection_confidence_counts"],
         "warnings": _build_summary_warnings(results),
-        "results": results,
+        "results": confidence["results"],
     }
     dump_json(summary, outdir / "summary.json")
 

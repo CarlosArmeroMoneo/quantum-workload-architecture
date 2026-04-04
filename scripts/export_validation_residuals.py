@@ -16,6 +16,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from aqs.arch import analyze_execution_payload  # noqa: E402
+from aqs.validation_confidence import is_near_tie  # noqa: E402
 
 
 CSV_FIELDS = [
@@ -207,13 +208,27 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def _near_tie(row: dict[str, Any]) -> bool:
-    regret_s = row.get("regret_s")
-    normalized_regret = row.get("normalized_regret")
-    if regret_s is not None and float(regret_s) <= 0.001:
-        return True
-    if normalized_regret is not None and float(normalized_regret) <= 0.03:
-        return True
-    return False
+    return is_near_tie(
+        float(row["regret_s"]) if row.get("regret_s") is not None else None,
+        float(row["normalized_regret"]) if row.get("normalized_regret") is not None else None,
+    )
+
+
+def _verified_third_rank_winners(rows: list[dict[str, Any]]) -> tuple[int, list[str]]:
+    winners: list[str] = []
+    rows_by_workload: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        rows_by_workload[str(row["workload_id"])].append(row)
+
+    for selected_row in (row for row in rows if row["selected_flag"] and (row.get("regret_s") or 0.0) > 0.0):
+        oracle_template = selected_row.get("oracle_template")
+        if not oracle_template:
+            continue
+        workload_rows = rows_by_workload[str(selected_row["workload_id"])]
+        oracle_row = next((row for row in workload_rows if row["template_name"] == oracle_template), None)
+        if oracle_row and int(oracle_row.get("recommendation_rank") or 0) == 3:
+            winners.append(Path(str(selected_row["manifest_path"])).name)
+    return len(winners), winners
 
 
 def _dataset_interpretation(dataset_name: str, rows: list[dict[str, Any]], validation_arch: dict[str, Any] | None = None) -> list[str]:
@@ -229,6 +244,7 @@ def _dataset_interpretation(dataset_name: str, rows: list[dict[str, Any]], valid
     first_contract_values = [float(row.get("first_contract_time_s") or 0.0) for row in misses]
     near_ties = sum(1 for row in misses if _near_tie(row))
     clear_misses = len(misses) - near_ties
+    third_rank_winner_count, third_rank_winner_workloads = _verified_third_rank_winners(rows)
 
     if planner_setup_values and first_contract_values:
         dominant_error = (
@@ -247,6 +263,8 @@ def _dataset_interpretation(dataset_name: str, rows: list[dict[str, Any]], valid
         f"- Are misses mostly balanced vs deep_search? `{dict(pair_counts) if pair_counts else {}}`",
         f"- Is the dominant error in planning/setup or steady contraction? `{dominant_error}`",
         f"- Are wrong picks near-ties or clear misses? `{near_ties}` near-ties vs `{clear_misses}` clear misses",
+        f"- Verified third-rank winners: `{third_rank_winner_count}` on `{third_rank_winner_workloads}`",
+        "- Interpretation note: wrong-pick rows in a top-3 diagnostic are not automatically third-rank winners; a large miss can still be a rank-2 win.",
     ]
     if validation_arch:
         ranked = validation_arch.get("ranked_bottleneck_families") or []

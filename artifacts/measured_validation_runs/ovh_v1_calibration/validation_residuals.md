@@ -12,6 +12,8 @@
 - Are misses mostly balanced vs deep_search? `{'quick_turnaround -> deep_search': 1, 'quick_turnaround -> balanced': 3}`
 - Is the dominant error in planning/setup or steady contraction? `planning/setup dominates`
 - Are wrong picks near-ties or clear misses? `1` near-ties vs `3` clear misses
+- Verified third-rank winners: `1` on `['real_dense_ring6_amplitude.yaml']`
+- Interpretation note: wrong-pick rows in a top-3 diagnostic are not automatically third-rank winners; a large miss can still be a rank-2 win.
 
 | Workload | Repeat | Selected | Oracle | Regret (ms) | Primary Architecture Family |
 | --- | ---: | --- | --- | ---: | --- |
@@ -27,6 +29,8 @@
 - Are misses mostly balanced vs deep_search? `{'quick_turnaround -> balanced': 3}`
 - Is the dominant error in planning/setup or steady contraction? `planning/setup dominates`
 - Are wrong picks near-ties or clear misses? `1` near-ties vs `2` clear misses
+- Verified third-rank winners: `0` on `[]`
+- Interpretation note: wrong-pick rows in a top-3 diagnostic are not automatically third-rank winners; a large miss can still be a rank-2 win.
 - Selected-run aggregate from validation_arch: `['planner_roi', 'reuse_cache', 'launch_overhead']`
 
 | Workload | Repeat | Selected | Oracle | Regret (ms) | Primary Architecture Family |
