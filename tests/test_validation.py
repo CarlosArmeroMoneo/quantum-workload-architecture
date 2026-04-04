@@ -39,6 +39,10 @@ def test_validation_manifest_reports_holdout_and_regret(tmp_path, monkeypatch):
     assert summary['mean_regret'] is None or summary['mean_regret'] >= 0.0
     assert summary['confidence_version'] == 'aqs.validation_confidence.v1'
     assert summary['selection_confidence_counts'].keys() == {'low', 'medium', 'high'}
+    assert summary['stable_selected_miss_count'] >= 0
+    assert summary['selected_dominated_by_top2_count'] >= 0
+    assert summary['anchor_candidate_count'] >= 0
+    assert isinstance(summary['anchor_candidate_workloads'], list)
     assert isinstance(summary.get('warnings'), list)
     assert Path(summary['summary_path']).exists()
     assert Path(summary['confidence_summary_json_path']).exists()

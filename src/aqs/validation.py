@@ -269,6 +269,10 @@ def validate_planner_manifest(
         "top1_within_3pct_rate": confidence["top1_within_3pct_rate"],
         "high_confidence_top1_accuracy": confidence["high_confidence_top1_accuracy"],
         "selection_confidence_counts": confidence["selection_confidence_counts"],
+        "stable_selected_miss_count": confidence["stable_selected_miss_count"],
+        "selected_dominated_by_top2_count": confidence["selected_dominated_by_top2_count"],
+        "anchor_candidate_count": confidence["anchor_candidate_count"],
+        "anchor_candidate_workloads": confidence["anchor_candidate_workloads"],
         "warnings": _build_summary_warnings(per_workload),
         "results": confidence["results"],
     }

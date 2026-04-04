@@ -1,6 +1,6 @@
 # Validation Confidence Summary
 
-- Source summary: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v2/summary.json`
+- Source summary: `/home/ubuntu/quantum-workload-architecture/artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v2/summary.json`
 - Dataset: `tnep_measured_real_exact_slice_ovh_rtx5000_v2`
 - Confidence version: `aqs.validation_confidence.v1`
 - Workloads: `9`
@@ -11,6 +11,10 @@
 - top1_within_3pct_rate: `0.888889`
 - high_confidence_top1_accuracy: `None`
 - selection_confidence_counts: `{'low': 4, 'medium': 5, 'high': 0}`
+- stable_selected_miss_count: `0`
+- selected_dominated_by_top2_count: `0`
+- anchor_candidate_count: `0`
+- anchor_candidate_workloads: `[]`
 
 ## Workloads
 
@@ -26,8 +30,23 @@
 | `08_parity_iqp_batched_heldout_medium.yaml` | `quick_turnaround` | `quick_turnaround` | `balanced` | 5.046 | `True` | `True` | `medium` | `None` |
 | `09_spin_chain_phase_batched_heldout_high.yaml` | `quick_turnaround` | `quick_turnaround` | `balanced` | 4.036 | `True` | `True` | `medium` | `None` |
 
+## Miss-Anchor Triage
+
+| Workload | Selected gap (ms) | Selected vs winner | Selected vs runner-up | Dominated by top2 | Miss anchor | Retune anchor |
+| --- | ---: | --- | --- | --- | --- | --- |
+| `01_real_dense_ring6_amplitude.yaml` | 9.865 | `None` | `None` | `False` | `low` | `False` |
+| `02_real_dense_ring6_batched.yaml` | 0.000 | `None` | `None` | `False` | `low` | `False` |
+| `03_real_ghz3_amplitude.yaml` | 0.130 | `None` | `None` | `False` | `low` | `False` |
+| `04_real_grid_shape6_amplitude.yaml` | 0.000 | `None` | `None` | `False` | `low` | `False` |
+| `05_real_qaoa_ring4_batched.yaml` | 0.000 | `None` | `None` | `False` | `low` | `False` |
+| `06_star_graph_phase_amplitude_heldout_low.yaml` | 0.000 | `None` | `None` | `False` | `low` | `False` |
+| `07_ladder_brickwork_amplitude_heldout_medium.yaml` | 0.000 | `None` | `None` | `False` | `low` | `False` |
+| `08_parity_iqp_batched_heldout_medium.yaml` | 0.000 | `None` | `None` | `False` | `low` | `False` |
+| `09_spin_chain_phase_batched_heldout_high.yaml` | 0.000 | `None` | `None` | `False` | `low` | `False` |
+
 ## Notes
 
 - `top1_within_1ms_rate` and `top1_within_3pct_rate` are additive to `top1_accuracy`; they do not replace it.
 - `selection_confidence_counts` bucket workloads as low / medium / high using the current near-tie thresholds `0.001 s` or `3%`.
-- Heldout metrics remain descriptive while `heldout_workload_count=5` is below `5`.
+- Heldout metrics have reached the documented minimum because `heldout_workload_count=5` meets or exceeds `5`.
+- `selected_dominated_by_top2` only turns true when interleaved pairwise evidence shows the selected plan is slower than both the measured winner and the measured runner-up outside the paired uncertainty band.

@@ -10,6 +10,12 @@ NEAR_TIE_ABS_S = 0.001
 NEAR_TIE_REL = 0.03
 
 
+def _float_or_none(value: Any) -> float | None:
+    if value is None:
+        return None
+    return float(value)
+
+
 def is_near_tie(gap_s: float | None, gap_pct: float | None) -> bool:
     if gap_s is not None and float(gap_s) <= NEAR_TIE_ABS_S:
         return True
@@ -34,9 +40,26 @@ def build_replicate_lookup(pair_payloads: list[dict[str, Any]]) -> dict[tuple[st
         )
         if key is None:
             continue
-        uncertainty = payload.get("uncertainty_band_s")
+        delta_ci = payload.get("delta_confidence_interval") or {}
+        uncertainty = _float_or_none(payload.get("uncertainty_band_s"))
         lookup[key] = {
-            "uncertainty_band_s": float(uncertainty) if uncertainty is not None else None,
+            "pair_mode": payload.get("pair_mode"),
+            "left_template": payload.get("left_template"),
+            "right_template": payload.get("right_template"),
+            "baseline_winner_template": payload.get("baseline_winner_template"),
+            "replicate_winner_template": payload.get("replicate_winner_template"),
+            "delta_definition": payload.get("delta_definition"),
+            "delta_mean_s": _float_or_none(payload.get("delta_mean_s")),
+            "delta_median_s": _float_or_none(payload.get("delta_median_s")),
+            "delta_stdev_s": _float_or_none(payload.get("delta_stdev_s")),
+            "delta_confidence_interval": {
+                "lower_s": _float_or_none(delta_ci.get("lower_s")),
+                "upper_s": _float_or_none(delta_ci.get("upper_s")),
+                "half_width_s": _float_or_none(delta_ci.get("half_width_s")),
+                "level": delta_ci.get("level"),
+                "method": delta_ci.get("method"),
+            },
+            "uncertainty_band_s": uncertainty,
             "conclusion": payload.get("conclusion"),
             "source": payload.get("source") or "external_pair_summary",
         }
@@ -107,6 +130,163 @@ def _replicate_uncertainty_band_s(
     return None, None, None
 
 
+def _pair_payload(
+    workload: dict[str, Any],
+    template_a: str | None,
+    template_b: str | None,
+    replicate_lookup: dict[tuple[str, tuple[str, str]], dict[str, Any]] | None,
+) -> dict[str, Any] | None:
+    if not replicate_lookup:
+        return None
+    key = pair_lookup_key(workload.get("workload_id"), template_a, template_b)
+    if key is None:
+        return None
+    return replicate_lookup.get(key)
+
+
+def _ordered_pair_outcome(
+    payload: dict[str, Any] | None,
+    *,
+    left_template: str | None,
+    right_template: str | None,
+) -> dict[str, Any]:
+    outcome = {
+        "pair_mode": payload.get("pair_mode") if payload else None,
+        "conclusion": payload.get("conclusion") if payload else None,
+        "source": payload.get("source") if payload else None,
+        "uncertainty_band_s": payload.get("uncertainty_band_s") if payload else None,
+        "stable": False,
+        "left_slower": None,
+        "right_slower": None,
+        "faster_template": None,
+        "slower_template": None,
+    }
+    if not payload or not left_template or not right_template:
+        return outcome
+
+    pair_mode = str(payload.get("pair_mode") or "")
+    if pair_mode == "interleaved":
+        delta_ci = payload.get("delta_confidence_interval") or {}
+        ci_lower = _float_or_none(delta_ci.get("lower_s"))
+        ci_upper = _float_or_none(delta_ci.get("upper_s"))
+        if ci_lower is None or ci_upper is None:
+            return outcome
+        if ci_lower > 0.0:
+            return {
+                **outcome,
+                "stable": True,
+                "left_slower": False,
+                "right_slower": True,
+                "faster_template": left_template,
+                "slower_template": right_template,
+            }
+        if ci_upper < 0.0:
+            return {
+                **outcome,
+                "stable": True,
+                "left_slower": True,
+                "right_slower": False,
+                "faster_template": right_template,
+                "slower_template": left_template,
+            }
+        return outcome
+
+    faster_template = payload.get("replicate_winner_template")
+    if payload.get("conclusion") in {"winner_stable", "winner_flipped_vs_single_shot"} and faster_template in {left_template, right_template}:
+        slower_template = right_template if faster_template == left_template else left_template
+        return {
+            **outcome,
+            "stable": True,
+            "left_slower": slower_template == left_template,
+            "right_slower": slower_template == right_template,
+            "faster_template": faster_template,
+            "slower_template": slower_template,
+        }
+    return outcome
+
+
+def _selected_miss_anchor_annotation(
+    workload: dict[str, Any],
+    *,
+    selected_template: str | None,
+    winner_template: str | None,
+    runner_up_template: str | None,
+    selected_gap_s: float | None,
+    selected_gap_pct: float | None,
+    selected_runner_up_gap_s: float | None,
+    selected_runner_up_gap_pct: float | None,
+    replicate_lookup: dict[tuple[str, tuple[str, str]], dict[str, Any]] | None,
+) -> dict[str, Any]:
+    winner_pair = _ordered_pair_outcome(
+        _pair_payload(workload, selected_template, winner_template, replicate_lookup),
+        left_template=selected_template,
+        right_template=winner_template,
+    )
+    runner_up_pair = _ordered_pair_outcome(
+        _pair_payload(workload, selected_template, runner_up_template, replicate_lookup),
+        left_template=selected_template,
+        right_template=runner_up_template,
+    )
+
+    selected_misses_winner = bool(
+        selected_template
+        and winner_template
+        and selected_template != winner_template
+    )
+    selected_slower_than_winner = bool(
+        selected_misses_winner
+        and winner_pair["stable"]
+        and winner_pair["left_slower"] is True
+    )
+    selected_slower_than_runner_up = bool(
+        selected_misses_winner
+        and runner_up_template
+        and runner_up_template != selected_template
+        and runner_up_pair["stable"]
+        and runner_up_pair["left_slower"] is True
+    )
+    selected_dominated_by_top2 = bool(
+        selected_misses_winner
+        and selected_slower_than_winner
+        and selected_slower_than_runner_up
+    )
+    stable_selected_miss = bool(
+        selected_slower_than_winner
+        and not is_near_tie(selected_gap_s, selected_gap_pct)
+    )
+
+    if selected_dominated_by_top2 and not is_near_tie(selected_gap_s, selected_gap_pct):
+        miss_anchor_confidence = "high"
+        miss_anchor_reason = "selected plan is stably slower than both winner and runner-up beyond the near-tie band"
+    elif stable_selected_miss:
+        miss_anchor_confidence = "medium"
+        miss_anchor_reason = "selected plan is stably slower than the measured winner, but dominance over the runner-up is not established"
+    elif selected_misses_winner and is_near_tie(selected_gap_s, selected_gap_pct):
+        miss_anchor_confidence = "low"
+        miss_anchor_reason = "selected miss stays inside the current near-tie band"
+    elif selected_misses_winner and selected_runner_up_gap_s is not None and is_near_tie(selected_runner_up_gap_s, selected_runner_up_gap_pct):
+        miss_anchor_confidence = "low"
+        miss_anchor_reason = "selected plan is not clearly slower than the runner-up"
+    elif selected_misses_winner:
+        miss_anchor_confidence = "low"
+        miss_anchor_reason = "replicate evidence is not strong enough to show the selected plan is a stable miss anchor"
+    else:
+        miss_anchor_confidence = "low"
+        miss_anchor_reason = "selected plan matches the measured winner, so there is no miss anchor"
+
+    return {
+        "selected_vs_winner_replicate_stability": winner_pair["conclusion"],
+        "selected_vs_runner_up_replicate_stability": runner_up_pair["conclusion"],
+        "selected_runner_up_gap_s": round(selected_runner_up_gap_s, 6) if selected_runner_up_gap_s is not None else None,
+        "selected_runner_up_gap_pct": round(selected_runner_up_gap_pct, 6) if selected_runner_up_gap_pct is not None else None,
+        "selected_dominated_by_top2": selected_dominated_by_top2,
+        "miss_anchor_confidence": miss_anchor_confidence,
+        "miss_anchor_reason": miss_anchor_reason,
+        "retune_anchor_candidate": bool(miss_anchor_confidence == "high" or stable_selected_miss),
+        "_stable_selected_miss": stable_selected_miss,
+    }
+
+
 def annotate_workload_confidence(
     workload: dict[str, Any],
     *,
@@ -135,6 +315,7 @@ def annotate_workload_confidence(
         winner_gap_pct = winner_gap_s / winner_value if winner_value > 0.0 else None
 
     selected_gap_s, selected_gap_pct = _selected_gap_metrics(objective, selected_value, winner_value)
+    selected_runner_up_gap_s, selected_runner_up_gap_pct = _selected_gap_metrics(objective, selected_value, runner_up_value)
     selected_matches_winner = bool(
         winner_eval
         and selected_eval
@@ -177,12 +358,27 @@ def annotate_workload_confidence(
         selection_confidence = "high"
         confidence_reason = "winner margin clears both the near-tie band and the observed replicate uncertainty band"
 
+    selected_template = _template_name(selected_eval or {})
+    winner_template = _template_name(winner_eval or {})
+    runner_up_template = _template_name(runner_up_eval or {})
+    miss_anchor = _selected_miss_anchor_annotation(
+        workload,
+        selected_template=selected_template,
+        winner_template=winner_template,
+        runner_up_template=runner_up_template,
+        selected_gap_s=selected_gap_s,
+        selected_gap_pct=selected_gap_pct,
+        selected_runner_up_gap_s=selected_runner_up_gap_s,
+        selected_runner_up_gap_pct=selected_runner_up_gap_pct,
+        replicate_lookup=replicate_lookup,
+    )
+
     return {
-        "selected_template": _template_name(selected_eval or {}),
+        "selected_template": selected_template,
         "winner_gap_s": round(winner_gap_s, 6) if winner_gap_s is not None else None,
         "winner_gap_pct": round(winner_gap_pct, 6) if winner_gap_pct is not None else None,
-        "winner_template": _template_name(winner_eval or {}),
-        "runner_up_template": _template_name(runner_up_eval or {}),
+        "winner_template": winner_template,
+        "runner_up_template": runner_up_template,
         "top1_within_1ms": top1_within_1ms,
         "top1_within_3pct": top1_within_3pct,
         "selection_confidence": selection_confidence,
@@ -193,6 +389,7 @@ def annotate_workload_confidence(
         "replicate_stability": replicate_conclusion,
         "selected_winner_gap_s": round(selected_gap_s, 6) if selected_gap_s is not None else None,
         "selected_winner_gap_pct": round(selected_gap_pct, 6) if selected_gap_pct is not None else None,
+        **miss_anchor,
     }
 
 
@@ -208,6 +405,9 @@ def annotate_validation_results(
     top1_within_3pct_hits = 0
     high_confidence_hits = 0
     high_confidence_total = 0
+    stable_selected_miss_count = 0
+    selected_dominated_by_top2_count = 0
+    anchor_candidate_workloads: list[str] = []
 
     for workload in results:
         annotation = annotate_workload_confidence(
@@ -224,10 +424,21 @@ def annotate_validation_results(
             high_confidence_total += 1
             if workload.get("selected_plan_id") == workload.get("oracle_best_plan_id"):
                 high_confidence_hits += 1
+        if annotation["_stable_selected_miss"]:
+            stable_selected_miss_count += 1
+        if annotation["selected_dominated_by_top2"]:
+            selected_dominated_by_top2_count += 1
+        if annotation["retune_anchor_candidate"]:
+            anchor_candidate_workloads.append(
+                str(workload.get("manifest_path") or workload.get("workload_id") or "")
+            )
 
     workload_count = len(annotated_results)
     return {
-        "results": annotated_results,
+        "results": [
+            {key: value for key, value in row.items() if key != "_stable_selected_miss"}
+            for row in annotated_results
+        ],
         "confidence_version": CONFIDENCE_VERSION,
         "top1_within_1ms_rate": round(top1_within_1ms_hits / max(workload_count, 1), 6),
         "top1_within_3pct_rate": round(top1_within_3pct_hits / max(workload_count, 1), 6),
@@ -241,6 +452,10 @@ def annotate_validation_results(
             "medium": int(confidence_counts["medium"]),
             "high": int(confidence_counts["high"]),
         },
+        "stable_selected_miss_count": stable_selected_miss_count,
+        "selected_dominated_by_top2_count": selected_dominated_by_top2_count,
+        "anchor_candidate_count": len(anchor_candidate_workloads),
+        "anchor_candidate_workloads": anchor_candidate_workloads,
     }
 
 
@@ -286,6 +501,14 @@ def build_confidence_summary_payload(summary: dict[str, Any]) -> dict[str, Any]:
                 "replicate_uncertainty_band_s": row.get("replicate_uncertainty_band_s"),
                 "selected_winner_gap_s": row.get("selected_winner_gap_s"),
                 "selected_winner_gap_pct": row.get("selected_winner_gap_pct"),
+                "selected_vs_winner_replicate_stability": row.get("selected_vs_winner_replicate_stability"),
+                "selected_vs_runner_up_replicate_stability": row.get("selected_vs_runner_up_replicate_stability"),
+                "selected_runner_up_gap_s": row.get("selected_runner_up_gap_s"),
+                "selected_runner_up_gap_pct": row.get("selected_runner_up_gap_pct"),
+                "selected_dominated_by_top2": row.get("selected_dominated_by_top2"),
+                "miss_anchor_confidence": row.get("miss_anchor_confidence"),
+                "miss_anchor_reason": row.get("miss_anchor_reason"),
+                "retune_anchor_candidate": row.get("retune_anchor_candidate"),
             }
         )
 
@@ -306,12 +529,30 @@ def build_confidence_summary_payload(summary: dict[str, Any]) -> dict[str, Any]:
         "top1_within_3pct_rate": summary.get("top1_within_3pct_rate"),
         "high_confidence_top1_accuracy": summary.get("high_confidence_top1_accuracy"),
         "selection_confidence_counts": summary.get("selection_confidence_counts"),
+        "stable_selected_miss_count": summary.get("stable_selected_miss_count"),
+        "selected_dominated_by_top2_count": summary.get("selected_dominated_by_top2_count"),
+        "anchor_candidate_count": summary.get("anchor_candidate_count"),
+        "anchor_candidate_workloads": summary.get("anchor_candidate_workloads"),
         "warnings": summary.get("warnings") or [],
         "results": results,
     }
 
 
+def _heldout_note(heldout_workload_count: Any) -> str:
+    if heldout_workload_count is None:
+        return "- Heldout threshold status is unavailable in this summary."
+    heldout_count = int(heldout_workload_count)
+    if heldout_count < 5:
+        return f"- Heldout metrics remain descriptive while `heldout_workload_count={heldout_count}` is below `5`."
+    return f"- Heldout metrics have reached the documented minimum because `heldout_workload_count={heldout_count}` meets or exceeds `5`."
+
+
 def build_confidence_summary_markdown(payload: dict[str, Any]) -> str:
+    anchor_workloads = [
+        Path(str(path)).name
+        for path in payload.get("anchor_candidate_workloads") or []
+        if path
+    ]
     lines = [
         "# Validation Confidence Summary",
         "",
@@ -326,6 +567,10 @@ def build_confidence_summary_markdown(payload: dict[str, Any]) -> str:
         f"- top1_within_3pct_rate: `{payload.get('top1_within_3pct_rate')}`",
         f"- high_confidence_top1_accuracy: `{payload.get('high_confidence_top1_accuracy')}`",
         f"- selection_confidence_counts: `{payload.get('selection_confidence_counts')}`",
+        f"- stable_selected_miss_count: `{payload.get('stable_selected_miss_count')}`",
+        f"- selected_dominated_by_top2_count: `{payload.get('selected_dominated_by_top2_count')}`",
+        f"- anchor_candidate_count: `{payload.get('anchor_candidate_count')}`",
+        f"- anchor_candidate_workloads: `{anchor_workloads}`",
         "",
         "## Workloads",
         "",
@@ -347,11 +592,31 @@ def build_confidence_summary_markdown(payload: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
+            "## Miss-Anchor Triage",
+            "",
+            "| Workload | Selected gap (ms) | Selected vs winner | Selected vs runner-up | Dominated by top2 | Miss anchor | Retune anchor |",
+            "| --- | ---: | --- | --- | --- | --- | --- |",
+        ]
+    )
+    for workload in payload.get("results") or []:
+        lines.append(
+            f"| `{Path(str(workload.get('manifest_path') or '')).name}` | "
+            f"{((workload.get('selected_winner_gap_s') or 0.0) * 1000.0):.3f} | "
+            f"`{workload.get('selected_vs_winner_replicate_stability')}` | "
+            f"`{workload.get('selected_vs_runner_up_replicate_stability')}` | "
+            f"`{workload.get('selected_dominated_by_top2')}` | "
+            f"`{workload.get('miss_anchor_confidence')}` | "
+            f"`{workload.get('retune_anchor_candidate')}` |"
+        )
+    lines.extend(
+        [
+            "",
             "## Notes",
             "",
             "- `top1_within_1ms_rate` and `top1_within_3pct_rate` are additive to `top1_accuracy`; they do not replace it.",
             "- `selection_confidence_counts` bucket workloads as low / medium / high using the current near-tie thresholds `0.001 s` or `3%`.",
-            f"- Heldout metrics remain descriptive while `heldout_workload_count={payload.get('heldout_workload_count')}` is below `5`.",
+            _heldout_note(payload.get("heldout_workload_count")),
+            "- `selected_dominated_by_top2` only turns true when interleaved pairwise evidence shows the selected plan is slower than both the measured winner and the measured runner-up outside the paired uncertainty band.",
         ]
     )
     warnings = payload.get("warnings") or []

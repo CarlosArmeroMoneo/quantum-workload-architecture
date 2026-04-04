@@ -1,4 +1,4 @@
-from aqs.validation_confidence import annotate_validation_results, build_replicate_lookup
+from aqs.validation_confidence import annotate_validation_results, build_confidence_summary_markdown, build_replicate_lookup
 
 
 def _evaluation(plan_id: str, template_name: str, ttfr_s: float, *, stdev: float | None = None) -> dict[str, object]:
@@ -21,6 +21,35 @@ def _evaluation(plan_id: str, template_name: str, ttfr_s: float, *, stdev: float
         },
         "execution_run": {
             "failure_detail_json": details,
+        },
+    }
+
+
+def _interleaved_pair_payload(
+    workload_id: str,
+    left_template: str,
+    right_template: str,
+    *,
+    replicate_winner_template: str,
+    ci_lower_s: float,
+    ci_upper_s: float,
+    conclusion: str = "winner_stable",
+    uncertainty_band_s: float = 0.001,
+) -> dict[str, object]:
+    return {
+        "workload_id": workload_id,
+        "pair_mode": "interleaved",
+        "left_template": left_template,
+        "right_template": right_template,
+        "replicate_winner_template": replicate_winner_template,
+        "uncertainty_band_s": uncertainty_band_s,
+        "conclusion": conclusion,
+        "delta_confidence_interval": {
+            "lower_s": ci_lower_s,
+            "upper_s": ci_upper_s,
+            "half_width_s": uncertainty_band_s,
+            "level": 0.95,
+            "method": "normal_mean_ci",
         },
     }
 
@@ -223,3 +252,177 @@ def test_high_confidence_top1_accuracy_is_none_when_no_high_rows_exist():
     annotated = annotate_validation_results(results, objective="ttfr")
     assert annotated["selection_confidence_counts"] == {"low": 1, "medium": 1, "high": 0}
     assert annotated["high_confidence_top1_accuracy"] is None
+
+
+def test_confidence_summary_note_marks_heldout_boundary_as_reached():
+    markdown = build_confidence_summary_markdown(
+        {
+            "summary_path": "artifacts/example/summary.json",
+            "dataset_name": "example",
+            "confidence_version": "aqs.validation_confidence.v1",
+            "workload_count": 5,
+            "top1_accuracy": 0.8,
+            "mean_regret": 0.001,
+            "heldout_mean_regret": 0.0,
+            "top1_within_1ms_rate": 1.0,
+            "top1_within_3pct_rate": 1.0,
+            "high_confidence_top1_accuracy": None,
+            "selection_confidence_counts": {"low": 1, "medium": 4, "high": 0},
+            "stable_selected_miss_count": 0,
+            "selected_dominated_by_top2_count": 0,
+            "anchor_candidate_count": 0,
+            "anchor_candidate_workloads": [],
+            "heldout_workload_count": 5,
+            "warnings": [],
+            "results": [],
+        }
+    )
+    assert "heldout_workload_count=5" in markdown
+    assert "meets or exceeds `5`" in markdown
+    assert "below `5`" not in markdown
+
+
+def test_miss_anchor_marks_selected_dominated_by_top2_when_pairwise_evidence_is_clear():
+    results = [
+        {
+            "workload_id": "wkl_anchor",
+            "manifest_path": "workloads/manifests/imported/ovh_v2/01_anchor.yaml",
+            "selected_plan_id": "plan_quick",
+            "oracle_best_plan_id": "plan_deep",
+            "evaluations": [
+                _evaluation("plan_quick", "quick_turnaround", 0.0300),
+                _evaluation("plan_balanced", "balanced", 0.0210),
+                _evaluation("plan_deep", "deep_search", 0.0200),
+            ],
+        }
+    ]
+    replicate_lookup = build_replicate_lookup(
+        [
+            _interleaved_pair_payload(
+                "wkl_anchor",
+                "quick_turnaround",
+                "deep_search",
+                replicate_winner_template="deep_search",
+                ci_lower_s=-0.0110,
+                ci_upper_s=-0.0090,
+            ),
+            _interleaved_pair_payload(
+                "wkl_anchor",
+                "quick_turnaround",
+                "balanced",
+                replicate_winner_template="balanced",
+                ci_lower_s=-0.0100,
+                ci_upper_s=-0.0080,
+            ),
+        ]
+    )
+    annotated = annotate_validation_results(results, objective="ttfr", replicate_lookup=replicate_lookup)
+    row = annotated["results"][0]
+    assert row["selected_dominated_by_top2"] is True
+    assert row["miss_anchor_confidence"] == "high"
+    assert row["retune_anchor_candidate"] is True
+    assert row["selected_vs_winner_replicate_stability"] == "winner_stable"
+    assert row["selected_vs_runner_up_replicate_stability"] == "winner_stable"
+    assert annotated["selected_dominated_by_top2_count"] == 1
+    assert annotated["stable_selected_miss_count"] == 1
+    assert annotated["anchor_candidate_count"] == 1
+
+
+def test_miss_anchor_requires_clear_pairwise_loss_to_runner_up():
+    results = [
+        {
+            "workload_id": "wkl_runner_up_inconclusive",
+            "selected_plan_id": "plan_quick",
+            "oracle_best_plan_id": "plan_deep",
+            "evaluations": [
+                _evaluation("plan_quick", "quick_turnaround", 0.0300),
+                _evaluation("plan_balanced", "balanced", 0.0210),
+                _evaluation("plan_deep", "deep_search", 0.0200),
+            ],
+        }
+    ]
+    replicate_lookup = build_replicate_lookup(
+        [
+            _interleaved_pair_payload(
+                "wkl_runner_up_inconclusive",
+                "quick_turnaround",
+                "deep_search",
+                replicate_winner_template="deep_search",
+                ci_lower_s=-0.0110,
+                ci_upper_s=-0.0090,
+            ),
+            _interleaved_pair_payload(
+                "wkl_runner_up_inconclusive",
+                "quick_turnaround",
+                "balanced",
+                replicate_winner_template="balanced",
+                ci_lower_s=-0.0010,
+                ci_upper_s=0.0010,
+                conclusion="inconclusive_vs_variance",
+            ),
+        ]
+    )
+    annotated = annotate_validation_results(results, objective="ttfr", replicate_lookup=replicate_lookup)
+    row = annotated["results"][0]
+    assert row["selected_dominated_by_top2"] is False
+    assert row["miss_anchor_confidence"] == "medium"
+    assert row["retune_anchor_candidate"] is True
+
+
+def test_miss_anchor_can_be_high_even_when_winner_confidence_stays_low():
+    results = [
+        {
+            "workload_id": "wkl_near_tie_up_top",
+            "selected_plan_id": "plan_quick",
+            "oracle_best_plan_id": "plan_deep",
+            "evaluations": [
+                _evaluation("plan_quick", "quick_turnaround", 0.0300),
+                _evaluation("plan_balanced", "balanced", 0.0205),
+                _evaluation("plan_deep", "deep_search", 0.0200),
+            ],
+        }
+    ]
+    replicate_lookup = build_replicate_lookup(
+        [
+            _interleaved_pair_payload(
+                "wkl_near_tie_up_top",
+                "quick_turnaround",
+                "deep_search",
+                replicate_winner_template="deep_search",
+                ci_lower_s=-0.0110,
+                ci_upper_s=-0.0090,
+            ),
+            _interleaved_pair_payload(
+                "wkl_near_tie_up_top",
+                "quick_turnaround",
+                "balanced",
+                replicate_winner_template="balanced",
+                ci_lower_s=-0.0105,
+                ci_upper_s=-0.0085,
+            ),
+        ]
+    )
+    annotated = annotate_validation_results(results, objective="ttfr", replicate_lookup=replicate_lookup)
+    row = annotated["results"][0]
+    assert row["selection_confidence"] == "low"
+    assert row["miss_anchor_confidence"] == "high"
+    assert row["retune_anchor_candidate"] is True
+
+
+def test_miss_anchor_stays_false_without_replicate_evidence():
+    results = [
+        {
+            "workload_id": "wkl_no_replicates",
+            "selected_plan_id": "plan_quick",
+            "oracle_best_plan_id": "plan_balanced",
+            "evaluations": [
+                _evaluation("plan_quick", "quick_turnaround", 0.0200),
+                _evaluation("plan_balanced", "balanced", 0.0100),
+                _evaluation("plan_deep", "deep_search", 0.0110),
+            ],
+        }
+    ]
+    annotated = annotate_validation_results(results, objective="ttfr")
+    row = annotated["results"][0]
+    assert row["selected_dominated_by_top2"] is False
+    assert row["retune_anchor_candidate"] is False
