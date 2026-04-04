@@ -1,0 +1,54 @@
+{
+  "selected_plan": {
+    "autotune": false,
+    "cache_workspace_gb": 0.0,
+    "explanation_json": [
+      "small planner budget prioritizes time-to-first-result over path optimality",
+      "workspace comfortably covers the current peak estimate, limiting slicing pressure"
+    ],
+    "feasibility_label": "feasible",
+    "gpu_arch_target": "sm75",
+    "hyper_samples": 2,
+    "is_feasible": true,
+    "max_error": 0.0,
+    "mode": "exact_tn",
+    "mpi_ranks": 1,
+    "objective": "ttfr",
+    "parent_probe_ids": [
+      "probe_3c6c2657646972ee"
+    ],
+    "path_quality_factor": 0.96,
+    "plan_id": "plan_9681ead327789de4",
+    "planner_version": "aqs.tnep_planner.v0",
+    "policy_summary_json": {
+      "disable_autotune_below_repeat": 6,
+      "disable_reuse_cache_below_repeat": 8
+    },
+    "precision": "complex128",
+    "predicted_error": 0.0,
+    "predicted_gpu_seconds": 0.723637,
+    "predicted_iter_ms": 21.606094,
+    "predicted_peak_gb": 0.0,
+    "predicted_planning_s": 0.432425,
+    "predicted_setup_s": 0.248,
+    "predicted_ttfr_s": 0.702031,
+    "prediction_breakdown_json": {
+      "graph_density": 0.4,
+      "path_quality_factor": 0.96,
+      "predicted_planning_s": 0.432425,
+      "predicted_setup_s": 0.248,
+      "repeat_count_used": 2,
+      "speed_factor_used": 2.5,
+      "treewidth_proxy": 2.0,
+      "workspace_factor": 0.95
+    },
+    "project": "tnep",
+    "recommendation_rank": 1,
+    "repeat_count_used": 2,
+    "reuse_cache": false,
+    "speed_factor_used": 2.5,
+    "template_name": "quick_turnaround",
+    "workspace_factor": 0.95,
+    "workspace_gb": 2.7
+  }
+}
