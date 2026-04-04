@@ -53,6 +53,17 @@ def _objective_value(objective: str, run: dict[str, Any]) -> float:
     return _float_or_inf(run.get("ttfr_s"))
 
 
+def _build_summary_warnings(results: list[dict[str, Any]]) -> list[str]:
+    heldout_count = sum(1 for row in results if row.get("split_tag") == "heldout_family")
+    warnings: list[str] = []
+    if heldout_count < 5:
+        warnings.append(
+            f"heldout_workload_count={heldout_count} is below the recommended calibration minimum of 5; "
+            "treat heldout_mean_regret as descriptive only"
+        )
+    return warnings
+
+
 def validate_measured_manifest(
     benchmark_manifest_path: str | Path,
     *,
@@ -83,6 +94,7 @@ def validate_measured_manifest(
     planner_budget = str(benchmark.get("planner_budget") or "balanced")
     top_k_candidates = int(benchmark.get("top_k_candidates") or 3)
     measurement_repeats = int(benchmark.get("measurement_repeats") or 3)
+    ttfr_repeats = int(benchmark.get("ttfr_repeats") or 1)
     execution_intent = str(benchmark.get("execution_intent") or "optional_real")
 
     results: list[dict[str, Any]] = []
@@ -132,6 +144,7 @@ def validate_measured_manifest(
                     precision=str(candidate.get("precision") or "complex128"),
                     probe_strategy=probe_strategy,
                     measurement_repeats=measurement_repeats,
+                    ttfr_repeats=ttfr_repeats,
                     execution_intent=execution_intent,
                 ),
             )
@@ -236,6 +249,7 @@ def validate_measured_manifest(
         "probe_strategy": probe_strategy,
         "planner_budget": planner_budget,
         "execution_intent": execution_intent,
+        "ttfr_repeats": ttfr_repeats,
         "evaluation_source": "measured",
         "system_manifest": system_manifest,
         "workload_count": len(results),
@@ -243,6 +257,7 @@ def validate_measured_manifest(
         "top1_accuracy": round(top1_hits / max(top1_count, 1), 6),
         "mean_regret": round(sum(regrets) / len(regrets), 6) if regrets else None,
         "heldout_mean_regret": round(sum(heldout_regrets) / len(heldout_regrets), 6) if heldout_regrets else None,
+        "warnings": _build_summary_warnings(results),
         "results": results,
     }
     dump_json(summary, outdir / "summary.json")

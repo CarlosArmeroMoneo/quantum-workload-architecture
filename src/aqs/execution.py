@@ -37,6 +37,7 @@ class ExecutionConfig:
     precision: str = "complex128"
     probe_strategy: str = "structural_real"
     measurement_repeats: int = 3
+    ttfr_repeats: int = 1
     max_tensor_count: int = 64
     max_qubits: int = 12
     execution_intent: str = "optional_real"
@@ -532,6 +533,7 @@ def execute_selected_plan(
     allow_distributed: bool = True,
     max_candidates: int | None = None,
     measurement_repeats: int = 3,
+    ttfr_repeats: int = 1,
     execution_intent: str = "optional_real",
     replicate_idx: int = 0,
     plan_json_path: str | None = None,
@@ -580,6 +582,7 @@ def execute_selected_plan(
             precision=str(chosen.get("precision") or "complex128"),
             probe_strategy=probe_strategy,
             measurement_repeats=measurement_repeats,
+            ttfr_repeats=ttfr_repeats,
             execution_intent=execution_intent,
             replicate_idx=replicate_idx,
             graph_mode=resolved_graph_mode,

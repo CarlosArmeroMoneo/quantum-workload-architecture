@@ -309,6 +309,102 @@ def _reference_result_from_qiskit_circuit(circuit: Any, execution_target: dict[s
     return np.asarray(tensor[tuple(selectors)], dtype=np.complex128)
 
 
+def _sample_stats(samples: list[float], *, digits: int = 9) -> dict[str, float | int]:
+    if not samples:
+        return {
+            "count": 0,
+            "median": 0.0,
+            "mean": 0.0,
+            "stdev": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+        }
+    return {
+        "count": len(samples),
+        "median": round(statistics.median(samples), digits),
+        "mean": round(statistics.mean(samples), digits),
+        "stdev": round(statistics.stdev(samples), digits) if len(samples) > 1 else 0.0,
+        "min": round(min(samples), digits),
+        "max": round(max(samples), digits),
+    }
+
+
+def _calibration_sample_from_phase_times(ttfr_s: float, phase_times: dict[str, float]) -> dict[str, float]:
+    setup_time_s = (
+        float(phase_times.get("load_circuit") or 0.0)
+        + float(phase_times.get("convert_to_einsum") or 0.0)
+        + float(phase_times.get("postprocess") or 0.0)
+    )
+    planner_time_s = float(phase_times.get("contract_path") or 0.0) + float(phase_times.get("autotune") or 0.0)
+    first_contract_time_s = float(phase_times.get("contract_first") or 0.0)
+    return {
+        "ttfr_s": round(float(ttfr_s), 9),
+        "planner_time_s": round(planner_time_s, 9),
+        "setup_time_s": round(setup_time_s, 9),
+        "first_contract_time_s": round(first_contract_time_s, 9),
+    }
+
+
+def _run_cold_ttfr_sample(
+    workload_manifest: dict[str, Any],
+    plan: dict[str, Any],
+    execution_target: dict[str, Any],
+    *,
+    cupy: Any,
+    Network: Any,
+    CircuitToEinsum: Any,
+) -> dict[str, float]:
+    profiler = PhaseRecorder()
+    t_start = time.perf_counter()
+
+    with profiler.phase("load_circuit", emit_nvtx=False):
+        circuit = maybe_load_qiskit_circuit(workload_manifest)
+    if circuit is None:
+        raise RealExecutionError("missing_qiskit", "Qiskit circuit import failed during calibration-only TTFR repeat")
+
+    with profiler.phase("convert_to_einsum", emit_nvtx=False):
+        converter = CircuitToEinsum(circuit, dtype="complex128", backend="cupy")
+        if execution_target["kind"] == "amplitude":
+            expr, operands = converter.amplitude(execution_target["bitstring"])
+        else:
+            expr, operands = converter.batched_amplitudes(_converter_fixed_qubits(circuit, execution_target))
+    operands = list(operands)
+    network, _ = _construct_network(Network, expr, operands, plan)
+
+    with _network_context(network) as managed_network:
+        with profiler.phase("contract_path", emit_nvtx=False):
+            _call_network_method(
+                managed_network.contract_path,
+                optimize={"samples": max(1, int(plan.get("hyper_samples") or 1))},
+            )
+            _sync_cupy(cupy)
+
+        if bool(plan.get("autotune")):
+            with profiler.phase("autotune", emit_nvtx=False):
+                _call_network_method(managed_network.autotune, iterations=5, release_workspace=False)
+                _sync_cupy(cupy)
+
+        with profiler.phase("contract_first", emit_nvtx=False):
+            first_result = _call_network_method(managed_network.contract, release_workspace=False)
+            _sync_cupy(cupy)
+        first_result_at = time.perf_counter()
+
+        t0 = time.perf_counter()
+        _ = _call_network_method(managed_network.contract, release_workspace=True)
+        _sync_cupy(cupy)
+        release_workspace_contract_time_s = round(max(time.perf_counter() - t0, 0.0), 9)
+
+    with profiler.phase("postprocess", emit_nvtx=False):
+        _safe_output_digest(first_result)
+
+    sample = _calibration_sample_from_phase_times(
+        ttfr_s=max(first_result_at - t_start, 0.0),
+        phase_times=profiler.phase_times,
+    )
+    sample["release_workspace_contract_time_s"] = release_workspace_contract_time_s
+    return sample
+
+
 def execute_real_plan_candidate(
     workload_manifest: dict[str, Any],
     plan: dict[str, Any],
@@ -330,6 +426,7 @@ def execute_real_plan_candidate(
         raise RealExecutionError("runtime_error", str(exc), recoverable=False) from exc
 
     warm_repeats = min(5, max(2, int(getattr(config, "measurement_repeats", 3))))
+    ttfr_repeats = max(1, int(getattr(config, "ttfr_repeats", 1)))
     profiler = PhaseRecorder()
     started_at = _utc_now_iso()
     t_start = time.perf_counter()
@@ -509,6 +606,46 @@ def execute_real_plan_candidate(
         **payload["failure_detail_json"],
         "execution_target": execution_target,
     }
+    if ttfr_repeats > 1:
+        calibration_samples = [
+            _calibration_sample_from_phase_times(
+                ttfr_s=ttfr_s,
+                phase_times=profiler.phase_times,
+            )
+        ]
+        for _ in range(ttfr_repeats - 1):
+            calibration_samples.append(
+                _run_cold_ttfr_sample(
+                    workload_manifest,
+                    plan,
+                    execution_target,
+                    cupy=cupy,
+                    Network=Network,
+                    CircuitToEinsum=CircuitToEinsum,
+                )
+            )
+
+        ttfr_samples_s = [float(sample["ttfr_s"]) for sample in calibration_samples]
+        planner_time_samples_s = [float(sample["planner_time_s"]) for sample in calibration_samples]
+        setup_time_samples_s = [float(sample["setup_time_s"]) for sample in calibration_samples]
+        first_contract_samples_s = [float(sample["first_contract_time_s"]) for sample in calibration_samples]
+        payload["failure_detail_json"] = {
+            **payload["failure_detail_json"],
+            "calibration_ttfr": {
+                "mode": "fresh_network_cold_path",
+                "ttfr_repeats": ttfr_repeats,
+                "warm_repeats_context": warm_repeats,
+                "graph_mode_context": graph_mode,
+                "ttfr_samples_s": [round(value, 9) for value in ttfr_samples_s],
+                "planner_time_samples_s": [round(value, 9) for value in planner_time_samples_s],
+                "setup_time_samples_s": [round(value, 9) for value in setup_time_samples_s],
+                "first_contract_samples_s": [round(value, 9) for value in first_contract_samples_s],
+                "ttfr_stats": _sample_stats(ttfr_samples_s, digits=9),
+                "planner_time_stats": _sample_stats(planner_time_samples_s, digits=9),
+                "setup_time_stats": _sample_stats(setup_time_samples_s, digits=9),
+                "first_contract_stats": _sample_stats(first_contract_samples_s, digits=9),
+            },
+        }
     return {
         "execution_run": payload,
         "accuracy_eval": accuracy_eval,

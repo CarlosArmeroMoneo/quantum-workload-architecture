@@ -108,6 +108,17 @@ def _objective_key(objective: str, row: dict[str, Any]) -> float:
     return float(row.get("observed_ttfr_s") or float("inf"))
 
 
+def _build_summary_warnings(results: list[dict[str, Any]]) -> list[str]:
+    heldout_count = sum(1 for row in results if row.get("split_tag") == "heldout_family")
+    warnings: list[str] = []
+    if heldout_count < 5:
+        warnings.append(
+            f"heldout_workload_count={heldout_count} is below the recommended calibration minimum of 5; "
+            "treat heldout_mean_regret as descriptive only"
+        )
+    return warnings
+
+
 def validate_planner_manifest(
     benchmark_manifest_path: str | Path,
     *,
@@ -247,6 +258,7 @@ def validate_planner_manifest(
         "top1_accuracy": round(top1_hits / max(top1_count, 1), 6),
         "mean_regret": round(sum(regrets) / len(regrets), 6) if regrets else None,
         "heldout_mean_regret": round(sum(heldout_regrets) / len(heldout_regrets), 6) if heldout_regrets else None,
+        "warnings": _build_summary_warnings(per_workload),
         "results": per_workload,
     }
     dump_json(summary, outdir / "summary.json")

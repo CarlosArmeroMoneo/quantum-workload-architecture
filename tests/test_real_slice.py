@@ -236,6 +236,7 @@ def test_real_executor_maps_plan_fields_and_keeps_warm_outputs_identical(monkeyp
     run = bundle["execution_run"]
     assert run["status"] == "success"
     assert run["execution_source"] == REAL_EXECUTION_SOURCE
+    assert "calibration_ttfr" not in run["failure_detail_json"]
     assert bundle["accuracy_eval"]["status"] == "pass"
     fake_network = FakeNetwork.instances[-1]
     assert fake_network.options["memory_limit"] in {int(1.5 * (1024 ** 3)), "1.500000 GiB", 1.5}
@@ -542,6 +543,115 @@ def test_real_executor_graph_mode_captures_and_replays(monkeypatch):
     assert fake_cupy._stream.capture_calls == 1
     assert fake_cupy._stream.end_calls == 1
     assert fake_cupy._stream.graph.launch_calls == 3
+
+
+def test_real_executor_ttfr_repeats_emits_calibration_samples(monkeypatch):
+    manifest = load_yaml("workloads/manifests/imported/qiskit_qasm2_ghz3.yaml")
+    reference_result = np.asarray(1.0 + 0.0j, dtype=np.complex128)
+
+    class FakeStream:
+        def synchronize(self) -> None:
+            return None
+
+    class FakePool:
+        def used_bytes(self) -> int:
+            return 1024 * 1024
+
+    class FakeCuPy:
+        class cuda:
+            @staticmethod
+            def get_current_stream() -> FakeStream:
+                return FakeStream()
+
+        @staticmethod
+        def get_default_memory_pool() -> FakePool:
+            return FakePool()
+
+    class FakeCircuit:
+        qubits = [0, 1, 2]
+
+    class FakeConverter:
+        def __init__(self, circuit, dtype, backend):
+            self.circuit = circuit
+            self.dtype = dtype
+            self.backend = backend
+
+        def amplitude(self, bitstring):
+            assert bitstring == "000"
+            return "abc->", [np.ones((1,), dtype=np.complex128)]
+
+    class FakeNetwork:
+        instances: list["FakeNetwork"] = []
+
+        def __init__(self, expr, *operands, options=None):
+            self.expr = expr
+            self.operands = operands
+            self.options = options
+            self.release_workspace_flags: list[bool] = []
+            FakeNetwork.instances.append(self)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return None
+
+        def contract_path(self, optimize=None):
+            return ([], type("Info", (), {"largest_intermediate": 4, "opt_cost": 7.0, "num_slices": 1})())
+
+        def autotune(self, iterations=None, release_workspace=None):
+            return None
+
+        def contract(self, release_workspace=False):
+            self.release_workspace_flags.append(bool(release_workspace))
+            return np.asarray(reference_result)
+
+    monkeypatch.setattr("aqs.execution_real.maybe_load_qiskit_circuit", lambda manifest: FakeCircuit())
+    monkeypatch.setattr("aqs.execution_real._import_real_stack", lambda: (FakeCuPy(), FakeNetwork, FakeConverter))
+    monkeypatch.setattr("aqs.execution_real._reference_result_from_qiskit_circuit", lambda circuit, target: reference_result)
+
+    bundle = execute_real_plan_candidate(
+        manifest,
+        {
+            "plan_id": "plan_real_ttfr_repeat_fake",
+            "mode": "exact_tn",
+            "workspace_gb": 1.5,
+            "hyper_samples": 8,
+            "autotune": True,
+            "precision": "complex128",
+        },
+        system_profile={
+            "system_id": "sys_fake",
+            "gpu_present": True,
+            "cupy_present": True,
+            "cuquantum_present": True,
+            "qiskit_present": True,
+            "nsys_present": False,
+            "ncu_present": False,
+        },
+        config=type(
+            "Cfg",
+            (),
+            {
+                "precision": "complex128",
+                "measurement_repeats": 3,
+                "probe_strategy": "structural_real",
+                "ttfr_repeats": 3,
+            },
+        )(),
+    )
+
+    details = bundle["execution_run"]["failure_detail_json"]
+    calibration = details["calibration_ttfr"]
+    assert calibration["mode"] == "fresh_network_cold_path"
+    assert calibration["ttfr_repeats"] == 3
+    assert len(calibration["ttfr_samples_s"]) == 3
+    assert len(calibration["planner_time_samples_s"]) == 3
+    assert len(calibration["setup_time_samples_s"]) == 3
+    assert len(calibration["first_contract_samples_s"]) == 3
+    assert calibration["ttfr_stats"]["count"] == 3
+    assert calibration["planner_time_stats"]["count"] == 3
+    assert len(FakeNetwork.instances) == 3
 
 
 @pytest.mark.gpu

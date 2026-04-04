@@ -1,0 +1,35 @@
+{
+  "autotune": false,
+  "cache_workspace_gb": 0.0,
+  "explanation_json": [
+    "workspace comfortably covers the current peak estimate, limiting slicing pressure"
+  ],
+  "feasibility_label": "feasible",
+  "gpu_arch_target": "sm75",
+  "hyper_samples": 8,
+  "is_feasible": true,
+  "max_error": 0.0,
+  "mode": "exact_tn",
+  "mpi_ranks": 1,
+  "objective": "ttfr",
+  "parent_probe_ids": [
+    "probe_b05f0fe78c07b05b"
+  ],
+  "plan_id": "plan_4ac68b77fb9e0e36",
+  "planner_version": "aqs.tnep_planner.v0",
+  "policy_summary_json": {
+    "disable_autotune_below_repeat": 6,
+    "disable_reuse_cache_below_repeat": 8
+  },
+  "precision": "complex128",
+  "predicted_error": 0.0,
+  "predicted_gpu_seconds": 1.07912,
+  "predicted_iter_ms": 12.823703,
+  "predicted_peak_gb": 0.0,
+  "predicted_ttfr_s": 1.07912,
+  "project": "tnep",
+  "recommendation_rank": 2,
+  "reuse_cache": false,
+  "template_name": "balanced",
+  "workspace_gb": 5.25
+}

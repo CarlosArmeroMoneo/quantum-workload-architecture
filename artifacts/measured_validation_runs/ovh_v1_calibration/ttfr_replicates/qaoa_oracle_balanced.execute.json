@@ -1,0 +1,316 @@
+{
+  "accuracy_eval": {
+    "evaluation_version": "aqs.accuracy.v1",
+    "primary_metric": "batched_amplitude_max_abs_err",
+    "rows": [
+      {
+        "eval_id": "eval_456211f74f915222",
+        "evaluation_version": "aqs.accuracy.v1",
+        "metric_name": "batched_amplitude_max_abs_err",
+        "metric_value": 7.850462293418876e-17,
+        "pass": true,
+        "reference_run_id": null,
+        "run_id": "run_381533c4667c0511",
+        "threshold": 1e-12
+      }
+    ],
+    "run_id": "run_381533c4667c0511",
+    "status": "pass"
+  },
+  "candidate_count": 0,
+  "execution_run": {
+    "execution_source": "cuquantum_tensornet_gpu",
+    "failure_detail_json": {
+      "autotune_time_s": 0.0,
+      "calibration_ttfr": {
+        "first_contract_samples_s": [
+          0.001665689,
+          0.000494093,
+          0.000516784,
+          0.000459635,
+          0.000508144,
+          0.000481984,
+          0.000470718
+        ],
+        "first_contract_stats": {
+          "count": 7,
+          "max": 0.001665689,
+          "mean": 0.000656721,
+          "median": 0.000494093,
+          "min": 0.000459635,
+          "stdev": 0.000445364
+        },
+        "graph_mode_context": "off",
+        "mode": "fresh_network_cold_path",
+        "planner_time_samples_s": [
+          0.034322947,
+          0.033326923,
+          0.033247512,
+          0.032784711,
+          0.03470421,
+          0.033199745,
+          0.03358199
+        ],
+        "planner_time_stats": {
+          "count": 7,
+          "max": 0.03470421,
+          "mean": 0.033595434,
+          "median": 0.033326923,
+          "min": 0.032784711,
+          "stdev": 0.000678949
+        },
+        "setup_time_samples_s": [
+          0.149309113,
+          0.003578258,
+          0.003280711,
+          0.003363821,
+          0.003393046,
+          0.003526715,
+          0.003466747
+        ],
+        "setup_time_stats": {
+          "count": 7,
+          "max": 0.149309113,
+          "mean": 0.024274059,
+          "median": 0.003466747,
+          "min": 0.003280711,
+          "stdev": 0.055135368
+        },
+        "ttfr_repeats": 7,
+        "ttfr_samples_s": [
+          0.304259473,
+          0.044008633,
+          0.039207171,
+          0.038713476,
+          0.040773548,
+          0.039444151,
+          0.099194428
+        ],
+        "ttfr_stats": {
+          "count": 7,
+          "max": 0.304259473,
+          "mean": 0.086514411,
+          "median": 0.040773548,
+          "min": 0.038713476,
+          "stdev": 0.098498034
+        },
+        "warm_repeats_context": 2
+      },
+      "capabilities": {
+        "cupy_present": true,
+        "cuquantum_present": true,
+        "gpu_present": true,
+        "ncu_present": true,
+        "nsys_present": true,
+        "qiskit_present": true
+      },
+      "execution_intent": "require_real",
+      "execution_source": "cuquantum_tensornet_gpu",
+      "execution_target": {
+        "fixed_qubits": {
+          "0": 0
+        },
+        "kind": "batched_amplitudes"
+      },
+      "execution_version": "aqs.execution.real.v2",
+      "first_contract_time_s": 0.001499596,
+      "graph_capture_status": "disabled",
+      "graph_capture_time_s": 0.0,
+      "graph_mode": "off",
+      "graph_replay_launch_count": 0,
+      "graph_replay_phase": null,
+      "network_options": {
+        "device_id": 0,
+        "memory_limit": 5637144576
+      },
+      "nvtx_phase_version": "aqs.nvtx.v1",
+      "path_info": {
+        "largest_intermediate": 16.0,
+        "num_slices": 1,
+        "opt_cost": 896.0
+      },
+      "path_search_time_s": 0.034124511,
+      "phase_times": {
+        "contract_first": 0.0016656890002195723,
+        "contract_path": 0.0343229469981452,
+        "contract_warm": 0.0008181960001820698,
+        "convert_to_einsum": 0.14844480199826648,
+        "load_circuit": 0.0005494990000443067,
+        "postprocess": 0.0003148119976685848
+      },
+      "probe_strategy": "real_if_available",
+      "release_workspace_contract_time_s": 0.000250061,
+      "warm_contract_times_ms": [
+        0.32628,
+        0.252197
+      ]
+    },
+    "finished_at": "2026-04-04T16:25:36.049672+00:00",
+    "gpu_seconds": 0.306524746,
+    "graph_mode": "off",
+    "output_digest": "out_8388780835ea424e",
+    "peak_mem_gb": 1.1921e-05,
+    "peak_workspace_gb": 5.25,
+    "plan_id": "plan_75c8de28e77fc736",
+    "replicate_idx": 0,
+    "run_id": "run_381533c4667c0511",
+    "started_at": "2026-04-04T16:25:35.743145+00:00",
+    "status": "success",
+    "steady_iter_ms": 0.289239,
+    "system_id": "sys_2b947b356aff9c76",
+    "ttfr_s": 0.304259473,
+    "wall_s": 0.306524746,
+    "workload_id": "wkl_19ca61869000401d"
+  },
+  "family_id": "qaoa_graph",
+  "linked_assets": [],
+  "plan_override_path": "artifacts/measured_validation_runs/ovh_v1_calibration/plan_overrides/qaoa_oracle_balanced.json",
+  "probe": {
+    "autotune": null,
+    "cache_workspace_gb": null,
+    "gpu_arch_target": null,
+    "hyper_samples": null,
+    "largest_intermediate": null,
+    "mode": "exact_tn",
+    "mpi_ranks": null,
+    "num_slices": null,
+    "objective": "ttfr",
+    "optimizer_cost": null,
+    "precision": "complex128",
+    "predicted_error": 0.0,
+    "predicted_peak_gb": null,
+    "probe_id": "probe_466a4023493e675d",
+    "probe_kind": "tn_contract_path",
+    "probe_strategy": "real_if_available",
+    "raw_info_json": {
+      "backend": "opt_einsum",
+      "error_message": "0",
+      "path_length": null,
+      "probe_version": "aqs.tn_probe.v1"
+    },
+    "reuse_cache": null,
+    "status": "probe_fail",
+    "workspace_gb": null
+  },
+  "profile_summary": null,
+  "repeat_count_hint": 4,
+  "repo_metadata": {
+    "git_branch": "stack/14-measured-validation-success",
+    "git_commit": "f613f9f885641cf97876306235532cb3eb736783",
+    "git_dirty": true,
+    "git_ref_kind": "branch",
+    "package_version": "0.5.0",
+    "python_version": "3.13.3",
+    "repo_root": "/home/ubuntu/quantum-workload-architecture"
+  },
+  "selected_plan": {
+    "autotune": false,
+    "cache_workspace_gb": 0.0,
+    "explanation_json": [
+      "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+      "planner policy disables autotune below repeat_count_hint=6",
+      "planner policy disables reuse_cache below repeat_count_hint=8"
+    ],
+    "feasibility_label": "feasible",
+    "gpu_arch_target": "sm75",
+    "hyper_samples": 8,
+    "is_feasible": true,
+    "max_error": 0.0,
+    "mode": "exact_tn",
+    "mpi_ranks": 1,
+    "objective": "ttfr",
+    "parent_probe_ids": [
+      "probe_466a4023493e675d"
+    ],
+    "plan_id": "plan_75c8de28e77fc736",
+    "planner_version": "aqs.tnep_planner.v0",
+    "policy_summary_json": {
+      "disable_autotune_below_repeat": 6,
+      "disable_reuse_cache_below_repeat": 8
+    },
+    "precision": "complex128",
+    "predicted_error": 0.0,
+    "predicted_gpu_seconds": 1.29023,
+    "predicted_iter_ms": 17.08159,
+    "predicted_peak_gb": 0.145833,
+    "predicted_ttfr_s": 1.238985,
+    "project": "tnep",
+    "recommendation_rank": 2,
+    "reuse_cache": false,
+    "template_name": "balanced",
+    "workspace_gb": 5.25
+  },
+  "selection_source": "plan_override",
+  "system_manifest": {
+    "api_version": "aqs.system.v1",
+    "appliance_image": {
+      "base_ref": null,
+      "ref": null
+    },
+    "container_runtime": {
+      "kind": "unavailable_on_path",
+      "version": null
+    },
+    "driver_version": "580.95.05",
+    "gpu_arch_target": "sm75",
+    "gpu_count": 1,
+    "gpu_mem_gb": 15.0,
+    "gpu_model": "Quadro RTX 5000",
+    "interconnect": "pcie",
+    "kernel_version": "6.14.0-34-generic",
+    "node_label": "ovh-gra9-rtx5000-28",
+    "notes": "refreshed OVH profiling host manifest for the real exact-TN and measured follow-on portfolio runs on Quadro RTX 5000",
+    "os_release": "Ubuntu 25.04",
+    "profiling_host": {
+      "artifact_index": "docs/reports/first_real_profiler_slice_index.md",
+      "canonical_tool_source": {
+        "ncu": "host_installed_ubuntu_repo",
+        "nsys": "host_installed_ubuntu_repo",
+        "qdstrm_importer": "host_installed_ubuntu_repo"
+      },
+      "container_launch": {
+        "cap_add": [],
+        "gid": null,
+        "gpu_access": null,
+        "privileged": false,
+        "uid": null,
+        "user": null,
+        "workspace_mount": null
+      },
+      "elevated_probe_attempt": {
+        "cap_add": [],
+        "privileged": false,
+        "result": "succeeded_after_setting_NVreg_RestrictProfilingToAdminUsers=0",
+        "user": "root"
+      },
+      "execution_runbook": "docs/runbooks/ovh_cu13_real_execution.md",
+      "gpu_performance_counters": "enabled_for_non_admin_users_after_host_policy_change",
+      "ncu_version": "Version 2023.2.2.0 (build 33188574) (public-release)",
+      "notes": [
+        "canonical profiling on this host uses host-installed Ubuntu nsight packages, not container-bundled profiler tools",
+        "qdstrm importer is not on PATH by default and must be discovered at /usr/lib/nsight-systems/host-linux-x64/QdstrmImporter",
+        "docker was not detected on PATH during the April 4, 2026 packaging refresh, so container_runtime and container_launch are intentionally marked unavailable",
+        "nsys smoke is fully working on this host",
+        "ncu smoke is intentionally unfiltered on this host/toolchain to avoid brittle NVTX filter behavior",
+        "real exact-TN execution on this host uses the .venv_cu13 environment plus qwa_cuda_env_cu13.sh",
+        "the canonical first slice and the measured stage 10 through 12 follow-on passes ran directly on the host in .venv_cu13",
+        "real profiler-backed architecture analysis was successfully produced on this host",
+        "if the host changes materially, create a new manifest rather than editing this file in place"
+      ],
+      "nsys_version": "NVIDIA Nsight Systems version 2023.2.3.1004-33186433v0",
+      "qdstrm_importer_version": "NVIDIA Nsight Systems 2023.2.3.1004-33186433v0",
+      "qdstrm_importer_version_probe_error": null,
+      "readiness_artifact": "configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json",
+      "session_log": "docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md",
+      "tool_paths": {
+        "ncu": "/usr/bin/ncu",
+        "nsys": "/usr/bin/nsys",
+        "qdstrm_importer": "/usr/lib/nsight-systems/host-linux-x64/QdstrmImporter"
+      }
+    },
+    "ram_gb": 26.76,
+    "system_name": "ovh_gra9_rtx5000_28"
+  },
+  "system_name": "ovh_gra9_rtx5000_28",
+  "workload_id": "wkl_19ca61869000401d"
+}

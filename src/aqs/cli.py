@@ -242,6 +242,7 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
         allow_distributed=args.allow_distributed,
         max_candidates=args.max_candidates,
         measurement_repeats=args.measurement_repeats,
+        ttfr_repeats=args.ttfr_repeats,
         execution_intent=args.execution_intent,
         replicate_idx=args.replicate_idx,
         plan_json_path=args.plan_json,
@@ -503,6 +504,7 @@ def build_parser() -> argparse.ArgumentParser:
     execute_tnep.add_argument("--probe-strategy", choices=["surrogate_only", "structural_real", "real_if_available", "cuquantum_if_available", "cuquantum_required"], default="structural_real")
     execute_tnep.add_argument("--planner-budget", choices=["quick", "balanced", "deep"], default="balanced")
     execute_tnep.add_argument("--measurement-repeats", type=int, default=3)
+    execute_tnep.add_argument("--ttfr-repeats", type=int, default=1, help="Calibration-only fresh-network cold-TTFR repeats; default keeps the single-shot path")
     execute_tnep.add_argument("--replicate-idx", type=int, default=0)
     execute_tnep.add_argument("--graph-mode", choices=list(GRAPH_MODES), default=None, help="Optional CUDA Graph execution mode override")
     execute_tnep.add_argument("--execution-intent", choices=["optional_real", "prefer_real", "require_real"], default="optional_real")

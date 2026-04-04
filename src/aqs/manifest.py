@@ -322,6 +322,9 @@ def validate_benchmark_manifest(manifest: dict[str, Any]) -> list[str]:
     execution_intent = manifest.get("execution_intent")
     if execution_intent is not None and execution_intent not in EXECUTION_INTENTS:
         errors.append(f"execution_intent must be one of {sorted(EXECUTION_INTENTS)}")
+    ttfr_repeats = manifest.get("ttfr_repeats")
+    if ttfr_repeats is not None and (not isinstance(ttfr_repeats, int) or ttfr_repeats < 1):
+        errors.append("ttfr_repeats must be an integer >= 1 when provided")
     max_workloads = manifest.get("max_workloads")
     if max_workloads is not None and (not isinstance(max_workloads, int) or max_workloads < 1):
         errors.append("max_workloads must be an integer >= 1 when provided")

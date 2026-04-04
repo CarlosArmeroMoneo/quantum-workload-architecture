@@ -1,0 +1,38 @@
+{
+  "autotune": false,
+  "cache_workspace_gb": 0.0,
+  "explanation_json": [
+    "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+    "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+    "planner policy disables autotune below repeat_count_hint=6",
+    "planner policy disables reuse_cache below repeat_count_hint=8"
+  ],
+  "feasibility_label": "feasible",
+  "gpu_arch_target": "sm75",
+  "hyper_samples": 24,
+  "is_feasible": true,
+  "max_error": 0.0,
+  "mode": "exact_tn",
+  "mpi_ranks": 1,
+  "objective": "ttfr",
+  "parent_probe_ids": [
+    "probe_3c6c2657646972ee"
+  ],
+  "plan_id": "plan_210c4d5521521e70",
+  "planner_version": "aqs.tnep_planner.v0",
+  "policy_summary_json": {
+    "disable_autotune_below_repeat": 6,
+    "disable_reuse_cache_below_repeat": 8
+  },
+  "precision": "complex128",
+  "predicted_error": 0.0,
+  "predicted_gpu_seconds": 2.998859,
+  "predicted_iter_ms": 18.378718,
+  "predicted_peak_gb": 0.0,
+  "predicted_ttfr_s": 2.98048,
+  "project": "tnep",
+  "recommendation_rank": 3,
+  "reuse_cache": false,
+  "template_name": "deep_search",
+  "workspace_gb": 9.0
+}

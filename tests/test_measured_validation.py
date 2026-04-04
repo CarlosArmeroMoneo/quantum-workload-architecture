@@ -11,4 +11,7 @@ def test_measured_validation_reports_summary(tmp_path):
     assert summary['evaluation_source'] == 'measured'
     assert summary['workload_count'] >= 2
     assert 0.0 <= summary['top1_accuracy'] <= 1.0
+    assert isinstance(summary.get('warnings'), list)
+    if summary['heldout_workload_count'] < 5:
+        assert any('heldout_workload_count=' in warning for warning in summary['warnings'])
     assert Path(tmp_path / 'measured_validation' / 'summary.json').exists()

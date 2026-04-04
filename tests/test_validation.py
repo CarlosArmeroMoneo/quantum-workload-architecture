@@ -35,6 +35,9 @@ def test_validation_manifest_reports_holdout_and_regret(tmp_path, monkeypatch):
     assert summary['heldout_workload_count'] >= 1
     assert 0.0 <= summary['top1_accuracy'] <= 1.0
     assert summary['mean_regret'] is None or summary['mean_regret'] >= 0.0
+    assert isinstance(summary.get('warnings'), list)
+    if summary['heldout_workload_count'] < 5:
+        assert any('heldout_workload_count=' in warning for warning in summary['warnings'])
     assert any(row['split_tag'] == 'heldout_family' for row in summary['results'])
     assert Path(tmp_path / 'validation' / 'summary.json').exists()
     assert any(row['regret'] is not None for row in summary['results'])

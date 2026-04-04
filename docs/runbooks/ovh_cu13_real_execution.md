@@ -111,6 +111,39 @@ python -m aqs arch analyze-execution \
   --out artifacts/arch_real/real_dense_ring6_batched.arch.json
 ```
 
+## Calibration-Only TTFR Replicates
+
+Use calibration-only TTFR replicates only for uncertainty estimation on a small number of candidate pairs. This mode is opt-in, default-off, and should not replace the official deployment-style benchmark.
+
+Key rules:
+
+- Keep the official benchmark on the single-shot `require_real` slice.
+- Use explicit `--plan-json` overrides so the probe measures frozen candidate plans rather than a fresh planner decision.
+- Treat `--ttfr-repeats` as a diagnostic aid for uncertainty bands, not as a ranking retune mechanism by itself.
+- The replicate path rebuilds a fresh network each time, but it does not simulate a fresh process launch for every sample.
+
+Example:
+
+```bash
+python -m aqs tnep execute \
+  --manifest workloads/manifests/imported/real_ghz3_amplitude.yaml \
+  --system-manifest configs/systems/ovh_gra9_rtx5000_28.yml \
+  --plan-json artifacts/measured_validation_runs/ovh_v1_calibration/plan_overrides/ghz3_oracle_balanced.json \
+  --objective ttfr \
+  --probe-strategy real_if_available \
+  --planner-budget balanced \
+  --measurement-repeats 2 \
+  --ttfr-repeats 7 \
+  --execution-intent require_real \
+  --no-allow-distributed \
+  --out artifacts/measured_validation_runs/ovh_v1_calibration/ttfr_replicates/ghz3_oracle_balanced.execute.json
+```
+
+Current tracked calibration summary outputs live in:
+
+- `artifacts/measured_validation_runs/ovh_v1_calibration/ttfr_replicate_summary.md`
+- `artifacts/measured_validation_runs/ovh_v1_calibration/ttfr_replicate_summary.json`
+
 ## Public Evidence Layout
 
 - Curated summaries are tracked in `evidence/first_real_profiler_slice/`.

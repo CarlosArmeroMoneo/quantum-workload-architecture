@@ -1,0 +1,36 @@
+{
+  "autotune": false,
+  "cache_workspace_gb": 0.0,
+  "explanation_json": [
+    "small planner budget prioritizes time-to-first-result over path optimality",
+    "workspace comfortably covers the current peak estimate, limiting slicing pressure"
+  ],
+  "feasibility_label": "feasible",
+  "gpu_arch_target": "sm75",
+  "hyper_samples": 2,
+  "is_feasible": true,
+  "max_error": 0.0,
+  "mode": "exact_tn",
+  "mpi_ranks": 1,
+  "objective": "ttfr",
+  "parent_probe_ids": [
+    "probe_466a4023493e675d"
+  ],
+  "plan_id": "plan_cece52a0439c396d",
+  "planner_version": "aqs.tnep_planner.v0",
+  "policy_summary_json": {
+    "disable_autotune_below_repeat": 6,
+    "disable_reuse_cache_below_repeat": 8
+  },
+  "precision": "complex128",
+  "predicted_error": 0.0,
+  "predicted_gpu_seconds": 0.738763,
+  "predicted_iter_ms": 18.634462,
+  "predicted_peak_gb": 0.145833,
+  "predicted_ttfr_s": 0.68286,
+  "project": "tnep",
+  "recommendation_rank": 1,
+  "reuse_cache": false,
+  "template_name": "quick_turnaround",
+  "workspace_gb": 2.7
+}
