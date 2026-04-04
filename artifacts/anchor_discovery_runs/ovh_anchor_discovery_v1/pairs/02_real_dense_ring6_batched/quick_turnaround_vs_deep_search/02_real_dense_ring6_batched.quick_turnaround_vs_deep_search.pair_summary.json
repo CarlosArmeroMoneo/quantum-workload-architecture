@@ -1,0 +1,225 @@
+{
+  "baseline_left_ttfr_s": 0.096255235,
+  "baseline_right_ttfr_s": 0.04225231,
+  "baseline_winner_template": "deep_search",
+  "conclusion": "inconclusive_vs_variance",
+  "delta_confidence_interval": {
+    "half_width_s": 0.055271899,
+    "level": 0.95,
+    "lower_s": -0.074398094,
+    "method": "normal_mean_ci",
+    "upper_s": 0.036145705
+  },
+  "delta_definition": "right_minus_left_ttfr_s",
+  "delta_mean_s": -0.019126194,
+  "delta_median_s": 0.006692451,
+  "delta_stdev_s": 0.084599846,
+  "family_id": "dense_universal",
+  "left_first_contract_samples_s": [
+    0.001679698,
+    0.000720692,
+    0.000740797,
+    0.000757623,
+    0.00079228,
+    0.000756932,
+    0.000742384,
+    0.000713071,
+    0.000747097
+  ],
+  "left_first_contract_stats": {
+    "count": 9,
+    "max": 0.001679698,
+    "mean": 0.000850064,
+    "median": 0.000747097,
+    "min": 0.000713071,
+    "stdev": 0.000311948
+  },
+  "left_planner_time_samples_s": [
+    0.03313088,
+    0.056227865,
+    0.039284629,
+    0.062732831,
+    0.065836014,
+    0.039311929,
+    0.061309973,
+    0.043009247,
+    0.062806055
+  ],
+  "left_planner_time_stats": {
+    "count": 9,
+    "max": 0.065836014,
+    "mean": 0.051516603,
+    "median": 0.056227865,
+    "min": 0.03313088,
+    "stdev": 0.012675726
+  },
+  "left_setup_time_samples_s": [
+    0.15325901,
+    0.00921639,
+    0.004022452,
+    0.009255689,
+    0.009192863,
+    0.003935082,
+    0.007647202,
+    0.006996172,
+    0.008661148
+  ],
+  "left_setup_time_stats": {
+    "count": 9,
+    "max": 0.15325901,
+    "mean": 0.023576223,
+    "median": 0.008661148,
+    "min": 0.003935082,
+    "stdev": 0.048676232
+  },
+  "left_template": "quick_turnaround",
+  "left_ttfr_samples_s": [
+    0.309215918,
+    0.069943955,
+    0.046754709,
+    0.076791048,
+    0.080161875,
+    0.046352887,
+    0.073210738,
+    0.053884952,
+    0.076137832
+  ],
+  "left_ttfr_stats": {
+    "count": 9,
+    "max": 0.309215918,
+    "mean": 0.092494879,
+    "median": 0.073210738,
+    "min": 0.046352887,
+    "stdev": 0.082330637
+  },
+  "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/02_real_dense_ring6_batched.yaml",
+  "pair_lookup_key": {
+    "templates": [
+      "deep_search",
+      "quick_turnaround"
+    ],
+    "workload_id": "wkl_3a3d42fe7b94a2ed"
+  },
+  "pair_mode": "interleaved",
+  "payload_paths": {
+    "left": [
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block00.quick_turnaround.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block01.quick_turnaround.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block02.quick_turnaround.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block03.quick_turnaround.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block04.quick_turnaround.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block05.quick_turnaround.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block06.quick_turnaround.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block07.quick_turnaround.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block08.quick_turnaround.execute.json"
+    ],
+    "right": [
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block00.deep_search.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block01.deep_search.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block02.deep_search.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block03.deep_search.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block04.deep_search.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block05.deep_search.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block06.deep_search.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block07.deep_search.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/anchor_discovery_runs/ovh_anchor_discovery_v1/pairs/02_real_dense_ring6_batched/quick_turnaround_vs_deep_search/blocks/02_real_dense_ring6_batched.block08.deep_search.execute.json"
+    ]
+  },
+  "per_block_deltas_s": [
+    -0.241526435,
+    0.010955526,
+    0.023407108,
+    0.006692451,
+    -0.021883271,
+    0.02839366,
+    0.004899574,
+    0.013429091,
+    0.003496546
+  ],
+  "repeat_count_hint": 12,
+  "replicate_left_median_ttfr_s": 0.073210738,
+  "replicate_right_median_ttfr_s": 0.074746547,
+  "replicate_winner_template": "quick_turnaround",
+  "right_first_contract_samples_s": [
+    0.000417939,
+    0.000393563,
+    0.000468894,
+    0.000424069,
+    0.000421629,
+    0.000422058,
+    0.000448694,
+    0.000424067,
+    0.000415174
+  ],
+  "right_first_contract_stats": {
+    "count": 9,
+    "max": 0.000468894,
+    "mean": 0.000426232,
+    "median": 0.000422058,
+    "min": 0.000393563,
+    "stdev": 2.1304e-05
+  },
+  "right_planner_time_samples_s": [
+    0.052401447,
+    0.066931657,
+    0.056803615,
+    0.068978041,
+    0.050764266,
+    0.063371698,
+    0.065841241,
+    0.056121052,
+    0.06367624
+  ],
+  "right_planner_time_stats": {
+    "count": 9,
+    "max": 0.068978041,
+    "mean": 0.060543251,
+    "median": 0.063371698,
+    "min": 0.050764266,
+    "stdev": 0.006645488
+  },
+  "right_setup_time_samples_s": [
+    0.004971204,
+    0.009310059,
+    0.009367638,
+    0.009746174,
+    0.004632691,
+    0.007431754,
+    0.008418227,
+    0.007304975,
+    0.01096928
+  ],
+  "right_setup_time_stats": {
+    "count": 9,
+    "max": 0.01096928,
+    "mean": 0.008016889,
+    "median": 0.008418227,
+    "min": 0.004632691,
+    "stdev": 0.002148928
+  },
+  "right_template": "deep_search",
+  "right_ttfr_samples_s": [
+    0.067689483,
+    0.080899481,
+    0.070161817,
+    0.083483499,
+    0.058278604,
+    0.074746547,
+    0.078110312,
+    0.067314043,
+    0.079634378
+  ],
+  "right_ttfr_stats": {
+    "count": 9,
+    "max": 0.083483499,
+    "mean": 0.073368685,
+    "median": 0.074746547,
+    "min": 0.058278604,
+    "stdev": 0.008136103
+  },
+  "source": "targeted_ttfr_replicates",
+  "uncertainty_band_s": 0.055271899,
+  "winner_gap_pct": 0.020978,
+  "winner_gap_s": 0.001535809,
+  "workload_id": "wkl_3a3d42fe7b94a2ed"
+}
