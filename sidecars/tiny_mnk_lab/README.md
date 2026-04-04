@@ -1,6 +1,6 @@
 # Tiny-MNK Lab
 
-This sidecar isolates the tiny-MNK contraction shape already visible in the tracked Nsight Compute evidence for `real_dense_ring6_batched`.
+This sidecar isolates the tiny-MNK contraction shape already visible in the tracked Nsight Compute evidence for `real_dense_ring6_batched`. As of April 4, 2026, the OVH host has produced measured benchmark and Nsight Compute outputs for this lab.
 
 Current reference kernel:
 
@@ -18,13 +18,24 @@ Contents:
 - `scripts/export_results.py`: aggregates benchmark CSV output and optional Nsight Compute CSV into a summary JSON
 - `scripts/profile_ncu.sh`: Linux helper for Nsight Compute collection
 - `scripts/profile_nsys.sh`: Linux helper for Nsight Systems collection
-- `reports/report_template.md`: report scaffold for measured sidecar writeups
+- `reports/report_template.md`: final measured OVH sidecar report
 
-Suggested remote-host workflow:
+Measured OVH outputs:
+
+- `results/ncu/benchmark.csv`
+- `results/ncu/summary.json`
+- `results/ncu/tiny_mnk.ncu.csv`
+- `reports/report_template.md`
+
+Suggested workflow:
 
 1. `cmake -S sidecars/tiny_mnk_lab -B sidecars/tiny_mnk_lab/build`
 2. `cmake --build sidecars/tiny_mnk_lab/build --config Release`
 3. `bash sidecars/tiny_mnk_lab/scripts/profile_ncu.sh`
-4. Fill in `sidecars/tiny_mnk_lab/reports/report_template.md` using the emitted `summary.json`
+4. Inspect `sidecars/tiny_mnk_lab/results/ncu/summary.json` and `sidecars/tiny_mnk_lab/reports/report_template.md`
 
-This branch is only the foundation pass. It tracks the lab scaffold, the reference kernel signature, and the export/report plumbing. It does not claim measured tiny-MNK sidecar results yet.
+Measured interpretation:
+
+- The standalone benchmark reproduced the tracked shape key `m32_n256_k75`.
+- The measured standalone kernel family and launch geometry were materially different from the internal cuTensorNet kernel family.
+- Treat this lab as a shape-isolation tool, not a parity proxy for the production cuTensorNet path.

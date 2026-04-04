@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Use this runbook to reproduce the canonical profiler-backed slice on the OVH Ubuntu 24.04 RTX 5000 host.
+Use this runbook to reproduce the canonical profiler-backed slice and the measured follow-on OVH reports on the Ubuntu 25.04 RTX 5000 host.
 
 ## Host Roles
 
 - Local Windows + WSL2 + RTX 4050: development and negative-control profiling host.
-- OVH Ubuntu 24.04 + Quadro RTX 5000: canonical public evidence host.
+- OVH Ubuntu 25.04 + Quadro RTX 5000: canonical public evidence host.
 
 ## Connect And Prepare
 
@@ -39,6 +39,8 @@ Expected profiler tools on this host:
 - `nsys`: `/usr/bin/nsys`
 - `QdstrmImporter`: `/usr/lib/nsight-systems/host-linux-x64/QdstrmImporter`
 - `ncu`: `/usr/bin/ncu`
+- `nsys` version: `NVIDIA Nsight Systems version 2023.2.3.1004-33186433v0`
+- `ncu` version: `Version 2023.2.2.0 (build 33188574) (public-release)`
 
 ## Readiness Gate
 
@@ -114,3 +116,10 @@ python -m aqs arch analyze-execution \
 - Curated summaries are tracked in `evidence/first_real_profiler_slice/`.
 - Raw profiler binaries are distributed through the GitHub Release `v0.5.0-evidence`.
 - The release mapping is frozen in `configs/profiling/first_real_profiler_slice_ovh_gra9_rtx5000_28.artifacts.json`.
+
+## Measured Follow-On Package
+
+- Repeat ROI results: `docs/reports/remote_repeat_roi_results_blocked.md`
+- Diagnostic NCU and CUDA Graphs results: `docs/reports/remote_ncu_and_graphs_results_blocked.md`
+- CUDA-Q adapter and tiny-MNK sidecar results: `docs/reports/remote_cudaq_and_sidecar_results_blocked.md`
+- Portfolio package index: `docs/reports/portfolio_index.md`

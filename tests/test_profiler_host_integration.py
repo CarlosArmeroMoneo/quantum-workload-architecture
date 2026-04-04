@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 import pytest
 
 from aqs.arch import analyze_execution_payload
@@ -16,9 +18,15 @@ def _require_ovh_profile_host(profile: dict[str, object]) -> None:
         pytest.skip("canonical live profiler tests are pinned to the OVH Quadro RTX 5000 host")
 
 
+def _require_live_profiler_opt_in() -> None:
+    if os.environ.get("AQS_RUN_LIVE_PROFILER_TESTS") != "1":
+        pytest.skip("set AQS_RUN_LIVE_PROFILER_TESTS=1 to run live Nsight integration tests")
+
+
 @pytest.mark.gpu
 @pytest.mark.profiler
 def test_live_nsys_profile_real_amplitude_persists_rows_and_real_arch_nomination(tmp_path):
+    _require_live_profiler_opt_in()
     profile = collect_system_profile()
     required = {"cupy_present", "cuquantum_present", "qiskit_present", "nsys_present"}
     if not all(bool(profile.get(key)) for key in required):
@@ -66,6 +74,7 @@ def test_live_nsys_profile_real_amplitude_persists_rows_and_real_arch_nomination
 @pytest.mark.gpu
 @pytest.mark.profiler
 def test_live_ncu_profile_real_batched_persists_rows_and_real_metrics(tmp_path):
+    _require_live_profiler_opt_in()
     profile = collect_system_profile()
     required = {"cupy_present", "cuquantum_present", "qiskit_present", "ncu_present"}
     if not all(bool(profile.get(key)) for key in required):

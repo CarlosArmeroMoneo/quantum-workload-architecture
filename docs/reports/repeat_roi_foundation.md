@@ -16,4 +16,4 @@ What this stage does not claim:
 
 - No GPU-backed repeat ROI numbers are claimed from local dry runs.
 - No planner threshold in this branch should be treated as measured truth.
-- Remote evidence for `repeat_roi_v1` is still blocked on the Linux CUDA host pass.
+- The measured follow-on report now lives in [`docs/reports/remote_repeat_roi_results_blocked.md`](remote_repeat_roi_results_blocked.md), where the OVH host pass rejects lowering the planner thresholds to `{2, 2}`.

@@ -9,16 +9,18 @@ The repo takes workloads from normalized manifests through planning, real `cuTen
 - A workload can be normalized, probed, planned, and executed through one reproducible CLI flow.
 - The architecture recommendations come from measured Nsight data, not synthetic scoring alone.
 - Small summaries stay in git, while large profiler artifacts are published through a pinned release.
+- The packaged follow-on reports keep negative and partial remote results intact instead of filtering them out.
 
 ## Result Snapshot
 
 | Signal | Value | Evidence |
 | --- | --- | --- |
-| Canonical host | OVH Ubuntu 24.04, Quadro RTX 5000, host-installed `nsys` / `QdstrmImporter` / `ncu` | [OVH session summary](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md) |
+| Canonical host | OVH Ubuntu 25.04, Quadro RTX 5000, driver `580.95.05`, host-installed `nsys` / `QdstrmImporter` / `ncu` | [OVH session summary](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md) |
 | Evidence source | Real `cuTensorNet` execution with profiler-backed artifact reduction | [Evidence index](docs/reports/first_real_profiler_slice_index.md) |
 | First architecture nomination | `nomination_source=real_profiler_analysis` | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
 | Bottleneck family | `launch_overhead` | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
 | Setup share | `21.86%` on the canonical batched run | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
+| Portfolio follow-on package | Measured repeat-ROI, NCU, CUDA Graph, CUDA-Q adapter, and tiny-MNK sidecar reports from the OVH host | [Portfolio index](docs/reports/portfolio_index.md) |
 | Reproducibility path | Canonical rerun guide and pinned release assets | [OVH rerun guide](docs/runbooks/ovh_cu13_real_execution.md), [release `v0.5.0-evidence`](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.5.0-evidence) |
 
 ![Canonical profiler-backed architecture snapshot](docs/reports/assets/first_real_profiler_slice_canonical.svg)
@@ -86,8 +88,11 @@ Public repo policy:
 - Capability truth pass: [`docs/reports/current_state_truth_pass.md`](docs/reports/current_state_truth_pass.md)
 - Public evidence index: [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md)
 - Repeat ROI foundation: [`docs/reports/repeat_roi_foundation.md`](docs/reports/repeat_roi_foundation.md)
+- Measured repeat ROI results: [`docs/reports/remote_repeat_roi_results_blocked.md`](docs/reports/remote_repeat_roi_results_blocked.md)
+- Measured NCU and CUDA Graphs results: [`docs/reports/remote_ncu_and_graphs_results_blocked.md`](docs/reports/remote_ncu_and_graphs_results_blocked.md)
+- Measured CUDA-Q adapter and sidecar results: [`docs/reports/remote_cudaq_and_sidecar_results_blocked.md`](docs/reports/remote_cudaq_and_sidecar_results_blocked.md)
 - Portfolio index: [`docs/reports/portfolio_index.md`](docs/reports/portfolio_index.md)
-- Tiny-MNK sidecar foundation: [`sidecars/tiny_mnk_lab/README.md`](sidecars/tiny_mnk_lab/README.md)
+- Tiny-MNK sidecar lab: [`sidecars/tiny_mnk_lab/README.md`](sidecars/tiny_mnk_lab/README.md)
 - Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)
 - Portfolio demo runbook: [`docs/runbooks/portfolio_demo.md`](docs/runbooks/portfolio_demo.md)
 - Canonical OVH session summary: [`docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md`](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md)
@@ -98,6 +103,9 @@ Public repo policy:
 
 - The public project name is **Quantum Workload Architecture**; the stable Python package and CLI remain `aqs` for compatibility.
 - Nsight Compute profiling now supports `python -m aqs profile ncu --profile-mode basic|diagnostic|deep`, backed by `configs/profiling/ncu_metric_sets.yaml`.
+- The measured repeat-ROI pass on the OVH host kept autotune conservative; the dry-run suggestion to lower thresholds to `{2, 2}` was not promoted.
+- CUDA Graphs were measured on the OVH host, but capture failed on the default (legacy) stream, so the repo does not claim graph speedups.
 - `source_format: cudaq` is now implemented through an adapter-backed path: `source.loader: cudaq_python_file` must export `aqs_cudaq_program()`, and today that path normalizes and plans structurally but does not claim real measured CUDA-Q execution.
+- The tiny-MNK sidecar now has measured benchmark and Nsight Compute outputs, but it is a shape-isolation lab and not a parity proxy for cuTensorNet's internal kernel family.
 - Most of `artifacts/` and all of `release-assets/` are intentionally ignored so local reruns do not pollute the public tree. Small tracked truth-pass fixtures under `artifacts/truth_pass/` are the current exception.
 - `ovh.conf.example` documents the expected OVH client shape. Real credentials must live outside git.

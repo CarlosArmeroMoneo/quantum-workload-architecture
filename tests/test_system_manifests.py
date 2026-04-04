@@ -21,6 +21,9 @@ def test_frozen_local_profiler_host_manifest_is_valid():
 def test_canonical_ovh_profiler_host_manifest_is_valid():
     manifest = load_yaml("configs/systems/ovh_gra9_rtx5000_28.yml")
     assert validate_system_manifest(manifest) == []
+    assert manifest["os_release"] == "Ubuntu 25.04"
+    assert manifest["kernel_version"] == "6.14.0-34-generic"
+    assert manifest["driver_version"] == "580.95.05"
     assert manifest["profiling_host"]["canonical_tool_source"] == {
         "nsys": "host_installed_ubuntu_repo",
         "qdstrm_importer": "host_installed_ubuntu_repo",
@@ -77,7 +80,7 @@ def test_ovh_readiness_json_is_present_and_host_specific():
     assert payload["profiling_readiness"]["nsys"]["qdstrm_importer_path"] == "/usr/lib/nsight-systems/host-linux-x64/QdstrmImporter"
     assert payload["profiling_readiness"]["ncu"]["path"] == "/usr/bin/ncu"
     assert payload["system_profile"]["gpu_model"] == "Quadro RTX 5000"
-    assert payload["system_profile"]["driver_version"] == "580.126.09"
+    assert payload["system_profile"]["driver_version"] == "580.95.05"
 
 
 def test_ovh_exact_artifact_manifest_references_pinned_digests_and_synced_files():

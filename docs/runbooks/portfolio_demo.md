@@ -1,8 +1,15 @@
 # Portfolio Demo Runbook
 
-This is the canonical local demo path for the current portfolio package. It proves the implemented workflow without claiming the remote measured-result branches.
+This is the canonical local demo path for the measured portfolio package frozen on April 4, 2026. It validates the implemented workflow, re-renders the package asset, and inspects the curated OVH measurements without re-running the full remote campaigns.
 
-## 1. Validate the Foundations
+## 1. Activate the Canonical Shell
+
+```bash
+source .venv_cu13/bin/activate
+source ~/qwa_cuda_env_cu13.sh
+```
+
+## 2. Validate the Foundations
 
 ```bash
 python -m aqs manifest validate --mode implemented \
@@ -11,7 +18,7 @@ python -m aqs manifest validate --mode implemented \
   configs/campaigns/cpu_dry_run_v1.yaml
 ```
 
-## 2. Run the CPU Campaign Demo
+## 3. Run the CPU Campaign Demo
 
 ```bash
 python -m aqs campaign run \
@@ -19,22 +26,43 @@ python -m aqs campaign run \
   --outdir artifacts/campaigns/cpu_dry_run_v1
 ```
 
-## 3. Render the Portfolio Asset
+## 4. Render the Portfolio Asset
 
 ```bash
 python scripts/render_report_assets.py
 ```
 
-## 4. Inspect the Sidecar Reference Catalog
+## 5. Inspect the Curated Measured Summaries
 
 ```bash
-python sidecars/tiny_mnk_lab/scripts/extract_reference_kernel.py \
-  --input evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.ncu.csv \
-  --profile-summary evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json \
-  --output sidecars/tiny_mnk_lab/config/observed_tiny_mnk_kernels.json
+python - <<'PY'
+import json
+from pathlib import Path
+
+paths = {
+    "repeat_roi": "artifacts/campaigns/repeat_roi_v1/summary.json",
+    "graphs": "artifacts/campaigns/cuda_graphs_ablation_v1/summary.json",
+    "cudaq": "artifacts/cudaq_adapter_compare/summary.json",
+    "sidecar": "sidecars/tiny_mnk_lab/results/ncu/summary.json",
+}
+for label, path in paths.items():
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    print(f"== {label} ==")
+    if label == "repeat_roi":
+        print(payload["cell_count"], payload["run_count"], payload["status_counts"])
+    elif label == "graphs":
+        print(payload["cell_count"], payload["run_count"], payload["status_counts"])
+    elif label == "cudaq":
+        print(payload["host_profile"]["gpu_model"], len(payload["results"]))
+    else:
+        print(payload["benchmark"]["run_count"], payload["profile"]["shape_keys"])
+PY
 ```
 
-## 5. Know the Boundary
+## 6. Know the Boundary
 
-- Branches `stack/10` through `stack/12` are blocked until a Linux CUDA host is available.
-- This demo does not claim measured repeat-ROI, diagnostic NCU, CUDA-Q runtime, or sidecar benchmark results.
+- Branches `stack/10` through `stack/12` are now backed by measured OVH host outputs and curated artifacts.
+- The repeat-ROI pass was mostly negative, so the measured package keeps the existing planner defaults rather than lowering thresholds to `{2, 2}`.
+- CUDA Graph capture failed on the default (legacy) stream in every measured attempt, so no graph speedup claim is made.
+- CUDA-Q evidence is adapter-backed structural comparison plus matched Qiskit real-execution controls, not native CUDA-Q runtime execution.
+- The tiny-MNK sidecar is measured, but it is not a parity proxy for the internal cuTensorNet tiny-MNK kernel family.

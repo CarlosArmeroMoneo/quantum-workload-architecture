@@ -2,7 +2,7 @@
 
 ![Portfolio stack status](assets/portfolio_status.svg)
 
-This index packages the stacked-branch rollout as it exists in this workspace on April 3, 2026.
+This index packages the stacked-branch rollout as it exists in this workspace on April 4, 2026, after the measured OVH pass refreshed `stack/10` through `stack/12`.
 
 ## Completed Foundations
 
@@ -13,11 +13,11 @@ This index packages the stacked-branch rollout as it exists in this workspace on
 - `stack/08-cudaq-adapter`: adapter-backed CUDA-Q manifests under [`workloads/manifests/imported`](../../workloads/manifests/imported)
 - `stack/09-tiny-mnk-sidecar-foundation`: [`sidecars/tiny_mnk_lab/README.md`](../../sidecars/tiny_mnk_lab/README.md)
 
-## Blocked Remote Result Branches
+## Measured Remote Result Branches
 
-- `stack/10-remote-repeat-roi-results`: [`docs/reports/remote_repeat_roi_results_blocked.md`](remote_repeat_roi_results_blocked.md)
-- `stack/11-remote-ncu-and-graphs-results`: [`docs/reports/remote_ncu_and_graphs_results_blocked.md`](remote_ncu_and_graphs_results_blocked.md)
-- `stack/12-remote-cudaq-and-sidecar-results`: [`docs/reports/remote_cudaq_and_sidecar_results_blocked.md`](remote_cudaq_and_sidecar_results_blocked.md)
+- `stack/10-remote-repeat-roi-results`: [`docs/reports/remote_repeat_roi_results_blocked.md`](remote_repeat_roi_results_blocked.md), with curated outputs in [`artifacts/campaigns/repeat_roi_v1`](../../artifacts/campaigns/repeat_roi_v1)
+- `stack/11-remote-ncu-and-graphs-results`: [`docs/reports/remote_ncu_and_graphs_results_blocked.md`](remote_ncu_and_graphs_results_blocked.md), with curated outputs in [`artifacts/profiles/ncu`](../../artifacts/profiles/ncu) and [`artifacts/campaigns/cuda_graphs_ablation_v1`](../../artifacts/campaigns/cuda_graphs_ablation_v1)
+- `stack/12-remote-cudaq-and-sidecar-results`: [`docs/reports/remote_cudaq_and_sidecar_results_blocked.md`](remote_cudaq_and_sidecar_results_blocked.md), with curated outputs in [`artifacts/cudaq_adapter_compare`](../../artifacts/cudaq_adapter_compare) and [`sidecars/tiny_mnk_lab/results/ncu`](../../sidecars/tiny_mnk_lab/results/ncu)
 
 ## Release Package
 
@@ -27,5 +27,8 @@ This index packages the stacked-branch rollout as it exists in this workspace on
 
 ## Notes
 
-- The stack is intentionally truthful about the blocker boundary: branches `10` through `12` are not measured-result claims on this machine.
-- The packaging branch freezes the current curated report set and records what is complete versus what still requires a Linux CUDA host.
+- The measured host for the packaged remote results is OVH `ovh_gra9_rtx5000_28`: Quadro RTX 5000, Ubuntu `25.04`, driver `580.95.05`, and green profiling readiness in `configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json`.
+- The repeat-ROI pass recorded mostly negative optimizer deltas, so the measured package keeps the existing planner defaults rather than promoting the earlier dry-run threshold suggestion.
+- CUDA Graph capture failed on the default (legacy) stream in every measured attempt, so the package keeps `graph_mode=off` as the recommendation.
+- CUDA-Q remains adapter-backed for structural comparison only; the repo still does not claim native CUDA-Q runtime execution evidence.
+- The tiny-MNK sidecar is now measured and curated, but it remains a shape-isolation lab rather than a parity proxy for the internal cuTensorNet kernel family.

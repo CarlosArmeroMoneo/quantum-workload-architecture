@@ -1,6 +1,6 @@
 # Current State Truth Pass
 
-This report freezes the public scope of the repository as of April 3, 2026.
+This report freezes the public scope of the repository as of April 4, 2026.
 
 The rule for this document is simple: schema breadth is allowed to be wider than executable support, but README claims must follow executable support and measured evidence rather than the full ontology.
 
@@ -39,6 +39,9 @@ That means examples such as `source_format='cirq'`, `source_format='stim'`, or u
 - Canonical evidence index: [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md)
 - Canonical `nsys` execution payload: [`evidence/first_real_profiler_slice/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.execution.json`](../../evidence/first_real_profiler_slice/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.execution.json)
 - Canonical `ncu` profile summary: [`evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json`](../../evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json)
+- Measured repeat-ROI report: [`docs/reports/remote_repeat_roi_results_blocked.md`](docs/reports/remote_repeat_roi_results_blocked.md)
+- Measured NCU and CUDA Graphs report: [`docs/reports/remote_ncu_and_graphs_results_blocked.md`](docs/reports/remote_ncu_and_graphs_results_blocked.md)
+- Measured CUDA-Q adapter and sidecar report: [`docs/reports/remote_cudaq_and_sidecar_results_blocked.md`](docs/reports/remote_cudaq_and_sidecar_results_blocked.md)
 
 ## README Claim Policy
 

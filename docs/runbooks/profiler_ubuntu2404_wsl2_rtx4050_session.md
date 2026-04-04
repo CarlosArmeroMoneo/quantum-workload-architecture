@@ -12,7 +12,7 @@ This host is intentionally kept as a negative-control profiling environment.
 
 - `QdstrmImporter` was blocked by a missing `libdw.so.1` dependency in the frozen container workflow.
 - Nsight Compute remained blocked by host GPU counter policy before a reliable filtered capture could be proven.
-- The canonical public evidence therefore comes from the OVH Ubuntu 24.04 RTX 5000 host, not from this WSL2 environment.
+- The canonical public evidence therefore comes from the OVH Ubuntu 25.04 RTX 5000 host, not from this WSL2 environment.
 
 ## Public-Facing Use
 

@@ -7,13 +7,13 @@ gpu_mem_gb: 15.0
 gpu_arch_target: sm75
 ram_gb: 26.76
 interconnect: pcie
-os_release: Ubuntu 24.04.3 LTS
-kernel_version: 6.8.0-106-generic
-driver_version: "580.126.09"
+os_release: Ubuntu 25.04
+kernel_version: 6.14.0-34-generic
+driver_version: "580.95.05"
 
 container_runtime:
-  kind: docker
-  version: "Docker version 28.2.2, build 28.2.2-0ubuntu1~24.04.1"
+  kind: unavailable_on_path
+  version: null
 
 appliance_image:
   ref: null
@@ -30,17 +30,17 @@ profiling_host:
     qdstrm_importer: /usr/lib/nsight-systems/host-linux-x64/QdstrmImporter
     ncu: /usr/bin/ncu
 
-  nsys_version: NVIDIA Nsight Systems version 2022.4.2.50-32196742v0
-  qdstrm_importer_version: NVIDIA Nsight Systems 2022.4.2.50-32196742v0
+  nsys_version: NVIDIA Nsight Systems version 2023.2.3.1004-33186433v0
+  qdstrm_importer_version: NVIDIA Nsight Systems 2023.2.3.1004-33186433v0
   qdstrm_importer_version_probe_error: null
-  ncu_version: NVIDIA (R) Nsight Compute Command Line Profiler 2022.4.1.0
+  ncu_version: Version 2023.2.2.0 (build 33188574) (public-release)
   gpu_performance_counters: enabled_for_non_admin_users_after_host_policy_change
 
   container_launch:
-    user: ubuntu
-    uid: 1000
-    gid: 1000
-    gpu_access: --gpus all
+    user: null
+    uid: null
+    gid: null
+    gpu_access: null
     cap_add: []
     privileged: false
     workspace_mount: null
@@ -49,7 +49,7 @@ profiling_host:
     user: root
     cap_add: []
     privileged: false
-    result: succeeded_with_explicit_cuda_env_before_non_admin_counter_fix
+    result: succeeded_after_setting_NVreg_RestrictProfilingToAdminUsers=0
 
   readiness_artifact: configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json
   session_log: docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md
@@ -59,11 +59,12 @@ profiling_host:
   notes:
     - canonical profiling on this host uses host-installed Ubuntu nsight packages, not container-bundled profiler tools
     - qdstrm importer is not on PATH by default and must be discovered at /usr/lib/nsight-systems/host-linux-x64/QdstrmImporter
+    - docker was not detected on PATH during the April 4, 2026 packaging refresh, so container_runtime and container_launch are intentionally marked unavailable
     - nsys smoke is fully working on this host
     - ncu smoke is intentionally unfiltered on this host/toolchain to avoid brittle NVTX filter behavior
     - real exact-TN execution on this host uses the .venv_cu13 environment plus qwa_cuda_env_cu13.sh
-    - container runtime inventory is recorded here, but the canonical first slice ran directly on the host in .venv_cu13
+    - the canonical first slice and the measured stage 10 through 12 follow-on passes ran directly on the host in .venv_cu13
     - real profiler-backed architecture analysis was successfully produced on this host
     - if the host changes materially, create a new manifest rather than editing this file in place
 
-notes: canonical OVH profiling host for real exact-TN profiler-backed runs on Quadro RTX 5000
+notes: refreshed OVH profiling host manifest for the real exact-TN and measured follow-on portfolio runs on Quadro RTX 5000

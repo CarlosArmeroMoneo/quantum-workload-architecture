@@ -1,6 +1,6 @@
 {
   "api_version": "aqs.portfolio_release.v1",
-  "snapshot_date": "2026-04-03",
+  "snapshot_date": "2026-04-04",
   "artifacts": [
     {
       "path": "docs/reports/current_state_truth_pass.md",
@@ -24,18 +24,63 @@
     },
     {
       "path": "docs/reports/remote_repeat_roi_results_blocked.md",
-      "role": "remote_result_blocker",
-      "status": "blocked_remote"
+      "role": "repeat_roi_measured_report",
+      "status": "complete"
+    },
+    {
+      "path": "artifacts/campaigns/repeat_roi_v1/summary.json",
+      "role": "repeat_roi_measured_summary",
+      "status": "complete"
+    },
+    {
+      "path": "artifacts/campaigns/repeat_roi_v1/results.csv",
+      "role": "repeat_roi_measured_table",
+      "status": "complete"
     },
     {
       "path": "docs/reports/remote_ncu_and_graphs_results_blocked.md",
-      "role": "remote_result_blocker",
-      "status": "blocked_remote"
+      "role": "ncu_and_graphs_measured_report",
+      "status": "complete"
+    },
+    {
+      "path": "artifacts/profiles/ncu/real_dense_ring6_batched.ncu.32f6e24969d9e164.profile_summary.json",
+      "role": "ncu_diagnostic_summary",
+      "status": "complete"
+    },
+    {
+      "path": "artifacts/profiles/ncu/real_dense_ring6_batched.ncu.32f6e24969d9e164.ncu.csv",
+      "role": "ncu_diagnostic_csv",
+      "status": "complete"
+    },
+    {
+      "path": "artifacts/campaigns/cuda_graphs_ablation_v1/summary.json",
+      "role": "cuda_graphs_ablation_summary",
+      "status": "complete_negative_result"
+    },
+    {
+      "path": "artifacts/campaigns/cuda_graphs_ablation_v1/plots/status_counts.svg",
+      "role": "cuda_graphs_ablation_plot",
+      "status": "complete_negative_result"
     },
     {
       "path": "docs/reports/remote_cudaq_and_sidecar_results_blocked.md",
-      "role": "remote_result_blocker",
-      "status": "blocked_remote"
+      "role": "cudaq_and_sidecar_measured_report",
+      "status": "complete_partial_result"
+    },
+    {
+      "path": "artifacts/cudaq_adapter_compare/summary.json",
+      "role": "cudaq_adapter_comparison_summary",
+      "status": "complete_partial_result"
+    },
+    {
+      "path": "sidecars/tiny_mnk_lab/results/ncu/summary.json",
+      "role": "tiny_mnk_sidecar_summary",
+      "status": "complete"
+    },
+    {
+      "path": "sidecars/tiny_mnk_lab/reports/report_template.md",
+      "role": "tiny_mnk_sidecar_report",
+      "status": "complete"
     },
     {
       "path": "docs/reports/assets/portfolio_status.svg",
@@ -45,6 +90,11 @@
     {
       "path": "docs/runbooks/portfolio_demo.md",
       "role": "demo_runbook",
+      "status": "complete"
+    },
+    {
+      "path": "SHA256SUMS.txt",
+      "role": "release_checksums",
       "status": "complete"
     },
     {

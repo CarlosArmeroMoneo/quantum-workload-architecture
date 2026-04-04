@@ -15,20 +15,18 @@ PORTFOLIO_ITEMS = [
     ("stack/07-cuda-graphs-foundation", "CUDA Graph execution foundation", "complete"),
     ("stack/08-cudaq-adapter", "Adapter-backed CUDA-Q manifests", "complete"),
     ("stack/09-tiny-mnk-sidecar-foundation", "Tiny-MNK sidecar foundation", "complete"),
-    ("stack/10-remote-repeat-roi-results", "Measured repeat ROI results on Linux CUDA host", "blocked_remote"),
-    ("stack/11-remote-ncu-and-graphs-results", "Measured diagnostic NCU and graph A/B results", "blocked_remote"),
-    ("stack/12-remote-cudaq-and-sidecar-results", "Measured CUDA-Q comparison and sidecar results", "blocked_remote"),
+    ("stack/10-remote-repeat-roi-results", "Measured repeat ROI results on the OVH CUDA host", "complete"),
+    ("stack/11-remote-ncu-and-graphs-results", "Measured diagnostic NCU and graph A/B results", "complete"),
+    ("stack/12-remote-cudaq-and-sidecar-results", "Measured CUDA-Q adapter comparison and sidecar results", "complete"),
     ("stack/13-portfolio-packaging", "Portfolio packaging and release manifest", "complete"),
 ]
 
 STATUS_COLORS = {
     "complete": "#1f7a1f",
-    "blocked_remote": "#a16207",
 }
 
 STATUS_LABELS = {
     "complete": "Complete",
-    "blocked_remote": "Blocked: Remote Host Required",
 }
 
 
@@ -49,7 +47,7 @@ def render_svg(output_path: str | Path) -> None:
         '</style>',
         '<rect x="0" y="0" width="1080" height="100%" fill="#f8fafc"/>',
         '<text x="28" y="34" class="title">Portfolio Stack Status</text>',
-        '<text x="28" y="56" class="subtitle">Local foundations are complete through stack/09; measured result branches require a Linux CUDA host.</text>',
+        '<text x="28" y="56" class="subtitle">The measured OVH host pass now completes stack/10 through stack/12, and stack/13 packages the curated evidence.</text>',
     ]
     for index, (branch, detail, status) in enumerate(PORTFOLIO_ITEMS):
         y = header_height + (index * row_height)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import os
 import sqlite3
 from pathlib import Path
 
@@ -25,6 +26,17 @@ from aqs.tnprobe import ProbeConfig, run_exact_tn_probe
 def _require_ovh_profile_host(profile: dict[str, object]) -> None:
     if profile.get("gpu_model") != "Quadro RTX 5000":
         pytest.skip("canonical live profiler tests are pinned to the OVH Quadro RTX 5000 host")
+
+
+def _require_live_profiler_opt_in() -> None:
+    if os.environ.get("AQS_RUN_LIVE_PROFILER_TESTS") != "1":
+        pytest.skip("set AQS_RUN_LIVE_PROFILER_TESTS=1 to run live Nsight integration tests")
+
+
+def _real_stack_is_available(profile: dict[str, object] | None = None) -> bool:
+    profile = profile or collect_system_profile()
+    required = ("gpu_present", "cupy_present", "cuquantum_present", "qiskit_present")
+    return all(bool(profile.get(key)) for key in required)
 
 
 def _inline_manifest(qasm_text: str, *, execution_target: dict[str, object] | None = None) -> dict[str, object]:
@@ -91,14 +103,19 @@ def test_validate_real_execution_request_rejects_reset_and_intermediate_measurem
     assert meas_error.value.code == "intermediate_measurement_present"
 
 
-def test_cuquantum_required_probe_fails_precisely_without_stack():
+def test_cuquantum_required_probe_reflects_real_stack_availability():
     manifest = load_yaml("workloads/manifests/imported/qiskit_qasm2_ghz3.yaml")
     probe = run_exact_tn_probe(manifest, ProbeConfig(probe_strategy="cuquantum_required"))
-    assert probe["status"] == "unsupported"
-    assert "cuQuantum/Qiskit-backed real circuit conversion" in probe["raw_info_json"]["error_message"]
+    if _real_stack_is_available():
+        assert probe["status"] == "success"
+        assert probe["raw_info_json"]["probe_source"] == "cuquantum_circuit_to_einsum"
+        assert probe["raw_info_json"]["error_message"] is None
+    else:
+        assert probe["status"] == "unsupported"
+        assert "cuQuantum/Qiskit-backed real circuit conversion" in probe["raw_info_json"]["error_message"]
 
 
-def test_require_real_execute_fails_with_precise_reason_when_stack_missing():
+def test_require_real_execute_reflects_real_stack_availability():
     payload = execute_selected_plan(
         "workloads/manifests/imported/qiskit_qasm2_ghz3.yaml",
         "configs/systems/cpu_probe.yml",
@@ -108,8 +125,13 @@ def test_require_real_execute_fails_with_precise_reason_when_stack_missing():
     )
     run = payload["execution_run"]
     assert run["execution_source"] == REAL_EXECUTION_SOURCE
-    assert run["status"] == "runtime_error"
-    assert run["failure_detail_json"]["reason_code"] in {"missing_cupy", "missing_cuquantum", "missing_qiskit", "missing_gpu"}
+    if _real_stack_is_available():
+        assert run["status"] == "success"
+        assert run["ttfr_s"] is not None
+        assert run["failure_detail_json"]["execution_intent"] == "require_real"
+    else:
+        assert run["status"] == "runtime_error"
+        assert run["failure_detail_json"]["reason_code"] in {"missing_cupy", "missing_cuquantum", "missing_qiskit", "missing_gpu"}
 
 
 def test_real_executor_maps_plan_fields_and_keeps_warm_outputs_identical(monkeypatch):
@@ -525,6 +547,7 @@ def test_real_executor_graph_mode_captures_and_replays(monkeypatch):
 @pytest.mark.gpu
 @pytest.mark.profiler
 def test_live_nsys_profile_real_slice(tmp_path):
+    _require_live_profiler_opt_in()
     profile = collect_system_profile()
     required = {"cupy_present", "cuquantum_present", "qiskit_present", "nsys_present"}
     if not all(bool(profile.get(key)) for key in required):
@@ -545,6 +568,7 @@ def test_live_nsys_profile_real_slice(tmp_path):
 @pytest.mark.gpu
 @pytest.mark.profiler
 def test_live_ncu_profile_real_slice(tmp_path):
+    _require_live_profiler_opt_in()
     profile = collect_system_profile()
     required = {"cupy_present", "cuquantum_present", "qiskit_present", "ncu_present"}
     if not all(bool(profile.get(key)) for key in required):
