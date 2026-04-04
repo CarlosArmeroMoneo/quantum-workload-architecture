@@ -1,0 +1,27 @@
+api_version: aqs.workload.v1
+family_id: ladder_brickwork
+family_version: 0.1.0
+generator_name: imported_qasm2
+generator_version: 0.2.0
+seed: 43
+source_format: qiskit
+source:
+  loader: qasm2_file
+  path: workloads/sources/openqasm/ladder_brickwork6.qasm
+semantic_target: amplitude
+execution_target:
+  kind: amplitude
+  bitstring: '010101'
+reference_tier: exact_ref
+split_tag: heldout_family
+repeat_count_hint: 6
+parameters:
+  n_qubits: 6
+  rows: 2
+  cols: 3
+  layers: 3
+  boundary_condition: open
+  entangler_pattern: ladder_brickwork
+ids:
+  workload_id: wkl_7e85ed6b2d83dc0d
+  source_hash: 7e85ed6b2d83dc0dedacba40b8048d5a4902c55eacb3667ef2e1b4f1bf60f5e4

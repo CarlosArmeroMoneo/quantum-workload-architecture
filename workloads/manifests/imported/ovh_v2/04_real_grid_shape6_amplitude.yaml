@@ -1,0 +1,25 @@
+api_version: aqs.workload.v1
+family_id: grid_2d_shallow
+family_version: 0.2.0
+generator_name: imported_qasm2
+generator_version: 0.2.0
+seed: 31
+source_format: qiskit
+source:
+  loader: qasm2_file
+  path: workloads/sources/openqasm/grid_shape6.qasm
+semantic_target: amplitude
+execution_target:
+  kind: amplitude
+  bitstring: '010101'
+reference_tier: exact_ref
+split_tag: heldout_family
+repeat_count_hint: 3
+parameters:
+  rows: 2
+  cols: 3
+  layers: 3
+  entangler_pattern: checkerboard
+ids:
+  workload_id: wkl_3b735062d7c19573
+  source_hash: 3b735062d7c19573c452d568d31917840d8aa70c06ecc805011f836f58e6751a

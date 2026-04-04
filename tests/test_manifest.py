@@ -78,3 +78,19 @@ def test_ovh_input_manifests_validate_in_implemented_and_real_modes():
         manifest = load_yaml(path)
         assert validate_manifest(manifest, mode="implemented") == [], f"{path} should validate in implemented mode"
         assert validate_manifest(manifest, mode="real") == [], f"{path} should validate in real mode"
+
+
+def test_ovh_v2_manifests_validate_in_implemented_and_real_modes():
+    for path in sorted(Path("workloads/manifests/imported/ovh_v2").glob("*.yaml")):
+        manifest = load_yaml(path)
+        assert validate_manifest(manifest, mode="implemented") == [], f"{path} should validate in implemented mode"
+        assert validate_manifest(manifest, mode="real") == [], f"{path} should validate in real mode"
+
+
+def test_ovh_v2_benchmark_manifests_validate():
+    for path in (
+        Path("benchmarks/manifests/templates/tnep_measured_real_exact_slice_ovh_rtx5000_v2.yaml"),
+        Path("benchmarks/manifests/templates/tnep_measured_real_exact_slice_ovh_rtx5000_top3_v2.yaml"),
+    ):
+        manifest = load_yaml(path)
+        assert validate_manifest(manifest) == [], f"{path} should validate"

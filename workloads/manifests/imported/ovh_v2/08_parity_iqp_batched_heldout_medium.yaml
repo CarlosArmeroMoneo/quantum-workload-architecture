@@ -1,0 +1,26 @@
+api_version: aqs.workload.v1
+family_id: parity_iqp
+family_version: 0.1.0
+generator_name: imported_qasm2
+generator_version: 0.2.0
+seed: 47
+source_format: qiskit
+source:
+  loader: qasm2_file
+  path: workloads/sources/openqasm/parity_iqp5.qasm
+semantic_target: batched_amplitudes
+execution_target:
+  kind: batched_amplitudes
+  fixed_qubits:
+    '0': 0
+reference_tier: exact_ref
+split_tag: heldout_family
+repeat_count_hint: 6
+parameters:
+  n_qubits: 5
+  parity_terms: 4
+  phase_layers: 2
+  connectivity: offset_pairs
+ids:
+  workload_id: wkl_e48c87cb8bd59349
+  source_hash: e48c87cb8bd59349ebbbd97be16c1e2a8728ba10a75a5cda95fd50446d3dd7fa

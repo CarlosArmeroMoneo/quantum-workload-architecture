@@ -1,0 +1,26 @@
+api_version: aqs.workload.v1
+family_id: dense_universal
+family_version: 0.2.0
+generator_name: imported_qasm2
+generator_version: 0.2.0
+seed: 17
+source_format: qiskit
+source:
+  loader: qasm2_file
+  path: workloads/sources/openqasm/dense_ring6.qasm
+semantic_target: amplitude
+execution_target:
+  kind: amplitude
+  bitstring: '000000'
+reference_tier: exact_ref
+split_tag: train
+repeat_count_hint: 2
+parameters:
+  n_qubits: 6
+  depth: 6
+  topology: ring
+  two_qubit_density: medium
+  measurement_pattern: terminal_observable_only
+ids:
+  workload_id: wkl_888bce118ad39b04
+  source_hash: 888bce118ad39b047973b325fc3e390d456fd0548c1588619326cde451b6b560
