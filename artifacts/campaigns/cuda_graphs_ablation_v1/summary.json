@@ -1,0 +1,1561 @@
+{
+  "api_version": "aqs.campaign.v1",
+  "campaign_id": "camp_f8d4f8227f3c256c",
+  "campaign_manifest": "configs/campaigns/cuda_graphs_ablation_v1.yaml",
+  "campaign_name": "cuda_graphs_ablation_v1",
+  "cell_aggregates": [
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_05f27b1515620b3a",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": null,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": null,
+      "mean_planner_overhead_ms": null,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": null,
+      "mean_ttfr_s": null,
+      "mean_wall_s": null,
+      "measurement_repeats": 3,
+      "plan_id": "plan_d2cfcc96266ef4f6",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 2.915115,
+      "predicted_iter_ms": 8.782079,
+      "predicted_peak_gb": 0.0,
+      "predicted_ttfr_s": 2.642871,
+      "repeat_count_hint": 32,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "runtime_error": 3
+      },
+      "success_count": 0,
+      "success_ratio_pct": 0.0,
+      "workload_id": "wkl_aba637ae8beeb019"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_16f0318c918fe244",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": null,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": null,
+      "mean_planner_overhead_ms": null,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": null,
+      "mean_ttfr_s": null,
+      "mean_wall_s": null,
+      "measurement_repeats": 3,
+      "plan_id": "plan_b0462b35ef16f24f",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 2.704346,
+      "predicted_iter_ms": 8.782079,
+      "predicted_peak_gb": 0.0,
+      "predicted_ttfr_s": 2.642871,
+      "repeat_count_hint": 8,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "runtime_error": 3
+      },
+      "success_count": 0,
+      "success_ratio_pct": 0.0,
+      "workload_id": "wkl_34730574a768505b"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_32f6b97487218473",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": null,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": null,
+      "mean_planner_overhead_ms": null,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": null,
+      "mean_ttfr_s": null,
+      "mean_wall_s": null,
+      "measurement_repeats": 3,
+      "plan_id": "plan_7a6537a53794213d",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 2.915115,
+      "predicted_iter_ms": 8.782079,
+      "predicted_peak_gb": 0.0,
+      "predicted_ttfr_s": 2.642871,
+      "repeat_count_hint": 32,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "runtime_error": 3
+      },
+      "success_count": 0,
+      "success_ratio_pct": 0.0,
+      "workload_id": "wkl_aba637ae8beeb019"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_68749ea440dbb01c",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": null,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": null,
+      "mean_planner_overhead_ms": null,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": null,
+      "mean_ttfr_s": null,
+      "mean_wall_s": null,
+      "measurement_repeats": 3,
+      "plan_id": "plan_a17afbf84ae537e7",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 3.42465,
+      "predicted_iter_ms": 11.219884,
+      "predicted_peak_gb": 0.117188,
+      "predicted_ttfr_s": 3.076834,
+      "repeat_count_hint": 32,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "runtime_error": 3
+      },
+      "success_count": 0,
+      "success_ratio_pct": 0.0,
+      "workload_id": "wkl_977f16a92f06596a"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_6c2fe6b56cad1e5e",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": null,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": null,
+      "mean_planner_overhead_ms": null,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": null,
+      "mean_ttfr_s": null,
+      "mean_wall_s": null,
+      "measurement_repeats": 3,
+      "plan_id": "plan_03b84711f6974834",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 3.42465,
+      "predicted_iter_ms": 11.219884,
+      "predicted_peak_gb": 0.117188,
+      "predicted_ttfr_s": 3.076834,
+      "repeat_count_hint": 32,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "runtime_error": 3
+      },
+      "success_count": 0,
+      "success_ratio_pct": 0.0,
+      "workload_id": "wkl_977f16a92f06596a"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_ad725a685d33c616",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": null,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": null,
+      "mean_planner_overhead_ms": null,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": null,
+      "mean_ttfr_s": null,
+      "mean_wall_s": null,
+      "measurement_repeats": 3,
+      "plan_id": "plan_ff6be35fef925b40",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 2.704346,
+      "predicted_iter_ms": 8.782079,
+      "predicted_peak_gb": 0.0,
+      "predicted_ttfr_s": 2.642871,
+      "repeat_count_hint": 8,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "runtime_error": 3
+      },
+      "success_count": 0,
+      "success_ratio_pct": 0.0,
+      "workload_id": "wkl_34730574a768505b"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_bc7b0ee31f86c44f",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": 0.030643,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": 3.830375,
+      "mean_planner_overhead_ms": 0.0,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": 0.173075,
+      "mean_ttfr_s": 0.029221,
+      "mean_wall_s": 0.030643,
+      "measurement_repeats": 3,
+      "plan_id": "plan_49616549e767c21b",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 2.704346,
+      "predicted_iter_ms": 8.782079,
+      "predicted_peak_gb": 0.0,
+      "predicted_ttfr_s": 2.642871,
+      "repeat_count_hint": 8,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "success": 3
+      },
+      "success_count": 3,
+      "success_ratio_pct": 100.0,
+      "workload_id": "wkl_34730574a768505b"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_ceea3d2edf761575",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": null,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": null,
+      "mean_planner_overhead_ms": null,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": null,
+      "mean_ttfr_s": null,
+      "mean_wall_s": null,
+      "measurement_repeats": 3,
+      "plan_id": "plan_b97efcf74c6f1ba3",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 3.155373,
+      "predicted_iter_ms": 11.219884,
+      "predicted_peak_gb": 0.117188,
+      "predicted_ttfr_s": 3.076834,
+      "repeat_count_hint": 8,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "runtime_error": 3
+      },
+      "success_count": 0,
+      "success_ratio_pct": 0.0,
+      "workload_id": "wkl_50dd86db6abd0bfa"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_dac6b50d611e8399",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": null,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": null,
+      "mean_planner_overhead_ms": null,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": null,
+      "mean_ttfr_s": null,
+      "mean_wall_s": null,
+      "measurement_repeats": 3,
+      "plan_id": "plan_098bd6312fb74e89",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 3.155373,
+      "predicted_iter_ms": 11.219884,
+      "predicted_peak_gb": 0.117188,
+      "predicted_ttfr_s": 3.076834,
+      "repeat_count_hint": 8,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "runtime_error": 3
+      },
+      "success_count": 0,
+      "success_ratio_pct": 0.0,
+      "workload_id": "wkl_50dd86db6abd0bfa"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_e9141e68c85a4530",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": 0.048372,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": 6.0465,
+      "mean_planner_overhead_ms": 0.0,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": 0.287148,
+      "mean_ttfr_s": 0.046406,
+      "mean_wall_s": 0.048372,
+      "measurement_repeats": 3,
+      "plan_id": "plan_4e0bc6d06357760f",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 3.155373,
+      "predicted_iter_ms": 11.219884,
+      "predicted_peak_gb": 0.117188,
+      "predicted_ttfr_s": 3.076834,
+      "repeat_count_hint": 8,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "success": 3
+      },
+      "success_count": 3,
+      "success_ratio_pct": 100.0,
+      "workload_id": "wkl_50dd86db6abd0bfa"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_f51c2dd181706085",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": 0.015408,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": 0.4815,
+      "mean_planner_overhead_ms": 0.0,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": 0.135721,
+      "mean_ttfr_s": 0.014318,
+      "mean_wall_s": 0.015408,
+      "measurement_repeats": 3,
+      "plan_id": "plan_d6b9c66ca003beb0",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 2.915115,
+      "predicted_iter_ms": 8.782079,
+      "predicted_peak_gb": 0.0,
+      "predicted_ttfr_s": 2.642871,
+      "repeat_count_hint": 32,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "success": 3
+      },
+      "success_count": 3,
+      "success_ratio_pct": 100.0,
+      "workload_id": "wkl_aba637ae8beeb019"
+    },
+    {
+      "autotune": true,
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_fe364189bc9b7dd4",
+      "execution_sources": [
+        "cuquantum_tensornet_gpu"
+      ],
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "mean_contract_share_pct": null,
+      "mean_gpu_seconds": 0.053332,
+      "mean_launch_share_pct": null,
+      "mean_per_repeat_wall_ms": 1.666625,
+      "mean_planner_overhead_ms": 0.0,
+      "mean_planner_share_pct": null,
+      "mean_steady_iter_ms": 0.264564,
+      "mean_ttfr_s": 0.051411,
+      "mean_wall_s": 0.053332,
+      "measurement_repeats": 3,
+      "plan_id": "plan_fe31e27fa7f4ef9a",
+      "planner_budget": "balanced",
+      "predicted_gpu_seconds": 3.42465,
+      "predicted_iter_ms": 11.219884,
+      "predicted_peak_gb": 0.117188,
+      "predicted_ttfr_s": 3.076834,
+      "repeat_count_hint": 32,
+      "reuse_cache": true,
+      "run_count": 3,
+      "status_counts": {
+        "success": 3
+      },
+      "success_count": 3,
+      "success_ratio_pct": 100.0,
+      "workload_id": "wkl_977f16a92f06596a"
+    }
+  ],
+  "cell_count": 12,
+  "cells": [
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_05f27b1515620b3a",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "steady_state",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 32,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "steady_state",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 32,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "steady_state",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_5a98e5d597795cef"
+        ],
+        "plan_id": "plan_d2cfcc96266ef4f6",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 2.915115,
+        "predicted_iter_ms": 8.782079,
+        "predicted_peak_gb": 0.0,
+        "predicted_ttfr_s": 2.642871,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_aba637ae8beeb019"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_16f0318c918fe244",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "warm_only",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 8,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "warm_only",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 8,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "warm_only",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_e5e62e0cc89a5c1c"
+        ],
+        "plan_id": "plan_b0462b35ef16f24f",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 2.704346,
+        "predicted_iter_ms": 8.782079,
+        "predicted_peak_gb": 0.0,
+        "predicted_ttfr_s": 2.642871,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_34730574a768505b"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_32f6b97487218473",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "warm_only",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 32,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "warm_only",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 32,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "warm_only",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_5a98e5d597795cef"
+        ],
+        "plan_id": "plan_7a6537a53794213d",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 2.915115,
+        "predicted_iter_ms": 8.782079,
+        "predicted_peak_gb": 0.0,
+        "predicted_ttfr_s": 2.642871,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_aba637ae8beeb019"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_68749ea440dbb01c",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "steady_state",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 32,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "steady_state",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 32,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "steady_state",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_4b7c0ea39cce1a51"
+        ],
+        "plan_id": "plan_a17afbf84ae537e7",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 3.42465,
+        "predicted_iter_ms": 11.219884,
+        "predicted_peak_gb": 0.117188,
+        "predicted_ttfr_s": 3.076834,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_977f16a92f06596a"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_6c2fe6b56cad1e5e",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "warm_only",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 32,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "warm_only",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 32,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "warm_only",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_4b7c0ea39cce1a51"
+        ],
+        "plan_id": "plan_03b84711f6974834",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 3.42465,
+        "predicted_iter_ms": 11.219884,
+        "predicted_peak_gb": 0.117188,
+        "predicted_ttfr_s": 3.076834,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_977f16a92f06596a"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_ad725a685d33c616",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "steady_state",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 8,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "steady_state",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 8,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "steady_state",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_e5e62e0cc89a5c1c"
+        ],
+        "plan_id": "plan_ff6be35fef925b40",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 2.704346,
+        "predicted_iter_ms": 8.782079,
+        "predicted_peak_gb": 0.0,
+        "predicted_ttfr_s": 2.642871,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_34730574a768505b"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_bc7b0ee31f86c44f",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "off",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 8,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "off",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 8,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "off",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_e5e62e0cc89a5c1c"
+        ],
+        "plan_id": "plan_49616549e767c21b",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 2.704346,
+        "predicted_iter_ms": 8.782079,
+        "predicted_peak_gb": 0.0,
+        "predicted_ttfr_s": 2.642871,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_34730574a768505b"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_ceea3d2edf761575",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "steady_state",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 8,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "steady_state",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 8,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "steady_state",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_909c34b1afdaec67"
+        ],
+        "plan_id": "plan_b97efcf74c6f1ba3",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 3.155373,
+        "predicted_iter_ms": 11.219884,
+        "predicted_peak_gb": 0.117188,
+        "predicted_ttfr_s": 3.076834,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_50dd86db6abd0bfa"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_dac6b50d611e8399",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "warm_only",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 8,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "warm_only",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 8,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "warm_only",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_909c34b1afdaec67"
+        ],
+        "plan_id": "plan_098bd6312fb74e89",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 3.155373,
+        "predicted_iter_ms": 11.219884,
+        "predicted_peak_gb": 0.117188,
+        "predicted_ttfr_s": 3.076834,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_50dd86db6abd0bfa"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_e9141e68c85a4530",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "off",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 8,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "off",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 8,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "off",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_909c34b1afdaec67"
+        ],
+        "plan_id": "plan_4e0bc6d06357760f",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 3.155373,
+        "predicted_iter_ms": 11.219884,
+        "predicted_peak_gb": 0.117188,
+        "predicted_ttfr_s": 3.076834,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_50dd86db6abd0bfa"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_f51c2dd181706085",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "off",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 32,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "off",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 32,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "off",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_5a98e5d597795cef"
+        ],
+        "plan_id": "plan_d6b9c66ca003beb0",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 2.915115,
+        "predicted_iter_ms": 8.782079,
+        "predicted_peak_gb": 0.0,
+        "predicted_ttfr_s": 2.642871,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_aba637ae8beeb019"
+    },
+    {
+      "campaign_id": "camp_f8d4f8227f3c256c",
+      "campaign_name": "cuda_graphs_ablation_v1",
+      "cell_id": "cell_fe364189bc9b7dd4",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "parameter_json": {
+        "autotune": true,
+        "graph_mode": "off",
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat_count_hint": 32,
+        "reuse_cache": true
+      },
+      "plan_json": {
+        "autotune": true,
+        "cache_workspace_gb": 1.62,
+        "explanation_json": [
+          "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+          "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+          "repeat count makes autotune and reuse worth amortizing",
+          {
+            "campaign_name": "cuda_graphs_ablation_v1",
+            "kind": "campaign_cell",
+            "parameters": {
+              "autotune": true,
+              "graph_mode": "off",
+              "measurement_repeats": 3,
+              "planner_budget": "balanced",
+              "repeat_count_hint": 32,
+              "reuse_cache": true
+            }
+          }
+        ],
+        "feasibility_label": "feasible",
+        "gpu_arch_target": "sm75",
+        "graph_mode": "off",
+        "hyper_samples": 24,
+        "is_feasible": true,
+        "max_error": 0.0,
+        "mode": "exact_tn",
+        "mpi_ranks": 1,
+        "objective": "steady_state",
+        "parent_probe_ids": [
+          "probe_4b7c0ea39cce1a51"
+        ],
+        "plan_id": "plan_fe31e27fa7f4ef9a",
+        "planner_version": "aqs.tnep_planner.v0",
+        "policy_summary_json": {
+          "disable_autotune_below_repeat": 6,
+          "disable_reuse_cache_below_repeat": 8
+        },
+        "precision": "complex128",
+        "predicted_error": 0.0,
+        "predicted_gpu_seconds": 3.42465,
+        "predicted_iter_ms": 11.219884,
+        "predicted_peak_gb": 0.117188,
+        "predicted_ttfr_s": 3.076834,
+        "project": "tnep",
+        "recommendation_rank": 1,
+        "reuse_cache": true,
+        "template_name": "deep_search",
+        "workspace_gb": 9.0
+      },
+      "replicate_count": 3,
+      "workload_id": "wkl_977f16a92f06596a"
+    }
+  ],
+  "execution_intent": "require_real",
+  "objective": "steady_state",
+  "outdir": "artifacts/campaigns/cuda_graphs_ablation_v1",
+  "planner_policy": {},
+  "probe_strategy": "cuquantum_if_available",
+  "profile_recommendations": {
+    "ncu": [
+      "cell_f51c2dd181706085",
+      "cell_fe364189bc9b7dd4",
+      "cell_bc7b0ee31f86c44f",
+      "cell_e9141e68c85a4530"
+    ],
+    "nsys": [
+      "cell_f51c2dd181706085",
+      "cell_fe364189bc9b7dd4",
+      "cell_bc7b0ee31f86c44f",
+      "cell_e9141e68c85a4530"
+    ]
+  },
+  "repeat_roi": {
+    "analysis_version": "aqs.repeat_roi.v1",
+    "dry_run_only": false,
+    "finding_count": 12,
+    "findings": [
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_16f0318c918fe244",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+        "mean_per_repeat_wall_ms": null,
+        "mean_planner_overhead_ms": null,
+        "mean_steady_iter_ms": null,
+        "mean_ttfr_s": null,
+        "mean_wall_s": null,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 8,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_34730574a768505b"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_ad725a685d33c616",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+        "mean_per_repeat_wall_ms": null,
+        "mean_planner_overhead_ms": null,
+        "mean_steady_iter_ms": null,
+        "mean_ttfr_s": null,
+        "mean_wall_s": null,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 8,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_34730574a768505b"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_bc7b0ee31f86c44f",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+        "mean_per_repeat_wall_ms": 3.830375,
+        "mean_planner_overhead_ms": 0.0,
+        "mean_steady_iter_ms": 0.173075,
+        "mean_ttfr_s": 0.029221,
+        "mean_wall_s": 0.030643,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 8,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_34730574a768505b"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_ceea3d2edf761575",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+        "mean_per_repeat_wall_ms": null,
+        "mean_planner_overhead_ms": null,
+        "mean_steady_iter_ms": null,
+        "mean_ttfr_s": null,
+        "mean_wall_s": null,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 8,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_50dd86db6abd0bfa"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_dac6b50d611e8399",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+        "mean_per_repeat_wall_ms": null,
+        "mean_planner_overhead_ms": null,
+        "mean_steady_iter_ms": null,
+        "mean_ttfr_s": null,
+        "mean_wall_s": null,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 8,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_50dd86db6abd0bfa"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_e9141e68c85a4530",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+        "mean_per_repeat_wall_ms": 6.0465,
+        "mean_planner_overhead_ms": 0.0,
+        "mean_steady_iter_ms": 0.287148,
+        "mean_ttfr_s": 0.046406,
+        "mean_wall_s": 0.048372,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 8,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_50dd86db6abd0bfa"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_68749ea440dbb01c",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+        "mean_per_repeat_wall_ms": null,
+        "mean_planner_overhead_ms": null,
+        "mean_steady_iter_ms": null,
+        "mean_ttfr_s": null,
+        "mean_wall_s": null,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 32,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_977f16a92f06596a"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_6c2fe6b56cad1e5e",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+        "mean_per_repeat_wall_ms": null,
+        "mean_planner_overhead_ms": null,
+        "mean_steady_iter_ms": null,
+        "mean_ttfr_s": null,
+        "mean_wall_s": null,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 32,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_977f16a92f06596a"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_fe364189bc9b7dd4",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+        "mean_per_repeat_wall_ms": 1.666625,
+        "mean_planner_overhead_ms": 0.0,
+        "mean_steady_iter_ms": 0.264564,
+        "mean_ttfr_s": 0.051411,
+        "mean_wall_s": 0.053332,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 32,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_977f16a92f06596a"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_05f27b1515620b3a",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+        "mean_per_repeat_wall_ms": null,
+        "mean_planner_overhead_ms": null,
+        "mean_steady_iter_ms": null,
+        "mean_ttfr_s": null,
+        "mean_wall_s": null,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 32,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_aba637ae8beeb019"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_32f6b97487218473",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+        "mean_per_repeat_wall_ms": null,
+        "mean_planner_overhead_ms": null,
+        "mean_steady_iter_ms": null,
+        "mean_ttfr_s": null,
+        "mean_wall_s": null,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 32,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_aba637ae8beeb019"
+      },
+      {
+        "amortized_wall_gain_pct_vs_repeat1": null,
+        "autotune": true,
+        "baseline_cell_id": null,
+        "break_even_extra_repeats": null,
+        "cell_id": "cell_f51c2dd181706085",
+        "dry_run_only": false,
+        "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+        "mean_per_repeat_wall_ms": 0.4815,
+        "mean_planner_overhead_ms": 0.0,
+        "mean_steady_iter_ms": 0.135721,
+        "mean_ttfr_s": 0.014318,
+        "mean_wall_s": 0.015408,
+        "measurement_repeats": 3,
+        "planner_budget": "balanced",
+        "repeat1_cell_id": null,
+        "repeat_count_hint": 32,
+        "reuse_cache": true,
+        "roi_label": "baseline",
+        "steady_iter_savings_ms_vs_no_opt": null,
+        "ttfr_penalty_ms_vs_no_opt": null,
+        "wall_delta_ms_vs_no_opt": null,
+        "workload_id": "wkl_aba637ae8beeb019"
+      }
+    ],
+    "positive_findings": [],
+    "suggested_policy_overrides": {
+      "confidence": "dry_run_structural_model_only",
+      "current_defaults": {
+        "disable_autotune_below_repeat": 6,
+        "disable_reuse_cache_below_repeat": 8
+      }
+    }
+  },
+  "repo_metadata": {
+    "git_branch": "stack/11-remote-ncu-and-graphs-results",
+    "git_commit": "f8bd4e6af804ac47fbd96c7bc1488f6783cc7b6b",
+    "git_dirty": false,
+    "git_ref_kind": "branch",
+    "package_version": "0.5.0",
+    "python_version": "3.13.3",
+    "repo_root": "/home/ubuntu/quantum-workload-architecture"
+  },
+  "run_count": 36,
+  "runner_version": "aqs.campaign_runner.v1",
+  "status_counts": {
+    "runtime_error": 24,
+    "success": 12
+  },
+  "system_manifest": "/home/ubuntu/quantum-workload-architecture/configs/systems/ovh_gra9_rtx5000_28.yml"
+}
