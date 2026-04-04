@@ -25,7 +25,7 @@ from .paths import repo_root
 from .planner import PlanConfig, generate_plan_candidates, load_system_manifest, select_top_plan
 from .tnprobe import ProbeConfig, run_exact_tn_probe
 from .utils import canonical_json, sha256_text
-from .validation_confidence import annotate_validation_results
+from .validation_confidence import annotate_validation_results, write_confidence_summary_artifacts
 
 MEASURED_VALIDATION_VERSION = "aqs.tnep_measured_validation.v1"
 
@@ -243,10 +243,12 @@ def validate_measured_manifest(
 
     confidence = annotate_validation_results(results, objective=objective)
 
+    summary_path = outdir / "summary.json"
     summary = {
         "validation_run_id": validation_run_id,
         "planner_version": MEASURED_VALIDATION_VERSION,
         "benchmark_manifest": str(benchmark_manifest_path),
+        "summary_path": str(summary_path),
         "dataset_name": benchmark["dataset_name"],
         "objective": objective,
         "probe_strategy": probe_strategy,
@@ -268,7 +270,8 @@ def validate_measured_manifest(
         "warnings": _build_summary_warnings(results),
         "results": confidence["results"],
     }
-    dump_json(summary, outdir / "summary.json")
+    summary.update(write_confidence_summary_artifacts(summary, outdir))
+    dump_json(summary, summary_path)
 
     if db_path:
         insert_validation_run(db_path, summary, project="tnep", evaluation_source="measured")

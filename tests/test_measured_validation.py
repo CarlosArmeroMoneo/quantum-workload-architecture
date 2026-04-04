@@ -16,7 +16,12 @@ def test_measured_validation_reports_summary(tmp_path):
     assert summary['confidence_version'] == 'aqs.validation_confidence.v1'
     assert summary['selection_confidence_counts'].keys() == {'low', 'medium', 'high'}
     assert isinstance(summary.get('warnings'), list)
+    assert Path(summary['summary_path']).exists()
+    assert Path(summary['confidence_summary_json_path']).exists()
+    assert Path(summary['confidence_summary_path']).exists()
     if summary['heldout_workload_count'] < 5:
         assert any('heldout_workload_count=' in warning for warning in summary['warnings'])
     assert all('selection_confidence' in row for row in summary['results'])
     assert Path(tmp_path / 'measured_validation' / 'summary.json').exists()
+    assert Path(tmp_path / 'measured_validation' / 'confidence_summary.json').exists()
+    assert Path(tmp_path / 'measured_validation' / 'confidence_summary.md').exists()

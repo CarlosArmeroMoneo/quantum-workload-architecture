@@ -9,7 +9,7 @@ This report closes the post-calibration-infrastructure milestone. It preserves t
 - Merge-gate policy: `docs/reports/ovh_merge_gate_policy.md`
 - Selected-vs-oracle architecture comparison: `artifacts/measured_validation_runs/ovh_v1_calibration/selected_vs_oracle_arch.md`
 - Residual export: `artifacts/measured_validation_runs/ovh_v1_calibration/validation_residuals.md`
-- Official top-2 confidence summary: `artifacts/measured_validation_runs/ovh_v1_confidence/official_top2/confidence_summary.md`
+- Official top-2 confidence summary: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v1/confidence_summary.md`
 - Targeted official-miss replicate pair: `artifacts/measured_validation_runs/ovh_v1_confidence/official_miss_dense_ring6_amplitude/real_dense_ring6_amplitude.quick_turnaround_vs_balanced.pair_summary.md`
 - Heldout expansion plan: `docs/heldout_expansion_plan.md`
 
@@ -39,7 +39,7 @@ For the official top-2 OVH slice:
 - medium confidence: `3`
 - high confidence: `0`
 
-The current confidence split comes from `artifacts/measured_validation_runs/ovh_v1_confidence/official_top2/confidence_summary.md`.
+The current confidence split comes from `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v1/confidence_summary.md`.
 
 ## 3. What are `top1_within_1ms_rate` and `top1_within_3pct_rate`?
 

@@ -121,6 +121,7 @@ Key rules:
 - Use explicit `--plan-json` overrides so the probe measures frozen candidate plans rather than a fresh planner decision.
 - Treat `--ttfr-repeats` as a diagnostic aid for uncertainty bands, not as a ranking retune mechanism by itself.
 - The replicate path rebuilds a fresh network each time, but it does not simulate a fresh process launch for every sample.
+- Future close-call disputes can opt into `--pair-mode interleaved` for `A/B/A/B/...` execution and delta-based uncertainty reporting, but the lightweight default remains sequential.
 
 Example:
 
@@ -154,6 +155,20 @@ python scripts/run_targeted_ttfr_replicates.py \
   --right-template balanced \
   --system-manifest configs/systems/ovh_gra9_rtx5000_28.yml \
   --outdir artifacts/measured_validation_runs/ovh_v1_confidence/official_miss_dense_ring6_amplitude
+```
+
+Interleaved methodology v2 upgrade for future close-call disputes:
+
+```bash
+python scripts/run_targeted_ttfr_replicates.py \
+  --summary artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v1/summary.json \
+  --manifest workloads/manifests/imported/real_dense_ring6_amplitude.yaml \
+  --left-template quick_turnaround \
+  --right-template balanced \
+  --system-manifest configs/systems/ovh_gra9_rtx5000_28.yml \
+  --ttfr-repeats 7 \
+  --pair-mode interleaved \
+  --outdir artifacts/measured_validation_runs/ovh_v1_confidence/official_miss_dense_ring6_amplitude_interleaved
 ```
 
 ## Public Evidence Layout

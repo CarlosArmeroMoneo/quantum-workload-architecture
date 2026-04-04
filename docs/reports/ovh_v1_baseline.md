@@ -6,8 +6,10 @@ This report freezes the current OVH real-host measured-validation result as the 
 
 - Frozen git tag: `ovh-v1-baseline`
 - Official top-2 `require_real` summary: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v1/summary.json`
+- Official top-2 confidence summary: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v1/confidence_summary.md`
 - Official top-2 architecture aggregation: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_v1/validation_arch.json`
 - Full-menu top-3 diagnostic summary: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_top3_v1/summary.json`
+- Full-menu top-3 confidence summary: `artifacts/measured_validation_runs/tnep_measured_real_exact_slice_ovh_rtx5000_top3_v1/confidence_summary.md`
 - Reconcile note for the top-3 interpretation: `docs/reports/ovh_top3_reconcile_note.md`
 
 ## Frozen Baseline Claims

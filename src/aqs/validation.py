@@ -12,7 +12,7 @@ from .paths import repo_root
 from .planner import PlanConfig, generate_plan_candidates, load_system_manifest, select_top_plan
 from .tnprobe import ProbeConfig, run_exact_tn_probe
 from .utils import canonical_json, sha256_text
-from .validation_confidence import annotate_validation_results
+from .validation_confidence import annotate_validation_results, write_confidence_summary_artifacts
 
 VALIDATION_VERSION = "aqs.tnep_validation.v0"
 
@@ -249,10 +249,12 @@ def validate_planner_manifest(
 
     confidence = annotate_validation_results(per_workload, objective=objective)
 
+    summary_path = outdir / "summary.json"
     summary = {
         "validation_run_id": validation_run_id,
         "planner_version": VALIDATION_VERSION,
         "benchmark_manifest": str(benchmark_manifest_path),
+        "summary_path": str(summary_path),
         "dataset_name": benchmark["dataset_name"],
         "objective": objective,
         "probe_strategy": probe_strategy,
@@ -270,7 +272,8 @@ def validate_planner_manifest(
         "warnings": _build_summary_warnings(per_workload),
         "results": confidence["results"],
     }
-    dump_json(summary, outdir / "summary.json")
+    summary.update(write_confidence_summary_artifacts(summary, outdir))
+    dump_json(summary, summary_path)
     return summary
 
 

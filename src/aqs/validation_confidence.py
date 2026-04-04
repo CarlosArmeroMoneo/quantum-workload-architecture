@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from collections import Counter
+import json
+from pathlib import Path
 from typing import Any
 
 CONFIDENCE_VERSION = "aqs.validation_confidence.v1"
@@ -188,6 +190,7 @@ def annotate_workload_confidence(
         "replicate_uncertainty_band_s": round(replicate_uncertainty_band_s, 6) if replicate_uncertainty_band_s is not None else None,
         "replicate_uncertainty_source": replicate_support,
         "replicate_conclusion": replicate_conclusion,
+        "replicate_stability": replicate_conclusion,
         "selected_winner_gap_s": round(selected_gap_s, 6) if selected_gap_s is not None else None,
         "selected_winner_gap_pct": round(selected_gap_pct, 6) if selected_gap_pct is not None else None,
     }
@@ -258,6 +261,125 @@ def annotate_validation_summary(
     }
 
 
+def build_confidence_summary_payload(summary: dict[str, Any]) -> dict[str, Any]:
+    results = []
+    for row in summary.get("results") or []:
+        results.append(
+            {
+                "workload_id": row.get("workload_id"),
+                "manifest_path": row.get("manifest_path"),
+                "family_id": row.get("family_id"),
+                "split_tag": row.get("split_tag"),
+                "repeat_count_hint": row.get("repeat_count_hint"),
+                "selected_plan_id": row.get("selected_plan_id"),
+                "oracle_best_plan_id": row.get("oracle_best_plan_id"),
+                "selected_template": row.get("selected_template"),
+                "winner_template": row.get("winner_template"),
+                "runner_up_template": row.get("runner_up_template"),
+                "winner_gap_s": row.get("winner_gap_s"),
+                "winner_gap_pct": row.get("winner_gap_pct"),
+                "top1_within_1ms": row.get("top1_within_1ms"),
+                "top1_within_3pct": row.get("top1_within_3pct"),
+                "selection_confidence": row.get("selection_confidence"),
+                "selection_confidence_reason": row.get("selection_confidence_reason"),
+                "replicate_stability": row.get("replicate_stability"),
+                "replicate_uncertainty_band_s": row.get("replicate_uncertainty_band_s"),
+                "selected_winner_gap_s": row.get("selected_winner_gap_s"),
+                "selected_winner_gap_pct": row.get("selected_winner_gap_pct"),
+            }
+        )
+
+    return {
+        "validation_run_id": summary.get("validation_run_id"),
+        "benchmark_manifest": summary.get("benchmark_manifest"),
+        "dataset_name": summary.get("dataset_name"),
+        "objective": summary.get("objective"),
+        "evaluation_source": summary.get("evaluation_source"),
+        "summary_path": summary.get("summary_path"),
+        "confidence_version": summary.get("confidence_version"),
+        "workload_count": summary.get("workload_count"),
+        "heldout_workload_count": summary.get("heldout_workload_count"),
+        "top1_accuracy": summary.get("top1_accuracy"),
+        "mean_regret": summary.get("mean_regret"),
+        "heldout_mean_regret": summary.get("heldout_mean_regret"),
+        "top1_within_1ms_rate": summary.get("top1_within_1ms_rate"),
+        "top1_within_3pct_rate": summary.get("top1_within_3pct_rate"),
+        "high_confidence_top1_accuracy": summary.get("high_confidence_top1_accuracy"),
+        "selection_confidence_counts": summary.get("selection_confidence_counts"),
+        "warnings": summary.get("warnings") or [],
+        "results": results,
+    }
+
+
+def build_confidence_summary_markdown(payload: dict[str, Any]) -> str:
+    lines = [
+        "# Validation Confidence Summary",
+        "",
+        f"- Source summary: `{payload.get('summary_path')}`",
+        f"- Dataset: `{payload.get('dataset_name')}`",
+        f"- Confidence version: `{payload.get('confidence_version')}`",
+        f"- Workloads: `{payload.get('workload_count')}`",
+        f"- top1_accuracy: `{payload.get('top1_accuracy')}`",
+        f"- mean_regret: `{payload.get('mean_regret')}`",
+        f"- heldout_mean_regret: `{payload.get('heldout_mean_regret')}`",
+        f"- top1_within_1ms_rate: `{payload.get('top1_within_1ms_rate')}`",
+        f"- top1_within_3pct_rate: `{payload.get('top1_within_3pct_rate')}`",
+        f"- high_confidence_top1_accuracy: `{payload.get('high_confidence_top1_accuracy')}`",
+        f"- selection_confidence_counts: `{payload.get('selection_confidence_counts')}`",
+        "",
+        "## Workloads",
+        "",
+        "| Workload | Selected | Winner | Runner-up | Winner gap (ms) | top1<=1ms | top1<=3pct | Confidence | Replicate Stability |",
+        "| --- | --- | --- | --- | ---: | --- | --- | --- | --- |",
+    ]
+    for workload in payload.get("results") or []:
+        lines.append(
+            f"| `{Path(str(workload.get('manifest_path') or '')).name}` | "
+            f"`{workload.get('selected_template')}` | "
+            f"`{workload.get('winner_template')}` | "
+            f"`{workload.get('runner_up_template')}` | "
+            f"{((workload.get('winner_gap_s') or 0.0) * 1000.0):.3f} | "
+            f"`{workload.get('top1_within_1ms')}` | "
+            f"`{workload.get('top1_within_3pct')}` | "
+            f"`{workload.get('selection_confidence')}` | "
+            f"`{workload.get('replicate_stability')}` |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Notes",
+            "",
+            "- `top1_within_1ms_rate` and `top1_within_3pct_rate` are additive to `top1_accuracy`; they do not replace it.",
+            "- `selection_confidence_counts` bucket workloads as low / medium / high using the current near-tie thresholds `0.001 s` or `3%`.",
+            f"- Heldout metrics remain descriptive while `heldout_workload_count={payload.get('heldout_workload_count')}` is below `5`.",
+        ]
+    )
+    warnings = payload.get("warnings") or []
+    if warnings:
+        lines.extend(["", "## Warnings", ""])
+        lines.extend(f"- {warning}" for warning in warnings)
+    return "\n".join(lines) + "\n"
+
+
+def write_confidence_summary_artifacts(summary: dict[str, Any], outdir: str | Path) -> dict[str, str]:
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    payload = build_confidence_summary_payload(summary)
+    json_path = outdir / "confidence_summary.json"
+    md_path = outdir / "confidence_summary.md"
+    summary_with_paths = {
+        **summary,
+        "confidence_summary_json_path": str(json_path),
+        "confidence_summary_path": str(md_path),
+    }
+    json_path.write_text(json.dumps(summary_with_paths, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    md_path.write_text(build_confidence_summary_markdown(payload), encoding="utf-8")
+    return {
+        "confidence_summary_json_path": str(json_path),
+        "confidence_summary_path": str(md_path),
+    }
+
+
 __all__ = [
     "CONFIDENCE_VERSION",
     "NEAR_TIE_ABS_S",
@@ -265,7 +387,10 @@ __all__ = [
     "annotate_validation_results",
     "annotate_validation_summary",
     "annotate_workload_confidence",
+    "build_confidence_summary_markdown",
+    "build_confidence_summary_payload",
     "build_replicate_lookup",
     "is_near_tie",
     "pair_lookup_key",
+    "write_confidence_summary_artifacts",
 ]
