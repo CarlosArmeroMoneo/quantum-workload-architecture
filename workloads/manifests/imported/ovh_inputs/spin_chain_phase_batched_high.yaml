@@ -1,0 +1,26 @@
+api_version: aqs.workload.v1
+family_id: spin_chain_phase
+family_version: 0.1.0
+generator_name: imported_qasm2
+generator_version: 0.2.0
+seed: 53
+source_format: qiskit
+source:
+  loader: qasm2_file
+  path: workloads/sources/openqasm/spin_chain6.qasm
+semantic_target: batched_amplitudes
+execution_target:
+  kind: batched_amplitudes
+  fixed_qubits:
+    '0': 0
+reference_tier: exact_ref
+split_tag: demo
+repeat_count_hint: 12
+parameters:
+  n_qubits: 6
+  steps: 3
+  coupling_pattern: alternating
+  boundary_condition: open
+ids:
+  workload_id: wkl_1b4fcb8b62941ce0
+  source_hash: 1b4fcb8b62941ce067ad8297cffbc7f3c7b63c13b65b3d276a34c18112a41707

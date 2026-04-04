@@ -71,6 +71,33 @@ FAMILY_PARAM_RULES: dict[str, dict[str, tuple[type | tuple[type, ...], Any]]] = 
         "layers": (int, lambda v: v > 0),
         "entangler_pattern": (str, {"brickwork", "checkerboard"}),
     },
+    "star_graph_phase": {
+        "n_qubits": (int, lambda v: v > 0),
+        "hub_qubit": (int, lambda v: v >= 0),
+        "spoke_count": (int, lambda v: v > 0),
+        "phase_rounds": (int, lambda v: v > 0),
+        "entangler_pattern": (str, {"star"}),
+    },
+    "ladder_brickwork": {
+        "n_qubits": (int, lambda v: v > 0),
+        "rows": (int, lambda v: v > 0),
+        "cols": (int, lambda v: v > 0),
+        "layers": (int, lambda v: v > 0),
+        "boundary_condition": (str, {"open"}),
+        "entangler_pattern": (str, {"ladder_brickwork"}),
+    },
+    "parity_iqp": {
+        "n_qubits": (int, lambda v: v > 0),
+        "parity_terms": (int, lambda v: v > 0),
+        "phase_layers": (int, lambda v: v > 0),
+        "connectivity": (str, {"offset_pairs", "ladder"}),
+    },
+    "spin_chain_phase": {
+        "n_qubits": (int, lambda v: v > 0),
+        "steps": (int, lambda v: v > 0),
+        "coupling_pattern": (str, {"alternating", "staggered"}),
+        "boundary_condition": (str, {"open"}),
+    },
     "noisy_observable": {
         "n_qubits": (int, lambda v: v > 0),
         "depth": (int, lambda v: v > 0),

@@ -71,3 +71,10 @@ def test_campaign_manifest_accepts_policy_hook_fields():
 def test_campaign_manifest_accepts_graph_mode_matrix():
     manifest = load_yaml("configs/campaigns/cuda_graphs_ablation_v1.yaml")
     assert validate_manifest(manifest) == []
+
+
+def test_ovh_input_manifests_validate_in_implemented_and_real_modes():
+    for path in sorted(Path("workloads/manifests/imported/ovh_inputs").glob("*.yaml")):
+        manifest = load_yaml(path)
+        assert validate_manifest(manifest, mode="implemented") == [], f"{path} should validate in implemented mode"
+        assert validate_manifest(manifest, mode="real") == [], f"{path} should validate in real mode"
