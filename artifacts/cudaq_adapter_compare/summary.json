@@ -1,0 +1,143 @@
+{
+  "api_version": "aqs.cudaq_adapter_compare.v1",
+  "generated_at": "2026-04-04T12:49:10.931574+00:00",
+  "host_profile": {
+    "cudaq_version": "0.14.0",
+    "cupy_present": true,
+    "cuquantum_present": true,
+    "driver_version": "580.95.05",
+    "gpu_model": "Quadro RTX 5000",
+    "os_release": "Ubuntu 25.04",
+    "qiskit_present": true
+  },
+  "implementation_truth": {
+    "adapter_backed_only": true,
+    "cudaq_package_imported": true,
+    "real_execution_support_note": "real cuTensorNet execution currently supports source_format='qiskit' only",
+    "real_execution_supports_cudaq_source_format": false
+  },
+  "pairs": [
+    {
+      "cudaq_manifest": "workloads/manifests/imported/cudaq_ghz3_amplitude.yaml",
+      "execute_compare": {
+        "cudaq_manifest_real_execute": {
+          "execution_source": "cuquantum_tensornet_gpu",
+          "gpu_seconds": null,
+          "graph_mode": "off",
+          "reason": "real cuTensorNet execution currently supports source_format='qiskit' only",
+          "reason_code": "unsupported_source_format",
+          "status": "runtime_error",
+          "steady_iter_ms": null,
+          "ttfr_s": null,
+          "wall_s": null
+        },
+        "qiskit_manifest_real_execute": {
+          "execution_source": "cuquantum_tensornet_gpu",
+          "gpu_seconds": 0.04596511,
+          "graph_mode": "off",
+          "reason": null,
+          "reason_code": null,
+          "status": "success",
+          "steady_iter_ms": 0.2372,
+          "ttfr_s": 0.044028289,
+          "wall_s": 0.04596511
+        }
+      },
+      "ir_compare": {
+        "comparable_keys_match": true,
+        "cudaq_loader": "cudaq_python_file",
+        "cudaq_source_kind": "cudaq_kernel_adapter",
+        "interaction_graph_match_excluding_kind": true,
+        "qiskit_loader": "openqasm2",
+        "qiskit_source_kind": "qiskit"
+      },
+      "label": "ghz3_amplitude",
+      "probe_compare": {
+        "cudaq": {
+          "largest_intermediate": 4.0,
+          "layer_count": 3,
+          "optimizer_cost": 100.0,
+          "probe_id": "probe_0a59b006559c0e08",
+          "probe_source": "structural_real_circuit",
+          "semantic_target": "amplitude",
+          "status": "success",
+          "tensor_count": 9
+        },
+        "largest_intermediate_match": true,
+        "optimizer_cost_match": true,
+        "qiskit": {
+          "largest_intermediate": 4.0,
+          "layer_count": 3,
+          "optimizer_cost": 100.0,
+          "probe_id": "probe_591ea591d54ac4c6",
+          "probe_source": "structural_real_circuit",
+          "semantic_target": "amplitude",
+          "status": "success",
+          "tensor_count": 9
+        }
+      },
+      "qiskit_manifest": "workloads/manifests/imported/qiskit_qasm2_ghz3.yaml"
+    },
+    {
+      "cudaq_manifest": "workloads/manifests/imported/cudaq_dense_ring6_batched.yaml",
+      "execute_compare": {
+        "cudaq_manifest_real_execute": {
+          "execution_source": "cuquantum_tensornet_gpu",
+          "gpu_seconds": null,
+          "graph_mode": "off",
+          "reason": "real cuTensorNet execution currently supports source_format='qiskit' only",
+          "reason_code": "unsupported_source_format",
+          "status": "runtime_error",
+          "steady_iter_ms": null,
+          "ttfr_s": null,
+          "wall_s": null
+        },
+        "qiskit_manifest_real_execute": {
+          "execution_source": "cuquantum_tensornet_gpu",
+          "gpu_seconds": 0.068772901,
+          "graph_mode": "off",
+          "reason": null,
+          "reason_code": null,
+          "status": "success",
+          "steady_iter_ms": 0.28476,
+          "ttfr_s": 0.066751753,
+          "wall_s": 0.068772901
+        }
+      },
+      "ir_compare": {
+        "comparable_keys_match": true,
+        "cudaq_loader": "cudaq_python_file",
+        "cudaq_source_kind": "cudaq_kernel_adapter",
+        "interaction_graph_match_excluding_kind": true,
+        "qiskit_loader": "openqasm2",
+        "qiskit_source_kind": "qiskit"
+      },
+      "label": "dense_ring6_batched",
+      "probe_compare": {
+        "cudaq": {
+          "largest_intermediate": 16.0,
+          "layer_count": 5,
+          "optimizer_cost": 940.0,
+          "probe_id": "probe_3d40e7f46f1f103d",
+          "probe_source": "structural_real_circuit",
+          "semantic_target": "batched_amplitudes",
+          "status": "success",
+          "tensor_count": 26
+        },
+        "largest_intermediate_match": true,
+        "optimizer_cost_match": true,
+        "qiskit": {
+          "largest_intermediate": 16.0,
+          "layer_count": 5,
+          "optimizer_cost": 940.0,
+          "probe_id": "probe_de73cda34a9bb90e",
+          "probe_source": "structural_real_circuit",
+          "semantic_target": "batched_amplitudes",
+          "status": "success",
+          "tensor_count": 26
+        }
+      },
+      "qiskit_manifest": "workloads/manifests/imported/real_dense_ring6_batched.yaml"
+    }
+  ]
+}

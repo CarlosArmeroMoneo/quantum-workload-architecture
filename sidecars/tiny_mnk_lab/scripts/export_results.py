@@ -22,7 +22,10 @@ def build_sidecar_summary(
     benchmark_rows = load_benchmark_rows(benchmark_csv_path)
     aggregates = aggregate_benchmark_rows(benchmark_rows)
     reference_shape_keys = sorted({entry["shape_key"] for entry in reference.get("reference_kernels") or []})
-    profile_kernels = extract_tiny_mnk_kernels_from_csv(ncu_csv_path) if ncu_csv_path else []
+    benchmark_shapes = sorted({(int(row["m"]), int(row["n"]), int(row["k"])) for row in benchmark_rows})
+    profile_kernels = (
+        extract_tiny_mnk_kernels_from_csv(ncu_csv_path, fallback_shapes=benchmark_shapes) if ncu_csv_path else []
+    )
     profile_shape_keys = sorted({entry["shape_key"] for entry in profile_kernels})
     aggregate_shape_keys = [entry["shape_key"] for entry in aggregates]
 

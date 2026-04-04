@@ -1,0 +1,101 @@
+{
+  "aggregates": [
+    {
+      "gflops_max": 0.001853,
+      "k": 75,
+      "labels": [
+        "tiny_mnk_reference"
+      ],
+      "latency_ms_max": 8714.42,
+      "latency_ms_median": 2697.165,
+      "latency_ms_min": 2652.8,
+      "m": 32,
+      "n": 256,
+      "run_count": 50,
+      "shape_key": "m32_n256_k75",
+      "status_counts": {
+        "ok": 50
+      }
+    }
+  ],
+  "api_version": "aqs.tiny_mnk_sidecar.v1",
+  "benchmark_csv_path": "sidecars/tiny_mnk_lab/results/ncu/benchmark.csv",
+  "benchmark_run_count": 50,
+  "benchmark_shape_keys": [
+    "m32_n256_k75"
+  ],
+  "matched_reference_shape_keys": [
+    "m32_n256_k75"
+  ],
+  "ncu_csv_path": "sidecars/tiny_mnk_lab/results/ncu/tiny_mnk.ncu.csv",
+  "profile_kernels": [
+    {
+      "block_size": "(16, 16, 1)",
+      "grid_size": "(16, 2, 1)",
+      "k": 75,
+      "kernel_family": "tiny_mnk_sidecar_kernel",
+      "kernel_ids": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "kernel_name": "<unnamed>::tiny_mnk_gemm_kernel(const double2 *, const double2 *, double2 *, int, int, int)",
+      "m": 32,
+      "n": 256,
+      "occurrences": 55,
+      "shape_key": "m32_n256_k75"
+    }
+  ],
+  "profile_shape_keys": [
+    "m32_n256_k75"
+  ],
+  "reference_json_path": "sidecars/tiny_mnk_lab/config/observed_tiny_mnk_kernels.json",
+  "reference_kernels": [
+    {
+      "block_size": "(256, 1, 1)",
+      "grid_size": "(1, 1, 1)",
+      "k": 75,
+      "kernel_family": "cutensor_internal_tiny_mnk",
+      "kernel_ids": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "kernel_name": "void cutensor_internal_namespace::tiny_mnk::contraction_tiny_mnk_kernel<double2, double2, double2, double2, double2, (cutensorOperator_t)1, (cutensorOperator_t)1, (cutensorOperator_t)1, (int)32, (int)256, (int)75>(T5, const T1 *, const T2 *, T5, const T3 *, T3 *, cutensor_internal_namespace::ContractionAlgoTinyMNK::ParallelParams)",
+      "m": 32,
+      "n": 256,
+      "occurrences": 100,
+      "shape_key": "m32_n256_k75"
+    }
+  ],
+  "reference_shape_keys": [
+    "m32_n256_k75"
+  ],
+  "shape_count": 1
+}

@@ -14,6 +14,7 @@ ITERS="${ITERS:-50}"
 LABEL="${LABEL:-tiny_mnk_reference}"
 
 mkdir -p "$OUT_DIR"
+rm -f "$OUT_DIR/tiny_mnk.ncu-rep" "$OUT_DIR/tiny_mnk.ncu.csv" "$OUT_DIR/summary.json"
 
 ncu \
   --set full \
@@ -28,6 +29,12 @@ ncu \
   --iters "$ITERS" \
   --label "$LABEL" \
   --csv-out "$OUT_DIR/benchmark.csv"
+
+ncu \
+  --import "$OUT_DIR/tiny_mnk.ncu-rep" \
+  --csv \
+  --page raw \
+  > "$OUT_DIR/tiny_mnk.ncu.csv"
 
 python "$ROOT_DIR/scripts/export_results.py" \
   --reference-json "$ROOT_DIR/config/observed_tiny_mnk_kernels.json" \

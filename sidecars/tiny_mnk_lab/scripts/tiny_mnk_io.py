@@ -8,6 +8,7 @@ from typing import Any
 
 
 TINY_MNK_TOKEN = "tiny_mnk::contraction_tiny_mnk_kernel"
+SIDECAR_TINY_MNK_TOKEN = "tiny_mnk_gemm_kernel"
 
 
 def normalize_path(path_like: str | Path) -> str:
@@ -25,23 +26,33 @@ def parse_tiny_mnk_shape(kernel_name: str) -> tuple[int, int, int]:
     return dims[-3], dims[-2], dims[-1]
 
 
-def extract_tiny_mnk_kernels_from_csv(csv_path: str | Path) -> list[dict[str, Any]]:
+def extract_tiny_mnk_kernels_from_csv(
+    csv_path: str | Path,
+    *,
+    fallback_shapes: list[tuple[int, int, int]] | None = None,
+) -> list[dict[str, Any]]:
     path = Path(csv_path)
+    fallback_shape = fallback_shapes[0] if fallback_shapes and len(fallback_shapes) == 1 else None
     with path.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         grouped: dict[tuple[str, str, str], dict[str, Any]] = {}
         for row in reader:
             kernel_name = str(row.get("Kernel Name") or row.get("Name") or "").strip()
-            if TINY_MNK_TOKEN not in kernel_name:
+            if TINY_MNK_TOKEN in kernel_name:
+                m, n, k = parse_tiny_mnk_shape(kernel_name)
+                kernel_family = "cutensor_internal_tiny_mnk"
+            elif SIDECAR_TINY_MNK_TOKEN in kernel_name and fallback_shape is not None:
+                m, n, k = fallback_shape
+                kernel_family = "tiny_mnk_sidecar_kernel"
+            else:
                 continue
-            m, n, k = parse_tiny_mnk_shape(kernel_name)
             block_size = str(row.get("Block Size") or "")
             grid_size = str(row.get("Grid Size") or "")
             key = (kernel_name, block_size, grid_size)
             entry = grouped.setdefault(
                 key,
                 {
-                    "kernel_family": "cutensor_internal_tiny_mnk",
+                    "kernel_family": kernel_family,
                     "kernel_name": kernel_name,
                     "shape_key": shape_key(m, n, k),
                     "m": m,
@@ -118,6 +129,7 @@ def _status_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
 
 
 __all__ = [
+    "SIDECAR_TINY_MNK_TOKEN",
     "TINY_MNK_TOKEN",
     "aggregate_benchmark_rows",
     "extract_tiny_mnk_kernels_from_csv",
