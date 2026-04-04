@@ -12,22 +12,22 @@
         "artifact_presence_json": {
           "csv": {
             "exists": true,
-            "path": "artifacts/readiness/ovh_gra9_rtx5000_28/ncu/profiler_smoke.ncu.ncu.csv"
+            "path": "/home/ubuntu/quantum-workload-architecture/artifacts/readiness/ovh_gra9_rtx5000_28/ncu/profiler_smoke.ncu.ncu.csv"
           },
           "report": {
             "exists": true,
-            "path": "artifacts/readiness/ovh_gra9_rtx5000_28/ncu/profiler_smoke.ncu.ncu-rep"
+            "path": "/home/ubuntu/quantum-workload-architecture/artifacts/readiness/ovh_gra9_rtx5000_28/ncu/profiler_smoke.ncu.ncu-rep"
           },
           "smoke_payload": {
             "exists": true,
-            "path": "artifacts/readiness/ovh_gra9_rtx5000_28/ncu/profiler_smoke.ncu.smoke.json"
+            "path": "/home/ubuntu/quantum-workload-architecture/artifacts/readiness/ovh_gra9_rtx5000_28/ncu/profiler_smoke.ncu.smoke.json"
           },
           "summary": {
             "exists": true,
-            "path": "artifacts/readiness/ovh_gra9_rtx5000_28/ncu/profiler_smoke.ncu.summary.json"
+            "path": "/home/ubuntu/quantum-workload-architecture/artifacts/readiness/ovh_gra9_rtx5000_28/ncu/profiler_smoke.ncu.summary.json"
           }
         },
-        "attempt_id": "attempt_ee7a3f0d47dfa2d0",
+        "attempt_id": "attempt_7652c4480437b9e7",
         "attempt_role": "smoke",
         "exit_code": 0,
         "failure_class": null,
@@ -41,10 +41,10 @@
           "target_seen": true
         },
         "tool_kind": "ncu",
-        "tool_version": "NVIDIA (R) Nsight Compute Command Line Profiler 2022.4.1.0",
+        "tool_version": "NVIDIA (R) Nsight Compute Command Line Profiler",
         "usability_state": "report_written"
       },
-      "version": "NVIDIA (R) Nsight Compute Command Line Profiler 2022.4.1.0",
+      "version": "NVIDIA (R) Nsight Compute Command Line Profiler",
       "version_probe_error": null
     },
     "nsys": {
@@ -52,7 +52,7 @@
       "present": true,
       "qdstrm_importer_path": "/usr/lib/nsight-systems/host-linux-x64/QdstrmImporter",
       "qdstrm_importer_present": true,
-      "qdstrm_importer_version": "NVIDIA Nsight Systems 2022.4.2.50-32196742v0",
+      "qdstrm_importer_version": "NVIDIA Nsight Systems 2023.2.3.1004-33186433v0",
       "qdstrm_importer_version_probe_error": null,
       "readiness_class": "ready",
       "remediation": [],
@@ -91,11 +91,11 @@
             "path": "artifacts/readiness/ovh_gra9_rtx5000_28/nsys/profiler_smoke.nsys.summary.json"
           }
         },
-        "attempt_id": "attempt_c60bffe94269ff05",
+        "attempt_id": "attempt_c9bb090f79622943",
         "attempt_role": "smoke",
         "exit_code": 0,
         "failure_class": null,
-        "importer_version": "NVIDIA Nsight Systems 2022.4.2.50-32196742v0",
+        "importer_version": "NVIDIA Nsight Systems 2023.2.3.1004-33186433v0",
         "remediation": [],
         "state_json": {
           "collection_started": true,
@@ -105,10 +105,10 @@
           "stats_ingested": true
         },
         "tool_kind": "nsys",
-        "tool_version": "NVIDIA Nsight Systems version 2022.4.2.50-32196742v0",
+        "tool_version": "NVIDIA Nsight Systems version 2023.2.3.1004-33186433v0",
         "usability_state": "stats_ingested"
       },
-      "version": "NVIDIA Nsight Systems version 2022.4.2.50-32196742v0",
+      "version": "NVIDIA Nsight Systems version 2023.2.3.1004-33186433v0",
       "version_probe_error": null,
       "versions_match": true
     },
@@ -118,36 +118,36 @@
     },
     "profiling_readiness_version": "aqs.profiling_readiness.v1",
     "profiling_ready": true,
-    "system_id": "sys_f9dd176897ccba7a"
+    "system_id": "sys_2b947b356aff9c76"
   },
   "system_profile": {
     "appliance_tag": null,
-    "container_runtime": "docker",
+    "container_runtime": null,
     "cpu_cores_logical": 4,
     "cpu_model": "Intel(R) Xeon(R) W-3235 CPU @ 3.30GHz",
     "cpu_sockets": 4,
     "cuda_version": "13.0",
-    "cudaq_version": null,
+    "cudaq_version": "0.14.0",
     "cupy_present": true,
     "cuquantum_present": true,
     "cuquantum_python_version": null,
     "cuquantum_sdk_version": null,
-    "driver_version": "580.126.09",
+    "driver_version": "580.95.05",
     "gpu_count": 1,
     "gpu_mem_gb": 15.0,
     "gpu_model": "Quadro RTX 5000",
     "gpu_present": true,
-    "hostname_hash": "23f84f0975ccddcbe015ea000f297d7ebc0c54b081d19bde53a5882f8696598f",
+    "hostname_hash": "9a462734ef01ae980ed90ed60d523afbd85e135ffadae6a9a552f24bd9c6e7b1",
     "mpi_impl": null,
     "ncu_present": true,
-    "node_label": "ovh-gra9-rtx5000-28",
-    "notes": "canonical OVH profiler host; real execution succeeded in .venv_cu13",
-    "nsight_compute_version": "NVIDIA (R) Nsight Compute Command Line Profiler 2022.4.1.0",
-    "nsight_systems_version": "NVIDIA Nsight Systems version 2022.4.2.50-32196742v0",
+    "node_label": null,
+    "notes": null,
+    "nsight_compute_version": "NVIDIA (R) Nsight Compute Command Line Profiler",
+    "nsight_systems_version": "NVIDIA Nsight Systems version 2023.2.3.1004-33186433v0",
     "nsys_present": true,
-    "os_release": "Ubuntu 24.04.3 LTS",
+    "os_release": "Ubuntu 25.04",
     "qiskit_present": true,
     "ram_gb": 26.76,
-    "system_id": "sys_f9dd176897ccba7a"
+    "system_id": "sys_2b947b356aff9c76"
   }
 }
