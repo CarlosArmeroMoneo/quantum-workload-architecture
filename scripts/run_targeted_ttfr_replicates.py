@@ -26,6 +26,12 @@ def _dump_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _output_label(template_name: str, *, side: str, collide: bool) -> str:
+    if collide:
+        return f"{template_name}.{side}"
+    return template_name
+
+
 def _matches_manifest(candidate_path: str, requested_manifest: str) -> bool:
     return candidate_path == requested_manifest or candidate_path.endswith(requested_manifest)
 
@@ -415,8 +421,11 @@ def main(argv: list[str] | None = None) -> int:
 
     manifest_path = str(workload["manifest_path"])
     manifest_stem = Path(manifest_path).stem
-    left_plan_path = plan_dir / f"{manifest_stem}.{args.left_template}.json"
-    right_plan_path = plan_dir / f"{manifest_stem}.{args.right_template}.json"
+    label_collision = args.left_template == args.right_template
+    left_output_label = _output_label(args.left_template, side="left", collide=label_collision)
+    right_output_label = _output_label(args.right_template, side="right", collide=label_collision)
+    left_plan_path = plan_dir / f"{manifest_stem}.{left_output_label}.json"
+    right_plan_path = plan_dir / f"{manifest_stem}.{right_output_label}.json"
     _dump_json(left_plan_path, dict(left_eval.get("candidate") or {}))
     _dump_json(right_plan_path, dict(right_eval.get("candidate") or {}))
 
@@ -446,8 +455,8 @@ def main(argv: list[str] | None = None) -> int:
             replicate_idx=0,
         )
 
-        left_payload_path = outdir / f"{manifest_stem}.{args.left_template}.execute.json"
-        right_payload_path = outdir / f"{manifest_stem}.{args.right_template}.execute.json"
+        left_payload_path = outdir / f"{manifest_stem}.{left_output_label}.execute.json"
+        right_payload_path = outdir / f"{manifest_stem}.{right_output_label}.execute.json"
         _dump_json(left_payload_path, left_payload)
         _dump_json(right_payload_path, right_payload)
 
@@ -485,7 +494,7 @@ def main(argv: list[str] | None = None) -> int:
                 replicate_idx=block_idx * 2,
             )
             left_samples.append(_phase_sample(left_payload))
-            left_payload_path = block_dir / f"{manifest_stem}.block{block_idx:02d}.{args.left_template}.execute.json"
+            left_payload_path = block_dir / f"{manifest_stem}.block{block_idx:02d}.{left_output_label}.execute.json"
             _dump_json(left_payload_path, left_payload)
             left_payload_paths.append(str(left_payload_path.resolve()))
 
@@ -502,7 +511,7 @@ def main(argv: list[str] | None = None) -> int:
                 replicate_idx=(block_idx * 2) + 1,
             )
             right_samples.append(_phase_sample(right_payload))
-            right_payload_path = block_dir / f"{manifest_stem}.block{block_idx:02d}.{args.right_template}.execute.json"
+            right_payload_path = block_dir / f"{manifest_stem}.block{block_idx:02d}.{right_output_label}.execute.json"
             _dump_json(right_payload_path, right_payload)
             right_payload_paths.append(str(right_payload_path.resolve()))
 

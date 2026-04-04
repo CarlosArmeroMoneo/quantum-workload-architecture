@@ -1,0 +1,225 @@
+{
+  "baseline_left_ttfr_s": 0.048753267,
+  "baseline_right_ttfr_s": 0.048753267,
+  "baseline_winner_template": "quick_turnaround",
+  "conclusion": "inconclusive_vs_variance",
+  "delta_confidence_interval": {
+    "half_width_s": 0.011687352,
+    "level": 0.95,
+    "lower_s": -0.008483902,
+    "method": "normal_mean_ci",
+    "upper_s": 0.014890801
+  },
+  "delta_definition": "right_minus_left_ttfr_s",
+  "delta_mean_s": 0.00320345,
+  "delta_median_s": -0.002560664,
+  "delta_stdev_s": 0.017888803,
+  "family_id": "dense_universal",
+  "left_first_contract_samples_s": [
+    0.002272323,
+    0.000768437,
+    0.000772541,
+    0.001144627,
+    0.000763194,
+    0.000771952,
+    0.00075217,
+    0.000785873,
+    0.000747864
+  ],
+  "left_first_contract_stats": {
+    "count": 9,
+    "max": 0.002272323,
+    "mean": 0.000975442,
+    "median": 0.000771952,
+    "min": 0.000747864,
+    "stdev": 0.000502317
+  },
+  "left_planner_time_samples_s": [
+    0.040570904,
+    0.046205576,
+    0.045508444,
+    0.048183734,
+    0.051049881,
+    0.053741633,
+    0.050165689,
+    0.048108602,
+    0.054042009
+  ],
+  "left_planner_time_stats": {
+    "count": 9,
+    "max": 0.054042009,
+    "mean": 0.048619608,
+    "median": 0.048183734,
+    "min": 0.040570904,
+    "stdev": 0.004252555
+  },
+  "left_setup_time_samples_s": [
+    0.008114293,
+    0.006608983,
+    0.006522195,
+    0.007484442,
+    0.008278514,
+    0.005643364,
+    0.007843048,
+    0.00758764,
+    0.007211085
+  ],
+  "left_setup_time_stats": {
+    "count": 9,
+    "max": 0.008278514,
+    "mean": 0.00725484,
+    "median": 0.007484442,
+    "min": 0.005643364,
+    "stdev": 0.000855036
+  },
+  "left_template": "quick_turnaround",
+  "left_ttfr_samples_s": [
+    0.058091585,
+    0.056746184,
+    0.055898025,
+    0.060190385,
+    0.063995674,
+    0.062798922,
+    0.062273227,
+    0.059991086,
+    0.065902734
+  ],
+  "left_ttfr_stats": {
+    "count": 9,
+    "max": 0.065902734,
+    "mean": 0.060654202,
+    "median": 0.060190385,
+    "min": 0.055898025,
+    "stdev": 0.003373597
+  },
+  "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml",
+  "pair_lookup_key": {
+    "templates": [
+      "quick_turnaround",
+      "quick_turnaround"
+    ],
+    "workload_id": "wkl_888bce118ad39b04"
+  },
+  "pair_mode": "interleaved",
+  "payload_paths": {
+    "left": [
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block00.quick_turnaround.left.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block01.quick_turnaround.left.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block02.quick_turnaround.left.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block03.quick_turnaround.left.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block04.quick_turnaround.left.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block05.quick_turnaround.left.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block06.quick_turnaround.left.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block07.quick_turnaround.left.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block08.quick_turnaround.left.execute.json"
+    ],
+    "right": [
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block00.quick_turnaround.right.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block01.quick_turnaround.right.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block02.quick_turnaround.right.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block03.quick_turnaround.right.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block04.quick_turnaround.right.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block05.quick_turnaround.right.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block06.quick_turnaround.right.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block07.quick_turnaround.right.execute.json",
+      "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/blocks/01_real_dense_ring6_amplitude.block08.quick_turnaround.right.execute.json"
+    ]
+  },
+  "per_block_deltas_s": [
+    -0.0065402,
+    -0.002235333,
+    0.008677181,
+    -0.003980036,
+    0.049156351,
+    -0.008052341,
+    -0.002560664,
+    -0.000590577,
+    -0.005043332
+  ],
+  "repeat_count_hint": 2,
+  "replicate_left_median_ttfr_s": 0.060190385,
+  "replicate_right_median_ttfr_s": 0.059400509,
+  "replicate_winner_template": "quick_turnaround",
+  "right_first_contract_samples_s": [
+    0.000733545,
+    0.000808058,
+    0.000788748,
+    0.000787596,
+    0.00073925,
+    0.000760564,
+    0.000814326,
+    0.000756374,
+    0.001037009
+  ],
+  "right_first_contract_stats": {
+    "count": 9,
+    "max": 0.001037009,
+    "mean": 0.00080283,
+    "median": 0.000787596,
+    "min": 0.000733545,
+    "stdev": 9.2342e-05
+  },
+  "right_planner_time_samples_s": [
+    0.042226016,
+    0.044550238,
+    0.046373599,
+    0.0453748,
+    0.039668913,
+    0.045173652,
+    0.049225059,
+    0.048240378,
+    0.04856944
+  ],
+  "right_planner_time_stats": {
+    "count": 9,
+    "max": 0.049225059,
+    "mean": 0.045489122,
+    "median": 0.0453748,
+    "min": 0.039668913,
+    "stdev": 0.003108739
+  },
+  "right_setup_time_samples_s": [
+    0.005703001,
+    0.006088929,
+    0.007558788,
+    0.006885224,
+    0.070353253,
+    0.005937111,
+    0.00617947,
+    0.007205239,
+    0.007772595
+  ],
+  "right_setup_time_stats": {
+    "count": 9,
+    "max": 0.070353253,
+    "mean": 0.013742623,
+    "median": 0.006885224,
+    "min": 0.005703001,
+    "stdev": 0.021241903
+  },
+  "right_template": "quick_turnaround",
+  "right_ttfr_samples_s": [
+    0.051551385,
+    0.054510851,
+    0.064575206,
+    0.056210349,
+    0.113152025,
+    0.054746581,
+    0.059712563,
+    0.059400509,
+    0.060859402
+  ],
+  "right_ttfr_stats": {
+    "count": 9,
+    "max": 0.113152025,
+    "mean": 0.063857652,
+    "median": 0.059400509,
+    "min": 0.051551385,
+    "stdev": 0.018897048
+  },
+  "source": "targeted_ttfr_replicates",
+  "uncertainty_band_s": 0.011687352,
+  "winner_gap_pct": 0.013297,
+  "winner_gap_s": 0.000789876,
+  "workload_id": "wkl_888bce118ad39b04"
+}

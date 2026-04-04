@@ -69,3 +69,10 @@ def test_interleaved_pair_summary_marks_flipped_winner_when_delta_ci_is_clear():
     assert summary["replicate_winner_template"] == "quick_turnaround"
     assert summary["conclusion"] == "winner_flipped_vs_single_shot"
     assert float(summary["delta_confidence_interval"]["lower_s"]) > 0.0
+
+
+def test_output_label_disambiguates_same_template_pairs():
+    module = _load_module()
+    assert module._output_label("quick_turnaround", side="left", collide=True) == "quick_turnaround.left"
+    assert module._output_label("quick_turnaround", side="right", collide=True) == "quick_turnaround.right"
+    assert module._output_label("quick_turnaround", side="left", collide=False) == "quick_turnaround"

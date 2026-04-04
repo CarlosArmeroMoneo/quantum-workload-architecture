@@ -1,0 +1,53 @@
+{
+  "interpretation": "The null-pair uncertainty band is on the order of the 1-5 ms winner gaps we care about, so exact TTFR top-1 in that regime should stay descriptive-only on this host.",
+  "max_ci_half_width_ms": 48.093,
+  "median_ci_half_width_ms": 29.89,
+  "row_count": 2,
+  "rows": [
+    {
+      "ci_half_width_ms": 11.687,
+      "conclusion": "inconclusive_vs_variance",
+      "delta_95pct_confidence_interval": {
+        "half_width_s": 0.011687352,
+        "lower_s": -0.008483902,
+        "upper_s": 0.014890801
+      },
+      "delta_mean_s": 0.00320345,
+      "delta_median_s": -0.002560664,
+      "delta_stdev_s": 0.017888803,
+      "left_template": "quick_turnaround",
+      "left_ttfr_median_ms": 60.19,
+      "left_ttfr_stdev_ms": 3.374,
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml",
+      "pair_mode": "interleaved",
+      "pair_summary_path": "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/01_real_dense_ring6_amplitude/quick_turnaround_null_pair/01_real_dense_ring6_amplitude.quick_turnaround_vs_quick_turnaround.pair_summary.json",
+      "right_template": "quick_turnaround",
+      "right_ttfr_median_ms": 59.401,
+      "right_ttfr_stdev_ms": 18.897,
+      "workload_id": "wkl_888bce118ad39b04"
+    },
+    {
+      "ci_half_width_ms": 48.093,
+      "conclusion": "inconclusive_vs_variance",
+      "delta_95pct_confidence_interval": {
+        "half_width_s": 0.048092716,
+        "lower_s": -0.071323235,
+        "upper_s": 0.024862196
+      },
+      "delta_mean_s": -0.023230519,
+      "delta_median_s": 0.001280024,
+      "delta_stdev_s": 0.073611299,
+      "left_template": "quick_turnaround",
+      "left_ttfr_median_ms": 62.208,
+      "left_ttfr_stdev_ms": 77.164,
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/08_parity_iqp_batched_heldout_medium.yaml",
+      "pair_mode": "interleaved",
+      "pair_summary_path": "/home/ubuntu/quantum-workload-architecture/artifacts/ttfr_noise_floor/ovh_ttfr_noise_floor_v1/pairs/08_parity_iqp_batched_heldout_medium/quick_turnaround_null_pair/08_parity_iqp_batched_heldout_medium.quick_turnaround_vs_quick_turnaround.pair_summary.json",
+      "right_template": "quick_turnaround",
+      "right_ttfr_median_ms": 65.618,
+      "right_ttfr_stdev_ms": 9.963,
+      "workload_id": "wkl_e48c87cb8bd59349"
+    }
+  ],
+  "study_name": "ovh_ttfr_noise_floor_v1"
+}
