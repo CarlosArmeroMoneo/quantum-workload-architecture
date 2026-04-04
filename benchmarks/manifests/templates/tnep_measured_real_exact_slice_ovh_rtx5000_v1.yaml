@@ -1,0 +1,19 @@
+api_version: aqs.benchmark.v1
+project: tnep
+dataset_name: tnep_measured_real_exact_slice_ovh_rtx5000_v1
+version_tag: "v1"
+objective: ttfr
+system_manifest: configs/systems/ovh_gra9_rtx5000_28.yml
+workload_glob: workloads/manifests/imported/real_*.yaml
+allowed_modes:
+  - exact_tn
+probe_strategy: real_if_available
+execution_intent: require_real
+planner_budget: balanced
+top_k_candidates: 2
+measurement_repeats: 3
+allow_distributed: false
+max_workloads: 5
+profile_policy: representative_only
+precision: complex128
+notes: Official OVH Quadro RTX 5000 require_real measured exact-TN validation slice over the imported real workload set

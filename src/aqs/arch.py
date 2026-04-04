@@ -196,7 +196,11 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
         )
 
     real_profile = profiler_kind in {"nsys", "ncu", "both"} or str(derived.get("profile_source") or "").startswith("real_")
-    if real_profile:
+    runtime_phase_profile = bool(phase_times) and bool(execution_detail.get("nvtx_phase_version"))
+    measured_phase_analysis = real_profile or runtime_phase_profile
+    if measured_phase_analysis:
+        nomination_source = "real_profiler_analysis" if real_profile else "measured_runtime_analysis"
+        timing_label = "real profiling" if real_profile else "measured runtime phase timings"
         planner_time_s = float(phase_times.get("contract_path") or 0.0) + float(phase_times.get("autotune") or 0.0)
         setup_time_s = float(phase_times.get("load_circuit") or 0.0) + float(phase_times.get("convert_to_einsum") or 0.0) + float(phase_times.get("postprocess") or 0.0)
         first_contract_s = float(phase_times.get("contract_first") or 0.0)
@@ -222,14 +226,14 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
                 "planner_roi",
                 min(1.0, planner_share_pct / 60.0),
                 {
-                    "reason": "real profiling shows path search/autotune or one-time orchestration taking a material share of the run",
+                    "reason": f"{timing_label} show path search/autotune or one-time orchestration taking a material share of the run",
                     "planner_share_pct": round(planner_share_pct, 6),
                     "planner_time_s": round(planner_time_s, 9),
                     "planner_proxy_pct": round(planner_proxy_pct, 6),
                     "ttfr_residual_ratio": None if ttfr_residual_ratio is None else round(ttfr_residual_ratio, 6),
                     "repeat_count_hint": repeat_count,
                 },
-                nomination_source="real_profiler_analysis",
+                nomination_source=nomination_source,
             )
 
         if setup_share_pct >= 12.0:
@@ -237,14 +241,14 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
                 "launch_overhead",
                 min(1.0, setup_share_pct / 55.0),
                 {
-                    "reason": "real profiling shows load/convert/postprocess or short-kernel launch overhead consuming a meaningful share",
+                    "reason": f"{timing_label} show load/convert/postprocess or short-kernel launch overhead consuming a meaningful share",
                     "setup_share_pct": round(setup_share_pct, 6),
                     "setup_time_s": round(setup_time_s, 9),
                     "launch_proxy_pct": round(launch_proxy_pct, 6),
                     "avg_kernel_time_ms": avg_kernel_time_ms,
                     "kernel_count": kernel_count,
                 },
-                nomination_source="real_profiler_analysis",
+                nomination_source=nomination_source,
             )
 
         if warm_ratio is not None and warm_ratio >= 1.15:
@@ -252,14 +256,14 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
                 "reuse_cache",
                 min(1.0, (warm_ratio - 1.0) / 1.5),
                 {
-                    "reason": "real cold-vs-warm contraction timings or NCU repeat proxies show measurable amortization potential",
+                    "reason": "measured cold-vs-warm contraction timings or NCU repeat proxies show measurable amortization potential",
                     "first_contract_s": round(first_contract_s, 9),
                     "warm_contract_total_s": round(warm_contract_s, 9),
                     "cold_warm_ratio": round(warm_ratio, 6),
                     "reuse_signal": reuse_signal,
                     "repeat_count_hint": repeat_count,
                 },
-                nomination_source="real_profiler_analysis",
+                nomination_source=nomination_source,
             )
 
         if profile.get("dram_util_pct") is not None:
@@ -277,7 +281,7 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
                         "memory_bound_signal": memory_bound_signal,
                         "top_kernels": profile.get("top_kernels_json") or [],
                     },
-                    nomination_source="real_profiler_analysis",
+                    nomination_source=nomination_source,
                 )
 
         nominations = sorted(nominations, key=lambda row: row["severity_score"], reverse=True)[:max(1, top_k)]

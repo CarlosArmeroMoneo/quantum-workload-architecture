@@ -91,6 +91,7 @@ Public repo policy:
 - Measured repeat ROI results: [`docs/reports/remote_repeat_roi_results_blocked.md`](docs/reports/remote_repeat_roi_results_blocked.md)
 - Measured NCU and CUDA Graphs results: [`docs/reports/remote_ncu_and_graphs_results_blocked.md`](docs/reports/remote_ncu_and_graphs_results_blocked.md)
 - Measured CUDA-Q adapter and sidecar results: [`docs/reports/remote_cudaq_and_sidecar_results_blocked.md`](docs/reports/remote_cudaq_and_sidecar_results_blocked.md)
+- OVH measured-validation follow-on: [`docs/reports/ovh_measured_validation_follow_on.md`](docs/reports/ovh_measured_validation_follow_on.md)
 - Portfolio index: [`docs/reports/portfolio_index.md`](docs/reports/portfolio_index.md)
 - Tiny-MNK sidecar lab: [`sidecars/tiny_mnk_lab/README.md`](sidecars/tiny_mnk_lab/README.md)
 - Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)

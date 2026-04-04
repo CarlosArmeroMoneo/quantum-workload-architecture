@@ -1,0 +1,284 @@
+{
+  "analysis_id": "arch_2d641529f38768a9",
+  "analysis_version": "aqs.arch.v0",
+  "dataset_name": "tnep_measured_real_exact_slice_ovh_rtx5000_v1",
+  "objective": "ttfr",
+  "ranked_bottleneck_families": [
+    {
+      "bottleneck_family": "planner_roi",
+      "count": 5,
+      "mean_severity": 1.0
+    },
+    {
+      "bottleneck_family": "launch_overhead",
+      "count": 2,
+      "mean_severity": 0.371689
+    }
+  ],
+  "source_kind": "measured_validation_summary",
+  "source_validation_run_id": "val_c2353c079057467b",
+  "workload_analyses": [
+    {
+      "analysis_id": "arch_207102f20ca333c5",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "dense_universal",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_2fbedc213897c6ca",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 71.460317,
+            "planner_time_s": 0.033205126,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 2,
+            "ttfr_residual_ratio": -0.913406
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_515271d08ee32386",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        },
+        {
+          "bottleneck_family": "launch_overhead",
+          "case_id": "case_ad4cb959493ddee9",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "small jobs are sensitive to launch and setup overhead",
+              "knob_name": "orchestration_overhead_multiplier",
+              "suggested_sweep": [
+                1.0,
+                0.75,
+                0.5
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "avg_kernel_time_ms": null,
+            "kernel_count": 0,
+            "launch_proxy_pct": 0.0,
+            "reason": "measured runtime phase timings show load/convert/postprocess or short-kernel launch overhead consuming a meaningful share",
+            "setup_share_pct": 21.899694,
+            "setup_time_s": 0.010176027
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_515271d08ee32386",
+          "severity_score": 0.398176,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 2,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_515271d08ee32386",
+      "workload_id": "wkl_888bce118ad39b04"
+    },
+    {
+      "analysis_id": "arch_51e52e06f60b4845",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "dense_universal",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_c6f07ae006f89089",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 85.830172,
+            "planner_time_s": 0.031742194,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 12,
+            "ttfr_residual_ratio": -0.93438
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_d981c48799854a2a",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 12,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_d981c48799854a2a",
+      "workload_id": "wkl_3a3d42fe7b94a2ed"
+    },
+    {
+      "analysis_id": "arch_9978ecd548eee00a",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "dense_universal",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_7d4abaa56a007980",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 71.292605,
+            "planner_time_s": 0.008470633,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 1,
+            "ttfr_residual_ratio": -0.976001
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_1b708d9604c0513e",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        },
+        {
+          "bottleneck_family": "launch_overhead",
+          "case_id": "case_e5a888290dd3c602",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "small jobs are sensitive to launch and setup overhead",
+              "knob_name": "orchestration_overhead_multiplier",
+              "suggested_sweep": [
+                1.0,
+                0.75,
+                0.5
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "avg_kernel_time_ms": null,
+            "kernel_count": 0,
+            "launch_proxy_pct": 0.0,
+            "reason": "measured runtime phase timings show load/convert/postprocess or short-kernel launch overhead consuming a meaningful share",
+            "setup_share_pct": 18.986091,
+            "setup_time_s": 0.002255833
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_1b708d9604c0513e",
+          "severity_score": 0.345202,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 1,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_1b708d9604c0513e",
+      "workload_id": "wkl_5361a0b920fc4e05"
+    },
+    {
+      "analysis_id": "arch_11255b18dfd22ee3",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "grid_2d_shallow",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_7894881d5b75272f",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 86.48568,
+            "planner_time_s": 0.034940609,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 3,
+            "ttfr_residual_ratio": -0.931535
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_c1c85c32452e9555",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 3,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_c1c85c32452e9555",
+      "workload_id": "wkl_3b735062d7c19573"
+    },
+    {
+      "analysis_id": "arch_8f788e7e694fefa1",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "qaoa_graph",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_53d375f0fc30ff54",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 85.884289,
+            "planner_time_s": 0.033638441,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 4,
+            "ttfr_residual_ratio": -0.931985
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_6d0e86df375bd1ac",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 4,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_6d0e86df375bd1ac",
+      "workload_id": "wkl_19ca61869000401d"
+    }
+  ],
+  "workload_count": 5
+}

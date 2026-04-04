@@ -1,0 +1,2165 @@
+{
+  "benchmark_manifest": "benchmarks/manifests/templates/tnep_measured_real_exact_slice_ovh_rtx5000_v1.yaml",
+  "dataset_name": "tnep_measured_real_exact_slice_ovh_rtx5000_v1",
+  "evaluation_source": "measured",
+  "execution_intent": "require_real",
+  "heldout_mean_regret": 0.000485,
+  "heldout_workload_count": 1,
+  "mean_regret": 0.00258,
+  "objective": "ttfr",
+  "planner_budget": "balanced",
+  "planner_version": "aqs.tnep_measured_validation.v1",
+  "probe_strategy": "real_if_available",
+  "results": [
+    {
+      "evaluations": [
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "amplitude_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_00e62681fcdd5b45",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_abs_err",
+                "metric_value": 5.551115123125783e-17,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_515271d08ee32386",
+                "threshold": 1e-12
+              },
+              {
+                "eval_id": "eval_27e0b9bf8ff77deb",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_rel_err",
+                "metric_value": 1.412053321321589e-16,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_515271d08ee32386",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_515271d08ee32386",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": false,
+            "cache_workspace_gb": 0.0,
+            "explanation_json": [
+              "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+              "planner policy disables autotune below repeat_count_hint=6",
+              "planner policy disables reuse_cache below repeat_count_hint=8"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 24,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_3c6c2657646972ee"
+            ],
+            "plan_id": "plan_b25f41ebfdb42726",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.61347,
+            "predicted_iter_ms": 18.378718,
+            "predicted_peak_gb": 0.0,
+            "predicted_ttfr_s": 0.595091,
+            "project": "tnep",
+            "recommendation_rank": 1,
+            "reuse_cache": false,
+            "template_name": "deep_search",
+            "workspace_gb": 9.0
+          },
+          "details_json": {
+            "autotune_time_s": 0.0,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "bitstring": "000000",
+              "kind": "amplitude"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.001671646,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 9663676416
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 16.0,
+              "num_slices": 1,
+              "opt_cost": 582.0
+            },
+            "path_search_time_s": 0.033017983,
+            "phase_times": {
+              "contract_first": 0.0018665429997781757,
+              "contract_path": 0.03320512600112124,
+              "contract_warm": 0.0012188290020276327,
+              "convert_to_einsum": 0.009168743001282564,
+              "load_circuit": 0.0007111989998520585,
+              "postprocess": 0.00029608499971800484
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.000258264,
+            "warm_contract_times_ms": [
+              0.345633,
+              0.299907,
+              0.260349
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.0,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "bitstring": "000000",
+                "kind": "amplitude"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.001671646,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 9663676416
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 16.0,
+                "num_slices": 1,
+                "opt_cost": 582.0
+              },
+              "path_search_time_s": 0.033017983,
+              "phase_times": {
+                "contract_first": 0.0018665429997781757,
+                "contract_path": 0.03320512600112124,
+                "contract_warm": 0.0012188290020276327,
+                "convert_to_einsum": 0.009168743001282564,
+                "load_circuit": 0.0007111989998520585,
+                "postprocess": 0.00029608499971800484
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.000258264,
+              "warm_contract_times_ms": [
+                0.345633,
+                0.299907,
+                0.260349
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:41.944000+00:00",
+            "gpu_seconds": 0.053616801,
+            "graph_mode": "off",
+            "output_digest": "out_514172148d1c8e67",
+            "peak_mem_gb": 1.0967e-05,
+            "peak_workspace_gb": 9.0,
+            "plan_id": "plan_b25f41ebfdb42726",
+            "replicate_idx": 0,
+            "run_id": "run_515271d08ee32386",
+            "started_at": "2026-04-04T14:44:41.890380+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.299907,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.051531578,
+            "wall_s": 0.053616801,
+            "workload_id": "wkl_888bce118ad39b04"
+          },
+          "family_id": "dense_universal",
+          "feasible": true,
+          "normalized_regret": 0.298368,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.053616801,
+          "observed_iter_ms": 0.299907,
+          "observed_peak_gb": 1.0967e-05,
+          "observed_ttfr_s": 0.051531578,
+          "oracle_rank": 2,
+          "plan_id": "plan_b25f41ebfdb42726",
+          "profile_summary": null,
+          "regret": 0.011842,
+          "split_tag": "train",
+          "status": "success",
+          "workload_id": "wkl_888bce118ad39b04"
+        },
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "amplitude_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_7ab53325626e3083",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_abs_err",
+                "metric_value": 5.551115123125783e-17,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_6102fef8132aef1e",
+                "threshold": 1e-12
+              },
+              {
+                "eval_id": "eval_b4675cab81e27824",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_rel_err",
+                "metric_value": 1.412053321321589e-16,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_6102fef8132aef1e",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_6102fef8132aef1e",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": false,
+            "cache_workspace_gb": 0.0,
+            "explanation_json": [
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+              "planner policy disables autotune below repeat_count_hint=6",
+              "planner policy disables reuse_cache below repeat_count_hint=8"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 8,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_3c6c2657646972ee"
+            ],
+            "plan_id": "plan_e897358b12841fb3",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.616324,
+            "predicted_iter_ms": 19.805586,
+            "predicted_peak_gb": 0.0,
+            "predicted_ttfr_s": 0.596518,
+            "project": "tnep",
+            "recommendation_rank": 2,
+            "reuse_cache": false,
+            "template_name": "balanced",
+            "workspace_gb": 5.25
+          },
+          "details_json": {
+            "autotune_time_s": 0.0,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "bitstring": "000000",
+              "kind": "amplitude"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.00054885,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 5637144576
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 16.0,
+              "num_slices": 1,
+              "opt_cost": 582.0
+            },
+            "path_search_time_s": 0.032474019,
+            "phase_times": {
+              "contract_first": 0.000731043999621761,
+              "contract_path": 0.0326413919992774,
+              "contract_warm": 0.0012091979988326784,
+              "convert_to_einsum": 0.003009067999300896,
+              "load_circuit": 0.0004231020011502551,
+              "postprocess": 0.0002007650000450667
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.000259206,
+            "warm_contract_times_ms": [
+              0.329824,
+              0.298567,
+              0.263779
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.0,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "bitstring": "000000",
+                "kind": "amplitude"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.00054885,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 5637144576
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 16.0,
+                "num_slices": 1,
+                "opt_cost": 582.0
+              },
+              "path_search_time_s": 0.032474019,
+              "phase_times": {
+                "contract_first": 0.000731043999621761,
+                "contract_path": 0.0326413919992774,
+                "contract_warm": 0.0012091979988326784,
+                "convert_to_einsum": 0.003009067999300896,
+                "load_circuit": 0.0004231020011502551,
+                "postprocess": 0.0002007650000450667
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.000259206,
+              "warm_contract_times_ms": [
+                0.329824,
+                0.298567,
+                0.263779
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:41.987926+00:00",
+            "gpu_seconds": 0.04166475,
+            "graph_mode": "off",
+            "output_digest": "out_514172148d1c8e67",
+            "peak_mem_gb": 1.1921e-05,
+            "peak_workspace_gb": 5.25,
+            "plan_id": "plan_e897358b12841fb3",
+            "replicate_idx": 0,
+            "run_id": "run_6102fef8132aef1e",
+            "started_at": "2026-04-04T14:44:41.946263+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.298567,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.039689237,
+            "wall_s": 0.04166475,
+            "workload_id": "wkl_888bce118ad39b04"
+          },
+          "family_id": "dense_universal",
+          "feasible": true,
+          "normalized_regret": null,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.04166475,
+          "observed_iter_ms": 0.298567,
+          "observed_peak_gb": 1.1921e-05,
+          "observed_ttfr_s": 0.039689237,
+          "oracle_rank": 1,
+          "plan_id": "plan_e897358b12841fb3",
+          "profile_summary": null,
+          "regret": null,
+          "split_tag": "train",
+          "status": "success",
+          "workload_id": "wkl_888bce118ad39b04"
+        }
+      ],
+      "family_id": "dense_universal",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_amplitude.yaml",
+      "normalized_regret": 0.298368,
+      "oracle_best_plan_id": "plan_e897358b12841fb3",
+      "probe_id": "probe_3c6c2657646972ee",
+      "regret": 0.011842,
+      "repeat_count_hint": 2,
+      "selected_plan_id": "plan_b25f41ebfdb42726",
+      "split_tag": "train",
+      "top_candidate_mode": "exact_tn",
+      "workload_id": "wkl_888bce118ad39b04"
+    },
+    {
+      "evaluations": [
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "batched_amplitude_max_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_8fad8d7c98a73e8c",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "batched_amplitude_max_abs_err",
+                "metric_value": 3.227937720230791e-17,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_d981c48799854a2a",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_d981c48799854a2a",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": false,
+            "cache_workspace_gb": 0.0,
+            "explanation_json": [
+              "small planner budget prioritizes time-to-first-result over path optimality",
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 1,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_83e35a9c758a31f4"
+            ],
+            "plan_id": "plan_ce9a2b8d4dc22729",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.786528,
+            "predicted_iter_ms": 18.617521,
+            "predicted_peak_gb": 0.117188,
+            "predicted_ttfr_s": 0.581735,
+            "project": "tnep",
+            "recommendation_rank": 1,
+            "reuse_cache": false,
+            "template_name": "quick_turnaround",
+            "workspace_gb": 2.7
+          },
+          "details_json": {
+            "autotune_time_s": 0.0,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "fixed_qubits": {
+                "0": 0,
+                "3": 1
+              },
+              "kind": "batched_amplitudes"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.000520044,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 2899102924
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 16.0,
+              "num_slices": 1,
+              "opt_cost": 796.0
+            },
+            "path_search_time_s": 0.031551609,
+            "phase_times": {
+              "contract_first": 0.0006993070001044543,
+              "contract_path": 0.03174219399988942,
+              "contract_warm": 0.0010650119984347839,
+              "convert_to_einsum": 0.0028092610009480268,
+              "load_circuit": 0.00040239199915959034,
+              "postprocess": 0.0002643930001795525
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.000233274,
+            "warm_contract_times_ms": [
+              0.275714,
+              0.283999,
+              0.242028
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.0,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "fixed_qubits": {
+                  "0": 0,
+                  "3": 1
+                },
+                "kind": "batched_amplitudes"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.000520044,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 2899102924
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 16.0,
+                "num_slices": 1,
+                "opt_cost": 796.0
+              },
+              "path_search_time_s": 0.031551609,
+              "phase_times": {
+                "contract_first": 0.0006993070001044543,
+                "contract_path": 0.03174219399988942,
+                "contract_warm": 0.0010650119984347839,
+                "convert_to_einsum": 0.0028092610009480268,
+                "load_circuit": 0.00040239199915959034,
+                "postprocess": 0.0002643930001795525
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.000233274,
+              "warm_contract_times_ms": [
+                0.275714,
+                0.283999,
+                0.242028
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:42.034621+00:00",
+            "gpu_seconds": 0.040011791,
+            "graph_mode": "off",
+            "output_digest": "out_f3abf33fd262cab9",
+            "peak_mem_gb": 1.2398e-05,
+            "peak_workspace_gb": 2.7,
+            "plan_id": "plan_ce9a2b8d4dc22729",
+            "replicate_idx": 0,
+            "run_id": "run_d981c48799854a2a",
+            "started_at": "2026-04-04T14:44:41.994609+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.275714,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.038173647,
+            "wall_s": 0.040011791,
+            "workload_id": "wkl_3a3d42fe7b94a2ed"
+          },
+          "family_id": "dense_universal",
+          "feasible": true,
+          "normalized_regret": 0.0,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.040011791,
+          "observed_iter_ms": 0.275714,
+          "observed_peak_gb": 1.2398e-05,
+          "observed_ttfr_s": 0.038173647,
+          "oracle_rank": 1,
+          "plan_id": "plan_ce9a2b8d4dc22729",
+          "profile_summary": null,
+          "regret": 0.0,
+          "split_tag": "train",
+          "status": "success",
+          "workload_id": "wkl_3a3d42fe7b94a2ed"
+        },
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "batched_amplitude_max_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_665ac2e4a31d10a8",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "batched_amplitude_max_abs_err",
+                "metric_value": 3.227937720230791e-17,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_b9ef0ef4d66620ce",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_b9ef0ef4d66620ce",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": true,
+            "cache_workspace_gb": 1.62,
+            "explanation_json": [
+              "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+              "repeat count makes autotune and reuse worth amortizing"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 24,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_83e35a9c758a31f4"
+            ],
+            "plan_id": "plan_6ce5484d4ea8bd4d",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.754477,
+            "predicted_iter_ms": 11.219884,
+            "predicted_peak_gb": 0.117188,
+            "predicted_ttfr_s": 0.631058,
+            "project": "tnep",
+            "recommendation_rank": 2,
+            "reuse_cache": true,
+            "template_name": "deep_search",
+            "workspace_gb": 9.0
+          },
+          "details_json": {
+            "autotune_time_s": 0.00489895,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "fixed_qubits": {
+                "0": 0,
+                "3": 1
+              },
+              "kind": "batched_amplitudes"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.000253354,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 9663676416
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 16.0,
+              "num_slices": 1,
+              "opt_cost": 796.0
+            },
+            "path_search_time_s": 0.031951512,
+            "phase_times": {
+              "autotune": 0.005082153000330436,
+              "contract_first": 0.00041158299973176327,
+              "contract_path": 0.03215282400014985,
+              "contract_warm": 0.0010603089995129267,
+              "convert_to_einsum": 0.0030441260005318327,
+              "load_circuit": 0.0004249989997333614,
+              "postprocess": 0.00021019999985583127
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.000253525,
+            "warm_contract_times_ms": [
+              0.300509,
+              0.278944,
+              0.233906
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.00489895,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "fixed_qubits": {
+                  "0": 0,
+                  "3": 1
+                },
+                "kind": "batched_amplitudes"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.000253354,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 9663676416
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 16.0,
+                "num_slices": 1,
+                "opt_cost": 796.0
+              },
+              "path_search_time_s": 0.031951512,
+              "phase_times": {
+                "autotune": 0.005082153000330436,
+                "contract_first": 0.00041158299973176327,
+                "contract_path": 0.03215282400014985,
+                "contract_warm": 0.0010603089995129267,
+                "convert_to_einsum": 0.0030441260005318327,
+                "load_circuit": 0.0004249989997333614,
+                "postprocess": 0.00021019999985583127
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.000253525,
+              "warm_contract_times_ms": [
+                0.300509,
+                0.278944,
+                0.233906
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:42.147012+00:00",
+            "gpu_seconds": 0.110626814,
+            "graph_mode": "off",
+            "output_digest": "out_f3abf33fd262cab9",
+            "peak_mem_gb": 1.2398e-05,
+            "peak_workspace_gb": 9.0,
+            "plan_id": "plan_6ce5484d4ea8bd4d",
+            "replicate_idx": 0,
+            "run_id": "run_b9ef0ef4d66620ce",
+            "started_at": "2026-04-04T14:44:42.036387+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.278944,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.108803443,
+            "wall_s": 0.110626814,
+            "workload_id": "wkl_3a3d42fe7b94a2ed"
+          },
+          "family_id": "dense_universal",
+          "feasible": true,
+          "normalized_regret": null,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.110626814,
+          "observed_iter_ms": 0.278944,
+          "observed_peak_gb": 1.2398e-05,
+          "observed_ttfr_s": 0.108803443,
+          "oracle_rank": 2,
+          "plan_id": "plan_6ce5484d4ea8bd4d",
+          "profile_summary": null,
+          "regret": null,
+          "split_tag": "train",
+          "status": "success",
+          "workload_id": "wkl_3a3d42fe7b94a2ed"
+        }
+      ],
+      "family_id": "dense_universal",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_dense_ring6_batched.yaml",
+      "normalized_regret": 0.0,
+      "oracle_best_plan_id": "plan_ce9a2b8d4dc22729",
+      "probe_id": "probe_83e35a9c758a31f4",
+      "regret": 0.0,
+      "repeat_count_hint": 12,
+      "selected_plan_id": "plan_ce9a2b8d4dc22729",
+      "split_tag": "train",
+      "top_candidate_mode": "exact_tn",
+      "workload_id": "wkl_3a3d42fe7b94a2ed"
+    },
+    {
+      "evaluations": [
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "amplitude_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_12af7eb906ecea6a",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_abs_err",
+                "metric_value": 0.0,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_1b708d9604c0513e",
+                "threshold": 1e-12
+              },
+              {
+                "eval_id": "eval_c54a9b185ae38a23",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_rel_err",
+                "metric_value": 0.0,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_1b708d9604c0513e",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_1b708d9604c0513e",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": false,
+            "cache_workspace_gb": 0.0,
+            "explanation_json": [
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+              "planner policy disables autotune below repeat_count_hint=6",
+              "planner policy disables reuse_cache below repeat_count_hint=8"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 12,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_b05f0fe78c07b05b"
+            ],
+            "plan_id": "plan_754d1daa879032d1",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.552645,
+            "predicted_iter_ms": 12.482731,
+            "predicted_peak_gb": 0.0,
+            "predicted_ttfr_s": 0.552645,
+            "project": "tnep",
+            "recommendation_rank": 1,
+            "reuse_cache": false,
+            "template_name": "deep_search",
+            "workspace_gb": 9.0
+          },
+          "details_json": {
+            "autotune_time_s": 0.0,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "bitstring": "000",
+              "kind": "amplitude"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.000336983,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 9663676416
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 4.0,
+              "num_slices": 1,
+              "opt_cost": 100.0
+            },
+            "path_search_time_s": 0.008280321,
+            "phase_times": {
+              "contract_first": 0.0004737270010082284,
+              "contract_path": 0.00847063299988804,
+              "contract_warm": 0.0006813099989813054,
+              "convert_to_einsum": 0.0016286480004055193,
+              "load_circuit": 0.0004229989990562899,
+              "postprocess": 0.00020418600070115644
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.000124371,
+            "warm_contract_times_ms": [
+              0.177994,
+              0.131642,
+              0.125123
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.0,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "bitstring": "000",
+                "kind": "amplitude"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.000336983,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 9663676416
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 4.0,
+                "num_slices": 1,
+                "opt_cost": 100.0
+              },
+              "path_search_time_s": 0.008280321,
+              "phase_times": {
+                "contract_first": 0.0004737270010082284,
+                "contract_path": 0.00847063299988804,
+                "contract_warm": 0.0006813099989813054,
+                "convert_to_einsum": 0.0016286480004055193,
+                "load_circuit": 0.0004229989990562899,
+                "postprocess": 0.00020418600070115644
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.000124371,
+              "warm_contract_times_ms": [
+                0.177994,
+                0.131642,
+                0.125123
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:42.171496+00:00",
+            "gpu_seconds": 0.01443794,
+            "graph_mode": "off",
+            "output_digest": "out_852fa66e589dc06a",
+            "peak_mem_gb": 4.768e-06,
+            "peak_workspace_gb": 9.0,
+            "plan_id": "plan_754d1daa879032d1",
+            "replicate_idx": 0,
+            "run_id": "run_1b708d9604c0513e",
+            "started_at": "2026-04-04T14:44:42.157055+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.131642,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.013262986,
+            "wall_s": 0.01443794,
+            "workload_id": "wkl_5361a0b920fc4e05"
+          },
+          "family_id": "dense_universal",
+          "feasible": true,
+          "normalized_regret": 0.045071,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.01443794,
+          "observed_iter_ms": 0.131642,
+          "observed_peak_gb": 4.768e-06,
+          "observed_ttfr_s": 0.013262986,
+          "oracle_rank": 2,
+          "plan_id": "plan_754d1daa879032d1",
+          "profile_summary": null,
+          "regret": 0.000572,
+          "split_tag": "demo",
+          "status": "success",
+          "workload_id": "wkl_5361a0b920fc4e05"
+        },
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "amplitude_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_b13706a16f326de0",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_abs_err",
+                "metric_value": 0.0,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_ce1caa91c26c5abf",
+                "threshold": 1e-12
+              },
+              {
+                "eval_id": "eval_029028733b88a0ce",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_rel_err",
+                "metric_value": 0.0,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_ce1caa91c26c5abf",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_ce1caa91c26c5abf",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": false,
+            "cache_workspace_gb": 0.0,
+            "explanation_json": [
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 8,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_b05f0fe78c07b05b"
+            ],
+            "plan_id": "plan_1a94bd0f71680c6f",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.552986,
+            "predicted_iter_ms": 12.823703,
+            "predicted_peak_gb": 0.0,
+            "predicted_ttfr_s": 0.552986,
+            "project": "tnep",
+            "recommendation_rank": 2,
+            "reuse_cache": false,
+            "template_name": "balanced",
+            "workspace_gb": 5.25
+          },
+          "details_json": {
+            "autotune_time_s": 0.0,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "bitstring": "000",
+              "kind": "amplitude"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.000319444,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 5637144576
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 4.0,
+              "num_slices": 1,
+              "opt_cost": 100.0
+            },
+            "path_search_time_s": 0.008024225,
+            "phase_times": {
+              "contract_first": 0.00043878300130018033,
+              "contract_path": 0.008172022999133333,
+              "contract_warm": 0.0006504449993371964,
+              "convert_to_einsum": 0.0015345430001616478,
+              "load_circuit": 0.0003721960001712432,
+              "postprocess": 0.0001901460000226507
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.000119354,
+            "warm_contract_times_ms": [
+              0.151797,
+              0.136176,
+              0.122876
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.0,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "bitstring": "000",
+                "kind": "amplitude"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.000319444,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 5637144576
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 4.0,
+                "num_slices": 1,
+                "opt_cost": 100.0
+              },
+              "path_search_time_s": 0.008024225,
+              "phase_times": {
+                "contract_first": 0.00043878300130018033,
+                "contract_path": 0.008172022999133333,
+                "contract_warm": 0.0006504449993371964,
+                "convert_to_einsum": 0.0015345430001616478,
+                "load_circuit": 0.0003721960001712432,
+                "postprocess": 0.0001901460000226507
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.000119354,
+              "warm_contract_times_ms": [
+                0.151797,
+                0.136176,
+                0.122876
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:42.186367+00:00",
+            "gpu_seconds": 0.013808808,
+            "graph_mode": "off",
+            "output_digest": "out_852fa66e589dc06a",
+            "peak_mem_gb": 4.768e-06,
+            "peak_workspace_gb": 5.25,
+            "plan_id": "plan_1a94bd0f71680c6f",
+            "replicate_idx": 0,
+            "run_id": "run_ce1caa91c26c5abf",
+            "started_at": "2026-04-04T14:44:42.172557+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.136176,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.012691106,
+            "wall_s": 0.013808808,
+            "workload_id": "wkl_5361a0b920fc4e05"
+          },
+          "family_id": "dense_universal",
+          "feasible": true,
+          "normalized_regret": null,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.013808808,
+          "observed_iter_ms": 0.136176,
+          "observed_peak_gb": 4.768e-06,
+          "observed_ttfr_s": 0.012691106,
+          "oracle_rank": 1,
+          "plan_id": "plan_1a94bd0f71680c6f",
+          "profile_summary": null,
+          "regret": null,
+          "split_tag": "demo",
+          "status": "success",
+          "workload_id": "wkl_5361a0b920fc4e05"
+        }
+      ],
+      "family_id": "dense_universal",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_ghz3_amplitude.yaml",
+      "normalized_regret": 0.045071,
+      "oracle_best_plan_id": "plan_1a94bd0f71680c6f",
+      "probe_id": "probe_b05f0fe78c07b05b",
+      "regret": 0.000572,
+      "repeat_count_hint": 1,
+      "selected_plan_id": "plan_754d1daa879032d1",
+      "split_tag": "demo",
+      "top_candidate_mode": "exact_tn",
+      "workload_id": "wkl_5361a0b920fc4e05"
+    },
+    {
+      "evaluations": [
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "amplitude_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_01eabaef0bfcf1b9",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_abs_err",
+                "metric_value": 0.0,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_c1c85c32452e9555",
+                "threshold": 1e-12
+              },
+              {
+                "eval_id": "eval_0e137a5a1190314e",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_rel_err",
+                "metric_value": 0.0,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_c1c85c32452e9555",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_c1c85c32452e9555",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": false,
+            "cache_workspace_gb": 0.0,
+            "explanation_json": [
+              "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+              "planner policy disables autotune below repeat_count_hint=6",
+              "planner policy disables reuse_cache below repeat_count_hint=8"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 24,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_58baad8e46b487f7"
+            ],
+            "plan_id": "plan_f76df4f577feabd4",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.644038,
+            "predicted_iter_ms": 18.963507,
+            "predicted_peak_gb": 0.0,
+            "predicted_ttfr_s": 0.606111,
+            "project": "tnep",
+            "recommendation_rank": 1,
+            "reuse_cache": false,
+            "template_name": "deep_search",
+            "workspace_gb": 9.0
+          },
+          "details_json": {
+            "autotune_time_s": 0.0,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "bitstring": "010101",
+              "kind": "amplitude"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.00052058,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 9663676416
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 16.0,
+              "num_slices": 1,
+              "opt_cost": 676.0
+            },
+            "path_search_time_s": 0.034766506,
+            "phase_times": {
+              "contract_first": 0.0007021639994491125,
+              "contract_path": 0.034940609000841505,
+              "contract_warm": 0.001102501000787015,
+              "convert_to_einsum": 0.0029461750000336906,
+              "load_circuit": 0.0005087320005259244,
+              "postprocess": 0.00020027500067953952
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.000269706,
+            "warm_contract_times_ms": [
+              0.306844,
+              0.271456,
+              0.25714
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.0,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "bitstring": "010101",
+                "kind": "amplitude"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.00052058,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 9663676416
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 16.0,
+                "num_slices": 1,
+                "opt_cost": 676.0
+              },
+              "path_search_time_s": 0.034766506,
+              "phase_times": {
+                "contract_first": 0.0007021639994491125,
+                "contract_path": 0.034940609000841505,
+                "contract_warm": 0.001102501000787015,
+                "convert_to_einsum": 0.0029461750000336906,
+                "load_circuit": 0.0005087320005259244,
+                "postprocess": 0.00020027500067953952
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.000269706,
+              "warm_contract_times_ms": [
+                0.306844,
+                0.271456,
+                0.25714
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:42.246984+00:00",
+            "gpu_seconds": 0.043376317,
+            "graph_mode": "off",
+            "output_digest": "out_84e0c0eafaa95a34",
+            "peak_mem_gb": 1.2398e-05,
+            "peak_workspace_gb": 9.0,
+            "plan_id": "plan_f76df4f577feabd4",
+            "replicate_idx": 0,
+            "run_id": "run_c1c85c32452e9555",
+            "started_at": "2026-04-04T14:44:42.203605+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.271456,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.041497118,
+            "wall_s": 0.043376317,
+            "workload_id": "wkl_3b735062d7c19573"
+          },
+          "family_id": "grid_2d_shallow",
+          "feasible": true,
+          "normalized_regret": 0.011826,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.043376317,
+          "observed_iter_ms": 0.271456,
+          "observed_peak_gb": 1.2398e-05,
+          "observed_ttfr_s": 0.041497118,
+          "oracle_rank": 2,
+          "plan_id": "plan_f76df4f577feabd4",
+          "profile_summary": null,
+          "regret": 0.000485,
+          "split_tag": "heldout_family",
+          "status": "success",
+          "workload_id": "wkl_3b735062d7c19573"
+        },
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "amplitude_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_c3bc3bec39099a77",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_abs_err",
+                "metric_value": 0.0,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_3483a8ca859fa0cc",
+                "threshold": 1e-12
+              },
+              {
+                "eval_id": "eval_b0839815d1c0f4f4",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "amplitude_rel_err",
+                "metric_value": 0.0,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_3483a8ca859fa0cc",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_3483a8ca859fa0cc",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": false,
+            "cache_workspace_gb": 0.0,
+            "explanation_json": [
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+              "planner policy disables autotune below repeat_count_hint=6",
+              "planner policy disables reuse_cache below repeat_count_hint=8"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 8,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_58baad8e46b487f7"
+            ],
+            "plan_id": "plan_2b8b5da168b5546b",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.648455,
+            "predicted_iter_ms": 20.435777,
+            "predicted_peak_gb": 0.0,
+            "predicted_ttfr_s": 0.607583,
+            "project": "tnep",
+            "recommendation_rank": 2,
+            "reuse_cache": false,
+            "template_name": "balanced",
+            "workspace_gb": 5.25
+          },
+          "details_json": {
+            "autotune_time_s": 0.0,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "bitstring": "010101",
+              "kind": "amplitude"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.000544426,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 5637144576
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 16.0,
+              "num_slices": 1,
+              "opt_cost": 676.0
+            },
+            "path_search_time_s": 0.034356935,
+            "phase_times": {
+              "contract_first": 0.0007186559996625874,
+              "contract_path": 0.034542072000476765,
+              "contract_warm": 0.0010999589994753478,
+              "convert_to_einsum": 0.0028830440005549463,
+              "load_circuit": 0.000406881001254078,
+              "postprocess": 0.00020132300051045604
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.00025233,
+            "warm_contract_times_ms": [
+              0.293014,
+              0.277962,
+              0.259725
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.0,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "bitstring": "010101",
+                "kind": "amplitude"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.000544426,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 5637144576
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 16.0,
+                "num_slices": 1,
+                "opt_cost": 676.0
+              },
+              "path_search_time_s": 0.034356935,
+              "phase_times": {
+                "contract_first": 0.0007186559996625874,
+                "contract_path": 0.034542072000476765,
+                "contract_warm": 0.0010999589994753478,
+                "convert_to_einsum": 0.0028830440005549463,
+                "load_circuit": 0.000406881001254078,
+                "postprocess": 0.00020132300051045604
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.00025233,
+              "warm_contract_times_ms": [
+                0.293014,
+                0.277962,
+                0.259725
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:42.291764+00:00",
+            "gpu_seconds": 0.042881227,
+            "graph_mode": "off",
+            "output_digest": "out_84e0c0eafaa95a34",
+            "peak_mem_gb": 1.2398e-05,
+            "peak_workspace_gb": 5.25,
+            "plan_id": "plan_2b8b5da168b5546b",
+            "replicate_idx": 0,
+            "run_id": "run_3483a8ca859fa0cc",
+            "started_at": "2026-04-04T14:44:42.248886+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.277962,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.041011641,
+            "wall_s": 0.042881227,
+            "workload_id": "wkl_3b735062d7c19573"
+          },
+          "family_id": "grid_2d_shallow",
+          "feasible": true,
+          "normalized_regret": null,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.042881227,
+          "observed_iter_ms": 0.277962,
+          "observed_peak_gb": 1.2398e-05,
+          "observed_ttfr_s": 0.041011641,
+          "oracle_rank": 1,
+          "plan_id": "plan_2b8b5da168b5546b",
+          "profile_summary": null,
+          "regret": null,
+          "split_tag": "heldout_family",
+          "status": "success",
+          "workload_id": "wkl_3b735062d7c19573"
+        }
+      ],
+      "family_id": "grid_2d_shallow",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_grid_shape6_amplitude.yaml",
+      "normalized_regret": 0.011826,
+      "oracle_best_plan_id": "plan_2b8b5da168b5546b",
+      "probe_id": "probe_58baad8e46b487f7",
+      "regret": 0.000485,
+      "repeat_count_hint": 3,
+      "selected_plan_id": "plan_f76df4f577feabd4",
+      "split_tag": "heldout_family",
+      "top_candidate_mode": "exact_tn",
+      "workload_id": "wkl_3b735062d7c19573"
+    },
+    {
+      "evaluations": [
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "batched_amplitude_max_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_bfeb1d920a144c26",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "batched_amplitude_max_abs_err",
+                "metric_value": 7.850462293418876e-17,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_6d0e86df375bd1ac",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_6d0e86df375bd1ac",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": false,
+            "cache_workspace_gb": 0.0,
+            "explanation_json": [
+              "higher hyper-sampling spends more planning time to reduce contraction-path regret",
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+              "planner policy disables autotune below repeat_count_hint=6",
+              "planner policy disables reuse_cache below repeat_count_hint=8"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 24,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_466a4023493e675d"
+            ],
+            "plan_id": "plan_11a205021b4a98aa",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.634684,
+            "predicted_iter_ms": 15.850969,
+            "predicted_peak_gb": 0.145833,
+            "predicted_ttfr_s": 0.587131,
+            "project": "tnep",
+            "recommendation_rank": 1,
+            "reuse_cache": false,
+            "template_name": "deep_search",
+            "workspace_gb": 9.0
+          },
+          "details_json": {
+            "autotune_time_s": 0.0,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "fixed_qubits": {
+                "0": 0
+              },
+              "kind": "batched_amplitudes"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.000579845,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 9663676416
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 16.0,
+              "num_slices": 1,
+              "opt_cost": 896.0
+            },
+            "path_search_time_s": 0.033471981,
+            "phase_times": {
+              "contract_first": 0.0007937999998830492,
+              "contract_path": 0.033638441000221064,
+              "contract_warm": 0.0013441099999909056,
+              "convert_to_einsum": 0.0027624770009424537,
+              "load_circuit": 0.0003525140000419924,
+              "postprocess": 0.0002758230002655182
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.000288197,
+            "warm_contract_times_ms": [
+              0.311078,
+              0.322679,
+              0.272618
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.0,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "fixed_qubits": {
+                  "0": 0
+                },
+                "kind": "batched_amplitudes"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.000579845,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 9663676416
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 16.0,
+                "num_slices": 1,
+                "opt_cost": 896.0
+              },
+              "path_search_time_s": 0.033471981,
+              "phase_times": {
+                "contract_first": 0.0007937999998830492,
+                "contract_path": 0.033638441000221064,
+                "contract_warm": 0.0013441099999909056,
+                "convert_to_einsum": 0.0027624770009424537,
+                "load_circuit": 0.0003525140000419924,
+                "postprocess": 0.0002758230002655182
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.000288197,
+              "warm_contract_times_ms": [
+                0.311078,
+                0.322679,
+                0.272618
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:42.340200+00:00",
+            "gpu_seconds": 0.042155599,
+            "graph_mode": "off",
+            "output_digest": "out_8388780835ea424e",
+            "peak_mem_gb": 1.2875e-05,
+            "peak_workspace_gb": 9.0,
+            "plan_id": "plan_11a205021b4a98aa",
+            "replicate_idx": 0,
+            "run_id": "run_6d0e86df375bd1ac",
+            "started_at": "2026-04-04T14:44:42.298049+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.311078,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.039933811,
+            "wall_s": 0.042155599,
+            "workload_id": "wkl_19ca61869000401d"
+          },
+          "family_id": "qaoa_graph",
+          "feasible": true,
+          "normalized_regret": 0.0,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.042155599,
+          "observed_iter_ms": 0.311078,
+          "observed_peak_gb": 1.2875e-05,
+          "observed_ttfr_s": 0.039933811,
+          "oracle_rank": 1,
+          "plan_id": "plan_11a205021b4a98aa",
+          "profile_summary": null,
+          "regret": 0.0,
+          "split_tag": "val",
+          "status": "success",
+          "workload_id": "wkl_19ca61869000401d"
+        },
+        {
+          "accuracy_eval": {
+            "evaluation_version": "aqs.accuracy.v1",
+            "primary_metric": "batched_amplitude_max_abs_err",
+            "rows": [
+              {
+                "eval_id": "eval_e47b36228ceef888",
+                "evaluation_version": "aqs.accuracy.v1",
+                "metric_name": "batched_amplitude_max_abs_err",
+                "metric_value": 7.850462293418876e-17,
+                "pass": true,
+                "reference_run_id": null,
+                "run_id": "run_87faa18e59d4ec7d",
+                "threshold": 1e-12
+              }
+            ],
+            "run_id": "run_87faa18e59d4ec7d",
+            "status": "pass"
+          },
+          "candidate": {
+            "autotune": false,
+            "cache_workspace_gb": 0.0,
+            "explanation_json": [
+              "workspace comfortably covers the current peak estimate, limiting slicing pressure",
+              "planner policy disables autotune below repeat_count_hint=6",
+              "planner policy disables reuse_cache below repeat_count_hint=8"
+            ],
+            "feasibility_label": "feasible",
+            "gpu_arch_target": "sm75",
+            "hyper_samples": 8,
+            "is_feasible": true,
+            "max_error": 0.0,
+            "mode": "exact_tn",
+            "mpi_ranks": 1,
+            "objective": "ttfr",
+            "parent_probe_ids": [
+              "probe_466a4023493e675d"
+            ],
+            "plan_id": "plan_18789f3841d015aa",
+            "planner_version": "aqs.tnep_planner.v1",
+            "policy_summary_json": {
+              "disable_autotune_below_repeat": 6,
+              "disable_reuse_cache_below_repeat": 8
+            },
+            "precision": "complex128",
+            "predicted_error": 0.0,
+            "predicted_gpu_seconds": 0.639606,
+            "predicted_iter_ms": 17.08159,
+            "predicted_peak_gb": 0.145833,
+            "predicted_ttfr_s": 0.588361,
+            "project": "tnep",
+            "recommendation_rank": 2,
+            "reuse_cache": false,
+            "template_name": "balanced",
+            "workspace_gb": 5.25
+          },
+          "details_json": {
+            "autotune_time_s": 0.0,
+            "capabilities": {
+              "cupy_present": true,
+              "cuquantum_present": true,
+              "gpu_present": true,
+              "ncu_present": true,
+              "nsys_present": true,
+              "qiskit_present": true
+            },
+            "execution_intent": "require_real",
+            "execution_source": "cuquantum_tensornet_gpu",
+            "execution_target": {
+              "fixed_qubits": {
+                "0": 0
+              },
+              "kind": "batched_amplitudes"
+            },
+            "execution_version": "aqs.execution.real.v2",
+            "first_contract_time_s": 0.00053212,
+            "graph_capture_status": "disabled",
+            "graph_capture_time_s": 0.0,
+            "graph_mode": "off",
+            "graph_replay_launch_count": 0,
+            "graph_replay_phase": null,
+            "network_options": {
+              "device_id": 0,
+              "memory_limit": 5637144576
+            },
+            "nvtx_phase_version": "aqs.nvtx.v1",
+            "path_info": {
+              "largest_intermediate": 16.0,
+              "num_slices": 1,
+              "opt_cost": 896.0
+            },
+            "path_search_time_s": 0.040474401,
+            "phase_times": {
+              "contract_first": 0.0007295260002138093,
+              "contract_path": 0.04066492099991592,
+              "contract_warm": 0.0010884169987548376,
+              "convert_to_einsum": 0.003329785000460106,
+              "load_circuit": 0.0004593600006046472,
+              "postprocess": 0.00023958299971127417
+            },
+            "probe_strategy": "real_if_available",
+            "release_workspace_contract_time_s": 0.000236374,
+            "warm_contract_times_ms": [
+              0.2802,
+              0.262316,
+              0.240478
+            ]
+          },
+          "execution_run": {
+            "execution_source": "cuquantum_tensornet_gpu",
+            "failure_detail_json": {
+              "autotune_time_s": 0.0,
+              "capabilities": {
+                "cupy_present": true,
+                "cuquantum_present": true,
+                "gpu_present": true,
+                "ncu_present": true,
+                "nsys_present": true,
+                "qiskit_present": true
+              },
+              "execution_intent": "require_real",
+              "execution_source": "cuquantum_tensornet_gpu",
+              "execution_target": {
+                "fixed_qubits": {
+                  "0": 0
+                },
+                "kind": "batched_amplitudes"
+              },
+              "execution_version": "aqs.execution.real.v2",
+              "first_contract_time_s": 0.00053212,
+              "graph_capture_status": "disabled",
+              "graph_capture_time_s": 0.0,
+              "graph_mode": "off",
+              "graph_replay_launch_count": 0,
+              "graph_replay_phase": null,
+              "network_options": {
+                "device_id": 0,
+                "memory_limit": 5637144576
+              },
+              "nvtx_phase_version": "aqs.nvtx.v1",
+              "path_info": {
+                "largest_intermediate": 16.0,
+                "num_slices": 1,
+                "opt_cost": 896.0
+              },
+              "path_search_time_s": 0.040474401,
+              "phase_times": {
+                "contract_first": 0.0007295260002138093,
+                "contract_path": 0.04066492099991592,
+                "contract_warm": 0.0010884169987548376,
+                "convert_to_einsum": 0.003329785000460106,
+                "load_circuit": 0.0004593600006046472,
+                "postprocess": 0.00023958299971127417
+              },
+              "probe_strategy": "real_if_available",
+              "release_workspace_contract_time_s": 0.000236374,
+              "warm_contract_times_ms": [
+                0.2802,
+                0.262316,
+                0.240478
+              ]
+            },
+            "finished_at": "2026-04-04T14:44:42.391581+00:00",
+            "gpu_seconds": 0.049560539,
+            "graph_mode": "off",
+            "output_digest": "out_8388780835ea424e",
+            "peak_mem_gb": 1.2875e-05,
+            "peak_workspace_gb": 5.25,
+            "plan_id": "plan_18789f3841d015aa",
+            "replicate_idx": 0,
+            "run_id": "run_87faa18e59d4ec7d",
+            "started_at": "2026-04-04T14:44:42.342021+00:00",
+            "status": "success",
+            "steady_iter_ms": 0.262316,
+            "system_id": "sys_2b947b356aff9c76",
+            "ttfr_s": 0.047708111,
+            "wall_s": 0.049560539,
+            "workload_id": "wkl_19ca61869000401d"
+          },
+          "family_id": "qaoa_graph",
+          "feasible": true,
+          "normalized_regret": null,
+          "objective": "ttfr",
+          "observed_error": 0.0,
+          "observed_gpu_seconds": 0.049560539,
+          "observed_iter_ms": 0.262316,
+          "observed_peak_gb": 1.2875e-05,
+          "observed_ttfr_s": 0.047708111,
+          "oracle_rank": 2,
+          "plan_id": "plan_18789f3841d015aa",
+          "profile_summary": null,
+          "regret": null,
+          "split_tag": "val",
+          "status": "success",
+          "workload_id": "wkl_19ca61869000401d"
+        }
+      ],
+      "family_id": "qaoa_graph",
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/real_qaoa_ring4_batched.yaml",
+      "normalized_regret": 0.0,
+      "oracle_best_plan_id": "plan_11a205021b4a98aa",
+      "probe_id": "probe_466a4023493e675d",
+      "regret": 0.0,
+      "repeat_count_hint": 4,
+      "selected_plan_id": "plan_11a205021b4a98aa",
+      "split_tag": "val",
+      "top_candidate_mode": "exact_tn",
+      "workload_id": "wkl_19ca61869000401d"
+    }
+  ],
+  "system_manifest": {
+    "api_version": "aqs.system.v1",
+    "appliance_image": {
+      "base_ref": null,
+      "ref": null
+    },
+    "container_runtime": {
+      "kind": "unavailable_on_path",
+      "version": null
+    },
+    "driver_version": "580.95.05",
+    "gpu_arch_target": "sm75",
+    "gpu_count": 1,
+    "gpu_mem_gb": 15.0,
+    "gpu_model": "Quadro RTX 5000",
+    "interconnect": "pcie",
+    "kernel_version": "6.14.0-34-generic",
+    "node_label": "ovh-gra9-rtx5000-28",
+    "notes": "refreshed OVH profiling host manifest for the real exact-TN and measured follow-on portfolio runs on Quadro RTX 5000",
+    "os_release": "Ubuntu 25.04",
+    "profiling_host": {
+      "artifact_index": "docs/reports/first_real_profiler_slice_index.md",
+      "canonical_tool_source": {
+        "ncu": "host_installed_ubuntu_repo",
+        "nsys": "host_installed_ubuntu_repo",
+        "qdstrm_importer": "host_installed_ubuntu_repo"
+      },
+      "container_launch": {
+        "cap_add": [],
+        "gid": null,
+        "gpu_access": null,
+        "privileged": false,
+        "uid": null,
+        "user": null,
+        "workspace_mount": null
+      },
+      "elevated_probe_attempt": {
+        "cap_add": [],
+        "privileged": false,
+        "result": "succeeded_after_setting_NVreg_RestrictProfilingToAdminUsers=0",
+        "user": "root"
+      },
+      "execution_runbook": "docs/runbooks/ovh_cu13_real_execution.md",
+      "gpu_performance_counters": "enabled_for_non_admin_users_after_host_policy_change",
+      "ncu_version": "Version 2023.2.2.0 (build 33188574) (public-release)",
+      "notes": [
+        "canonical profiling on this host uses host-installed Ubuntu nsight packages, not container-bundled profiler tools",
+        "qdstrm importer is not on PATH by default and must be discovered at /usr/lib/nsight-systems/host-linux-x64/QdstrmImporter",
+        "docker was not detected on PATH during the April 4, 2026 packaging refresh, so container_runtime and container_launch are intentionally marked unavailable",
+        "nsys smoke is fully working on this host",
+        "ncu smoke is intentionally unfiltered on this host/toolchain to avoid brittle NVTX filter behavior",
+        "real exact-TN execution on this host uses the .venv_cu13 environment plus qwa_cuda_env_cu13.sh",
+        "the canonical first slice and the measured stage 10 through 12 follow-on passes ran directly on the host in .venv_cu13",
+        "real profiler-backed architecture analysis was successfully produced on this host",
+        "if the host changes materially, create a new manifest rather than editing this file in place"
+      ],
+      "nsys_version": "NVIDIA Nsight Systems version 2023.2.3.1004-33186433v0",
+      "qdstrm_importer_version": "NVIDIA Nsight Systems 2023.2.3.1004-33186433v0",
+      "qdstrm_importer_version_probe_error": null,
+      "readiness_artifact": "configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json",
+      "session_log": "docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md",
+      "tool_paths": {
+        "ncu": "/usr/bin/ncu",
+        "nsys": "/usr/bin/nsys",
+        "qdstrm_importer": "/usr/lib/nsight-systems/host-linux-x64/QdstrmImporter"
+      }
+    },
+    "ram_gb": 26.76,
+    "system_name": "ovh_gra9_rtx5000_28"
+  },
+  "top1_accuracy": 0.4,
+  "validation_run_id": "val_c2353c079057467b",
+  "workload_count": 5
+}

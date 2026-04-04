@@ -132,6 +132,44 @@ def test_arch_real_profile_falls_back_to_execution_phase_times_when_summary_is_s
     assert launch['nomination_reason_json']['setup_share_pct'] > 20.0
 
 
+def test_arch_measured_runtime_phase_times_nominate_without_profiler_summary():
+    payload = {
+        'workload_id': 'wkl_runtime_phase',
+        'family_id': 'dense_universal',
+        'repeat_count_hint': 2,
+        'selected_plan': {
+            'mode': 'exact_tn',
+            'predicted_ttfr_s': 0.70,
+        },
+        'execution_run': {
+            'run_id': 'run_runtime_phase',
+            'ttfr_s': 0.05,
+            'wall_s': 0.06,
+            'failure_detail_json': {
+                'nvtx_phase_version': 'aqs.nvtx.v1',
+                'phase_times': {
+                    'load_circuit': 0.001,
+                    'convert_to_einsum': 0.005,
+                    'postprocess': 0.001,
+                    'contract_path': 0.030,
+                    'contract_first': 0.002,
+                    'contract_warm': 0.001,
+                },
+            },
+        },
+        'profile_summary': None,
+        'probe': {'raw_info_json': {'family_id': 'dense_universal'}},
+        'system_manifest': {'gpu_mem_gb': 15.0},
+    }
+
+    analysis = analyze_execution_payload(payload, top_k=4)
+    families = {row['bottleneck_family'] for row in analysis['nominations']}
+
+    assert analysis['source_profile_id'] is None
+    assert {'planner_roi', 'launch_overhead'} <= families
+    assert all(row['nomination_source'] == 'measured_runtime_analysis' for row in analysis['nominations'])
+
+
 def test_arch_real_ncu_profile_uses_proxy_signals_when_nvtx_ranges_are_sparse():
     payload = {
         'workload_id': 'wkl_ncu_proxy',

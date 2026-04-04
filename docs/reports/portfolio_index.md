@@ -28,6 +28,7 @@ This index packages the stacked-branch rollout as it exists in this workspace on
 ## Notes
 
 - The measured host for the packaged remote results is OVH `ovh_gra9_rtx5000_28`: Quadro RTX 5000, Ubuntu `25.04`, driver `580.95.05`, and green profiling readiness in `configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json`.
+- A measured-validation follow-on assessment now exists in [`docs/reports/ovh_measured_validation_follow_on.md`](ovh_measured_validation_follow_on.md); it confirms a real OVH `require_real` slice and recurring `planner_roi`, but it does not yet claim a clean planner-calibration success.
 - The repeat-ROI pass recorded mostly negative optimizer deltas, so the measured package keeps the existing planner defaults rather than promoting the earlier dry-run threshold suggestion.
 - CUDA Graph capture failed on the default (legacy) stream in every measured attempt, so the package keeps `graph_mode=off` as the recommendation.
 - CUDA-Q remains adapter-backed for structural comparison only; the repo still does not claim native CUDA-Q runtime execution evidence.

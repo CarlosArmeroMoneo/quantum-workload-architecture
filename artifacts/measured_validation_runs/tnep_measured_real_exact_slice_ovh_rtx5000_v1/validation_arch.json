@@ -1,0 +1,301 @@
+{
+  "analysis_id": "arch_81f6379516209f73",
+  "analysis_version": "aqs.arch.v0",
+  "dataset_name": "tnep_measured_real_exact_slice_ovh_rtx5000_v1",
+  "objective": "ttfr",
+  "ranked_bottleneck_families": [
+    {
+      "bottleneck_family": "planner_roi",
+      "count": 5,
+      "mean_severity": 1.0
+    },
+    {
+      "bottleneck_family": "reuse_cache",
+      "count": 1,
+      "mean_severity": 0.519345
+    },
+    {
+      "bottleneck_family": "launch_overhead",
+      "count": 1,
+      "mean_severity": 0.335777
+    }
+  ],
+  "source_kind": "measured_validation_summary",
+  "source_validation_run_id": "val_c2353c079057467b",
+  "workload_analyses": [
+    {
+      "analysis_id": "arch_26885557cab4aeac",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "dense_universal",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_99dea8dcc76e5ab8",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 76.221715,
+            "planner_time_s": 0.034234501,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 2,
+            "ttfr_residual_ratio": -0.929042
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_0d66ca602bbf2f7c",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        },
+        {
+          "bottleneck_family": "reuse_cache",
+          "case_id": "case_36034d4007ef75b0",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "repeated-structure workloads may benefit from larger cache workspace",
+              "knob_name": "cache_workspace_gb",
+              "suggested_sweep": [
+                0.0,
+                2.0,
+                8.0,
+                16.0
+              ],
+              "unit": "GB"
+            },
+            {
+              "hypothesis": "cache and autotune ROI depends strongly on repetition depth",
+              "knob_name": "repeat_count_hint",
+              "suggested_sweep": [
+                1,
+                8,
+                32,
+                128
+              ],
+              "unit": "iterations"
+            }
+          ],
+          "nomination_reason_json": {
+            "cold_warm_ratio": 1.779018,
+            "first_contract_s": 0.002189224,
+            "reason": "measured cold-vs-warm contraction timings or NCU repeat proxies show measurable amortization potential",
+            "repeat_count_hint": 2,
+            "reuse_signal": "",
+            "warm_contract_total_s": 0.00123058
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_0d66ca602bbf2f7c",
+          "severity_score": 0.519345,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 2,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_0d66ca602bbf2f7c",
+      "workload_id": "wkl_888bce118ad39b04"
+    },
+    {
+      "analysis_id": "arch_e73fd1c4dbd236d8",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "dense_universal",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_bfb8939c1af32db2",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 85.980968,
+            "planner_time_s": 0.031747261,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 12,
+            "ttfr_residual_ratio": -0.934825
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_8061f472f06f013f",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 12,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_8061f472f06f013f",
+      "workload_id": "wkl_3a3d42fe7b94a2ed"
+    },
+    {
+      "analysis_id": "arch_449a509b2d6eb971",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "dense_universal",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_a93a4a9a28ca4d95",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 71.342003,
+            "planner_time_s": 0.008592612,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 1,
+            "ttfr_residual_ratio": -0.978814
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_090bbf2bceebe9d4",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        },
+        {
+          "bottleneck_family": "launch_overhead",
+          "case_id": "case_baccdae4adcc825f",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "small jobs are sensitive to launch and setup overhead",
+              "knob_name": "orchestration_overhead_multiplier",
+              "suggested_sweep": [
+                1.0,
+                0.75,
+                0.5
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "avg_kernel_time_ms": null,
+            "kernel_count": 0,
+            "launch_proxy_pct": 0.0,
+            "reason": "measured runtime phase timings show load/convert/postprocess or short-kernel launch overhead consuming a meaningful share",
+            "setup_share_pct": 18.467711,
+            "setup_time_s": 0.002224298
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_090bbf2bceebe9d4",
+          "severity_score": 0.335777,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 1,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_090bbf2bceebe9d4",
+      "workload_id": "wkl_5361a0b920fc4e05"
+    },
+    {
+      "analysis_id": "arch_4269fb413abd8c6e",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "grid_2d_shallow",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_05412af1cf1dba5e",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 86.473393,
+            "planner_time_s": 0.034321498,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 3,
+            "ttfr_residual_ratio": -0.943103
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_6f70b4477247be65",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 3,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_6f70b4477247be65",
+      "workload_id": "wkl_3b735062d7c19573"
+    },
+    {
+      "analysis_id": "arch_c10b44cfe495853d",
+      "analysis_version": "aqs.arch.v0",
+      "family_id": "qaoa_graph",
+      "nominations": [
+        {
+          "bottleneck_family": "planner_roi",
+          "case_id": "case_714509ad9bd797e6",
+          "counterfactual_knobs": [
+            {
+              "hypothesis": "more or less path-search effort may improve TTFR/steady-state tradeoffs",
+              "knob_name": "planner_budget_multiplier",
+              "suggested_sweep": [
+                0.5,
+                1.0,
+                2.0
+              ],
+              "unit": "x"
+            }
+          ],
+          "nomination_reason_json": {
+            "planner_proxy_pct": 0.0,
+            "planner_share_pct": 88.109181,
+            "planner_time_s": 0.037282949,
+            "reason": "measured runtime phase timings show path search/autotune or one-time orchestration taking a material share of the run",
+            "repeat_count_hint": 4,
+            "ttfr_residual_ratio": -0.936456
+          },
+          "nomination_source": "measured_runtime_analysis",
+          "run_id": "run_1641025259519ef5",
+          "severity_score": 1.0,
+          "supporting_profile_ids": []
+        }
+      ],
+      "repeat_count_hint": 4,
+      "selected_mode": "exact_tn",
+      "source_kind": "execution_payload",
+      "source_profile_id": null,
+      "source_run_id": "run_1641025259519ef5",
+      "workload_id": "wkl_19ca61869000401d"
+    }
+  ],
+  "workload_count": 5
+}
