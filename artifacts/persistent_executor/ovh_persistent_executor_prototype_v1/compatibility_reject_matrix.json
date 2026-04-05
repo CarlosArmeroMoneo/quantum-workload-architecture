@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "actual": "accepted",
+      "case": "compatible_control",
+      "expected": "accepted",
+      "passed": true,
+      "reason": ""
+    },
+    {
+      "actual": "persistent_executor_rejected",
+      "case": "repo_commit_mismatch",
+      "expected": "persistent_executor_rejected",
+      "passed": true,
+      "reason": "request compatibility fingerprint did not match the worker session or the supplied execution payload: repo_commit"
+    },
+    {
+      "actual": "persistent_executor_rejected",
+      "case": "package_version_mismatch",
+      "expected": "persistent_executor_rejected",
+      "passed": true,
+      "reason": "request compatibility fingerprint did not match the worker session or the supplied execution payload: package_version"
+    },
+    {
+      "actual": "persistent_executor_rejected",
+      "case": "execution_stack_version_mismatch",
+      "expected": "persistent_executor_rejected",
+      "passed": true,
+      "reason": "request compatibility fingerprint did not match the worker session or the supplied execution payload: execution_stack_version"
+    },
+    {
+      "actual": "persistent_executor_rejected",
+      "case": "objective_mismatch",
+      "expected": "persistent_executor_rejected",
+      "passed": true,
+      "reason": "request compatibility fingerprint did not match the worker session or the supplied execution payload: objective"
+    },
+    {
+      "actual": "persistent_executor_rejected",
+      "case": "precision_mismatch",
+      "expected": "persistent_executor_rejected",
+      "passed": true,
+      "reason": "request compatibility fingerprint did not match the worker session or the supplied execution payload: precision"
+    },
+    {
+      "actual": "persistent_executor_rejected",
+      "case": "system_id_mismatch",
+      "expected": "persistent_executor_rejected",
+      "passed": true,
+      "reason": "request compatibility fingerprint did not match the worker session or the supplied execution payload: system_id"
+    },
+    {
+      "actual": "persistent_executor_rejected",
+      "case": "selected_plan_id_mismatch",
+      "expected": "persistent_executor_rejected",
+      "passed": true,
+      "reason": "request compatibility fingerprint did not match the worker session or the supplied execution payload: selected_plan_id"
+    }
+  ]
+}

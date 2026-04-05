@@ -100,9 +100,13 @@ Public repo policy:
 - OVH confidence defaulting readout: [`docs/reports/ovh_confidence_defaulting_readout.md`](docs/reports/ovh_confidence_defaulting_readout.md)
 - TTFR variance methodology v2: [`docs/reports/ttfr_variance_methodology_v2.md`](docs/reports/ttfr_variance_methodology_v2.md)
 - OVH plan reuse prototype readout: [`docs/reports/ovh_plan_reuse_prototype_readout.md`](docs/reports/ovh_plan_reuse_prototype_readout.md)
+- OVH Gate P policy: [`docs/reports/ovh_gate_p_policy.md`](docs/reports/ovh_gate_p_policy.md)
+- OVH persistent executor prototype plan: [`docs/reports/ovh_persistent_executor_prototype_plan.md`](docs/reports/ovh_persistent_executor_prototype_plan.md)
+- OVH persistent executor prototype readout: [`docs/reports/ovh_persistent_executor_prototype_v1.md`](docs/reports/ovh_persistent_executor_prototype_v1.md)
 - Portfolio index: [`docs/reports/portfolio_index.md`](docs/reports/portfolio_index.md)
 - Tiny-MNK sidecar lab: [`sidecars/tiny_mnk_lab/README.md`](sidecars/tiny_mnk_lab/README.md)
 - Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)
+- OVH persistent executor runbook: [`docs/runbooks/ovh_persistent_executor.md`](docs/runbooks/ovh_persistent_executor.md)
 - Portfolio demo runbook: [`docs/runbooks/portfolio_demo.md`](docs/runbooks/portfolio_demo.md)
 - Canonical OVH session summary: [`docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md`](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md)
 - Generic profiler-host runbook: [`docs/runbooks/profiler_linux_host.md`](docs/runbooks/profiler_linux_host.md)
@@ -118,5 +122,6 @@ Public repo policy:
 - The tiny-MNK sidecar now has measured benchmark and Nsight Compute outputs, but it is a shape-isolation lab and not a parity proxy for cuTensorNet's internal kernel family.
 - Confidence-aware validation is now the default reporting surface for planner validation summaries, but the current OVH evidence still does not justify a planner retune.
 - Explicit reusable plan bundles are now available as an opt-in performance path for `aqs tnep execute`, but the current OVH evidence shows only modest low-repeat amplitude CLI wins and does not change any ranking or calibration claim.
+- Persistent execution is now a separate local experimental performance path behind `persistent-executor` and Gate P; on the canonical OVH trio it cut warm bundle-hit CLI wall by about `1.48 s` per request while keeping selected-plan identity, correctness, and compatibility strict.
 - Most of `artifacts/` and all of `release-assets/` are intentionally ignored so local reruns do not pollute the public tree. Small tracked truth-pass fixtures under `artifacts/truth_pass/` are the current exception.
 - `ovh.conf.example` documents the expected OVH client shape. Real credentials must live outside git.

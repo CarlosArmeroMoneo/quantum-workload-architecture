@@ -319,6 +319,144 @@ def test_execute_selected_plan_requires_explicit_override_or_bundle_for_persiste
         )
 
 
+def test_execute_selected_plan_persistent_request_failure_can_fallback_to_direct_execution(tmp_path, monkeypatch):
+    fresh = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+    )
+    bundle_path = tmp_path / 'selected_plan.bundle.json'
+    execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_bundle_path=str(bundle_path),
+    )
+
+    class FailingPersistentClient:
+        def __init__(self, socket_path, *, timeout_s=60.0):
+            self.socket_path = socket_path
+            self.timeout_s = timeout_s
+
+        def request(self, payload):
+            raise RuntimeError('worker unavailable')
+
+    monkeypatch.setattr('aqs.persistent_executor.PersistentExecutorClient', FailingPersistentClient)
+
+    payload = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_bundle_path=str(bundle_path),
+        persistent_worker_socket=str(tmp_path / 'worker.sock'),
+        allow_one_shot_fallback=True,
+    )
+
+    assert payload['execution_mode'] == 'direct_executor'
+    assert payload['selected_plan']['plan_id'] == fresh['selected_plan']['plan_id']
+    assert payload['persistent_executor_provenance']['requested'] is True
+    assert payload['persistent_executor_provenance']['persistent_used'] is False
+    assert payload['persistent_executor_provenance']['fallback_used'] is True
+    assert 'worker unavailable' in payload['persistent_executor_provenance']['fallback_reason']
+    assert payload['execution_run']['status'] == 'success'
+
+
+def test_execute_selected_plan_persistent_rejection_can_fallback_to_direct_execution(tmp_path, monkeypatch):
+    bundle_path = tmp_path / 'selected_plan.bundle.json'
+    execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_bundle_path=str(bundle_path),
+    )
+
+    class RejectingPersistentClient:
+        def __init__(self, socket_path, *, timeout_s=60.0):
+            self.socket_path = socket_path
+            self.timeout_s = timeout_s
+
+        def request(self, payload):
+            return {
+                'ok': False,
+                'persistent_executor_provenance': {
+                    'execution_mode': 'persistent_executor',
+                    'bundle_hit': True,
+                    'worker_session_id': 'wrk_test',
+                    'worker_warm': True,
+                    'worker_start_time': '2026-04-05T00:00:00+00:00',
+                    'worker_request_index': 2,
+                    'compatibility_match_reason': None,
+                    'compatibility_reject_reason': 'request compatibility fingerprint did not match the worker session: objective',
+                },
+                'driver_timing_json': {
+                    'worker_startup_s': 0.25,
+                    'worker_request_dispatch_s': 0.01,
+                    'worker_execute_s': 0.0,
+                    'worker_reply_s': 0.002,
+                    'session_request_index': 2,
+                    'session_uptime_s': 1.5,
+                },
+                'error': {
+                    'reason_code': 'persistent_executor_rejected',
+                    'message': 'request compatibility fingerprint did not match the worker session: objective',
+                },
+            }
+
+    monkeypatch.setattr('aqs.persistent_executor.PersistentExecutorClient', RejectingPersistentClient)
+
+    payload = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_bundle_path=str(bundle_path),
+        persistent_worker_socket=str(tmp_path / 'worker.sock'),
+        allow_one_shot_fallback=True,
+    )
+
+    assert payload['execution_mode'] == 'direct_executor'
+    assert payload['persistent_executor_provenance']['persistent_used'] is False
+    assert payload['persistent_executor_provenance']['fallback_used'] is True
+    assert 'objective' in payload['persistent_executor_provenance']['compatibility_reject_reason']
+    assert 'objective' in payload['persistent_executor_provenance']['fallback_reason']
+    assert payload['execution_run']['status'] == 'success'
+
+
+def test_execute_selected_plan_persistent_request_failure_is_not_silent_without_fallback(tmp_path, monkeypatch):
+    bundle_path = tmp_path / 'selected_plan.bundle.json'
+    execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_bundle_path=str(bundle_path),
+    )
+
+    class FailingPersistentClient:
+        def __init__(self, socket_path, *, timeout_s=60.0):
+            self.socket_path = socket_path
+            self.timeout_s = timeout_s
+
+        def request(self, payload):
+            raise RuntimeError('worker unavailable')
+
+    monkeypatch.setattr('aqs.persistent_executor.PersistentExecutorClient', FailingPersistentClient)
+
+    with pytest.raises(ExecutionError, match='worker unavailable'):
+        execute_selected_plan(
+            'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+            'configs/systems/cpu_probe.yml',
+            measurement_repeats=2,
+            allow_distributed=False,
+            plan_bundle_path=str(bundle_path),
+            persistent_worker_socket=str(tmp_path / 'worker.sock'),
+        )
+
+
 def test_execute_selected_plan_rejects_plan_json_and_plan_bundle_together(tmp_path):
     plan_path = tmp_path / 'selected_plan.json'
     plan_path.write_text(json.dumps({'selected_plan': {'plan_id': 'plan_test'}}), encoding='utf-8')

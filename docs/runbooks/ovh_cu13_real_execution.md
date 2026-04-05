@@ -223,6 +223,61 @@ Current interpretation:
 - The medium-repeat control was slightly negative because cold real-executor initialization shifted into the reused execute phase.
 - This supports a performance-only follow-on, not a planner-retune branch.
 
+## Persistent Executor Prototype
+
+Use the persistent executor only as a local, opt-in performance path.
+
+It is intentionally separate from Gate A and Gate B:
+
+- Gate A and Gate B remain the ranking/calibration evaluation surfaces.
+- Gate P is the persistent-execution performance gate on the canonical OVH trio.
+- Persistent execution does not change ranking logic and should not be described as calibration progress.
+
+Lifecycle surface:
+
+```bash
+python -m aqs persistent-executor serve --socket /tmp/aqs-ovh.sock
+python -m aqs persistent-executor ping --socket /tmp/aqs-ovh.sock
+python -m aqs persistent-executor status --socket /tmp/aqs-ovh.sock
+python -m aqs persistent-executor shutdown --socket /tmp/aqs-ovh.sock
+```
+
+Compatible persistent bundle execution:
+
+```bash
+python -m aqs tnep execute \
+  --manifest workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml \
+  --system-manifest configs/systems/ovh_gra9_rtx5000_28.yml \
+  --objective ttfr \
+  --probe-strategy real_if_available \
+  --planner-budget balanced \
+  --measurement-repeats 3 \
+  --execution-intent require_real \
+  --no-allow-distributed \
+  --plan-bundle artifacts/persistent_executor/manual/01.plan_bundle.json \
+  --persistent-worker-socket /tmp/aqs-ovh.sock \
+  --out artifacts/persistent_executor/manual/01.persistent.execute.json
+```
+
+Canonical Gate P benchmark:
+
+```bash
+python scripts/benchmark_persistent_executor.py \
+  --manifest workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml \
+  --manifest workloads/manifests/imported/ovh_v2/06_star_graph_phase_amplitude_heldout_low.yaml \
+  --manifest workloads/manifests/imported/ovh_v2/08_parity_iqp_batched_heldout_medium.yaml \
+  --system-manifest configs/systems/ovh_gra9_rtx5000_28.yml \
+  --execution-intent require_real \
+  --benchmark-repeats 5 \
+  --outdir artifacts/persistent_executor/ovh_persistent_executor_prototype_v1
+```
+
+Reference docs:
+
+- `docs/reports/ovh_gate_p_policy.md`
+- `docs/reports/ovh_persistent_executor_prototype_plan.md`
+- `docs/runbooks/ovh_persistent_executor.md`
+
 ## Public Evidence Layout
 
 - Curated summaries are tracked in `evidence/first_real_profiler_slice/`.

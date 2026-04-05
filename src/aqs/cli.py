@@ -251,6 +251,7 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
         plan_json_path=args.plan_json,
         plan_bundle_path=args.plan_bundle,
         persistent_worker_socket=args.persistent_worker_socket,
+        allow_one_shot_fallback=args.allow_one_shot_fallback,
         graph_mode=args.graph_mode,
         prewarm_mode=args.prewarm_mode,
     )
@@ -279,11 +280,52 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
     return 0 if payload["execution_run"]["status"] == "success" else 1
 
 
-def _cmd_persistent_worker(args: argparse.Namespace) -> int:
+def _cmd_persistent_executor_serve(args: argparse.Namespace) -> int:
     from .persistent_executor import PersistentRealExecutorWorker
 
-    worker = PersistentRealExecutorWorker(args.socket)
+    worker = PersistentRealExecutorWorker(
+        args.socket,
+        replace_live_worker=args.replace_live_worker,
+        max_requests=args.max_requests,
+        max_session_seconds=args.max_session_seconds,
+    )
     return int(worker.serve_forever())
+
+
+def _cmd_persistent_executor_ping(args: argparse.Namespace) -> int:
+    from .persistent_executor import PersistentExecutorClient
+
+    try:
+        payload = PersistentExecutorClient(args.socket).ping()
+    except Exception as exc:
+        _print_json({"ok": False, "command": "ping", "error": str(exc)})
+        return 1
+    _print_json(payload)
+    return 0 if payload.get("ok") else 1
+
+
+def _cmd_persistent_executor_status(args: argparse.Namespace) -> int:
+    from .persistent_executor import PersistentExecutorClient
+
+    try:
+        payload = PersistentExecutorClient(args.socket).status()
+    except Exception as exc:
+        _print_json({"ok": False, "command": "status", "error": str(exc)})
+        return 1
+    _print_json(payload)
+    return 0 if payload.get("ok") else 1
+
+
+def _cmd_persistent_executor_shutdown(args: argparse.Namespace) -> int:
+    from .persistent_executor import PersistentExecutorClient
+
+    try:
+        payload = PersistentExecutorClient(args.socket).shutdown()
+    except Exception as exc:
+        _print_json({"ok": False, "command": "shutdown", "error": str(exc)})
+        return 1
+    _print_json(payload)
+    return 0 if payload.get("ok") else 1
 
 
 def _cmd_profile_nsys(args: argparse.Namespace) -> int:
@@ -526,6 +568,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--persistent-worker-socket",
         help="Optional Unix socket for an already-running persistent real executor. v1 only supports plan overrides or compatible bundle hits.",
     )
+    execute_tnep.add_argument(
+        "--allow-one-shot-fallback",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="When a requested persistent execution path is unavailable or rejected, fall back to the direct one-shot executor with explicit provenance.",
+    )
     execute_tnep.add_argument("--probe-strategy", choices=["surrogate_only", "structural_real", "real_if_available", "cuquantum_if_available", "cuquantum_required"], default="structural_real")
     execute_tnep.add_argument("--planner-budget", choices=["quick", "balanced", "deep"], default="balanced")
     execute_tnep.add_argument("--measurement-repeats", type=int, default=3)
@@ -638,9 +686,34 @@ def build_parser() -> argparse.ArgumentParser:
     campaign_summarize.add_argument("--outdir")
     campaign_summarize.set_defaults(func=_cmd_campaign_summarize)
 
-    persistent_worker = sub.add_parser("persistent-worker", help="Run the local persistent real-execution worker")
+    persistent_executor = sub.add_parser("persistent-executor", help="Persistent local real-execution worker lifecycle")
+    persistent_executor_sub = persistent_executor.add_subparsers(dest="persistent_executor_command", required=True)
+
+    serve = persistent_executor_sub.add_parser("serve", help="Start the local persistent real-execution worker")
+    serve.add_argument("--socket", required=True, help="Unix domain socket path for the worker")
+    serve.add_argument("--replace-live-worker", action=argparse.BooleanOptionalAction, default=False, help="Replace an existing live worker at the same socket after a graceful shutdown")
+    serve.add_argument("--max-requests", type=int, help="Optional maximum number of execute requests before the worker exits")
+    serve.add_argument("--max-session-seconds", type=float, help="Optional maximum session age in seconds before the worker exits")
+    serve.set_defaults(func=_cmd_persistent_executor_serve)
+
+    ping = persistent_executor_sub.add_parser("ping", help="Ping the persistent real-execution worker")
+    ping.add_argument("--socket", required=True, help="Unix domain socket path for the worker")
+    ping.set_defaults(func=_cmd_persistent_executor_ping)
+
+    status = persistent_executor_sub.add_parser("status", help="Fetch detailed worker health and runtime metadata")
+    status.add_argument("--socket", required=True, help="Unix domain socket path for the worker")
+    status.set_defaults(func=_cmd_persistent_executor_status)
+
+    shutdown = persistent_executor_sub.add_parser("shutdown", help="Gracefully stop the persistent real-execution worker")
+    shutdown.add_argument("--socket", required=True, help="Unix domain socket path for the worker")
+    shutdown.set_defaults(func=_cmd_persistent_executor_shutdown)
+
+    persistent_worker = sub.add_parser("persistent-worker", help="Compatibility alias for `persistent-executor serve`")
     persistent_worker.add_argument("--socket", required=True, help="Unix domain socket path for the worker")
-    persistent_worker.set_defaults(func=_cmd_persistent_worker)
+    persistent_worker.add_argument("--replace-live-worker", action=argparse.BooleanOptionalAction, default=False, help="Replace an existing live worker at the same socket after a graceful shutdown")
+    persistent_worker.add_argument("--max-requests", type=int, help="Optional maximum number of execute requests before the worker exits")
+    persistent_worker.add_argument("--max-session-seconds", type=float, help="Optional maximum session age in seconds before the worker exits")
+    persistent_worker.set_defaults(func=_cmd_persistent_executor_serve)
 
     return parser
 

@@ -822,6 +822,7 @@ def execute_selected_plan(
     plan_json_path: str | None = None,
     plan_bundle_path: str | None = None,
     persistent_worker_socket: str | None = None,
+    allow_one_shot_fallback: bool = False,
     graph_mode: str | None = None,
     prewarm_mode: str = "none",
 ) -> dict[str, Any]:
@@ -865,6 +866,7 @@ def execute_selected_plan(
         "requested": bool(persistent_worker_socket),
         "socket_path": _normalized_path(persistent_worker_socket) if persistent_worker_socket else None,
         "execution_mode": "direct_executor",
+        "persistent_used": False,
         "bundle_hit": False,
         "worker_session_id": None,
         "worker_warm": None,
@@ -872,6 +874,8 @@ def execute_selected_plan(
         "worker_request_index": None,
         "compatibility_match_reason": None,
         "compatibility_reject_reason": None,
+        "fallback_used": False,
+        "fallback_reason": None,
     }
 
     bundle_scope = _build_plan_bundle_scope(
@@ -1003,78 +1007,9 @@ def execute_selected_plan(
         graph_mode=resolved_graph_mode,
         prewarm_mode=prewarm_mode,
     )
-    if persistent_worker_socket:
-        if selected_by not in {"plan_override", "plan_bundle_reuse"}:
-            raise ExecutionError(
-                "persistent worker mode requires either an explicit plan override or a compatible plan bundle hit in v1"
-            )
-        from .persistent_executor import (
-            PERSISTENT_EXECUTION_MODE,
-            PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-            PersistentExecutorClient,
-        )
 
-        client = PersistentExecutorClient(persistent_worker_socket)
-        command = "execute_bundle" if selected_by == "plan_bundle_reuse" else "execute_plan_json"
-        request_context = _build_persistent_request_context(
-            bundle_scope=bundle_scope,
-            selected_plan=chosen,
-            selection_source=selected_by,
-            graph_mode=resolved_graph_mode,
-            execution_intent=execution_intent,
-            precision=execution_config.precision,
-            allow_distributed=allow_distributed,
-            bundle_hit=(selected_by == "plan_bundle_reuse"),
-        )
-        worker_response = client.request(
-            {
-                "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-                "command": command,
-                "request_context": request_context,
-                "workload_manifest": manifest,
-                "system_manifest": system_manifest,
-                "selected_plan": chosen,
-                "allow_distributed": bool(allow_distributed),
-                "config": {
-                    "objective": execution_config.objective,
-                    "precision": execution_config.precision,
-                    "probe_strategy": execution_config.probe_strategy,
-                    "measurement_repeats": execution_config.measurement_repeats,
-                    "ttfr_repeats": execution_config.ttfr_repeats,
-                    "execution_intent": execution_config.execution_intent,
-                    "replicate_idx": execution_config.replicate_idx,
-                    "graph_mode": execution_config.graph_mode,
-                    "prewarm_mode": execution_config.prewarm_mode,
-                },
-            }
-        )
-        persistent_executor_provenance = {
-            **persistent_executor_provenance,
-            **(worker_response.get("persistent_executor_provenance") or {}),
-            "execution_mode": PERSISTENT_EXECUTION_MODE,
-            "bundle_hit": bool(selected_by == "plan_bundle_reuse"),
-        }
-        worker_timing = dict(worker_response.get("driver_timing_json") or {})
-        if worker_response.get("ok"):
-            bundle = dict(worker_response["bundle"])
-            bundle["driver_timing_json"] = {
-                **dict(bundle.get("driver_timing_json") or {}),
-                **worker_timing,
-            }
-        else:
-            bundle = _build_persistent_worker_failure_bundle(
-                chosen=chosen,
-                workload_manifest=manifest,
-                system_profile=system_profile,
-                graph_mode=resolved_graph_mode,
-                execution_intent=execution_intent,
-                replicate_idx=replicate_idx,
-                error=worker_response.get("error") or {},
-                worker_provenance=persistent_executor_provenance,
-                worker_timing=worker_timing,
-            )
-    else:
-        bundle = execute_plan_candidate_bundle(
+    def execute_direct_bundle() -> dict[str, Any]:
+        return execute_plan_candidate_bundle(
             manifest,
             chosen,
             system_profile=system_profile,
@@ -1082,6 +1017,114 @@ def execute_selected_plan(
             probe=probe,
             config=execution_config,
         )
+
+    def mark_persistent_fallback(reason: str) -> None:
+        nonlocal persistent_executor_provenance
+        persistent_executor_provenance = {
+            **persistent_executor_provenance,
+            "execution_mode": "direct_executor",
+            "persistent_used": False,
+            "bundle_hit": bool(selected_by == "plan_bundle_reuse"),
+            "fallback_used": True,
+            "fallback_reason": reason,
+        }
+
+    if persistent_worker_socket:
+        if selected_by not in {"plan_override", "plan_bundle_reuse"}:
+            reason = (
+                "persistent worker mode requires either an explicit plan override or a compatible plan bundle hit in v1"
+            )
+            if not allow_one_shot_fallback:
+                raise ExecutionError(reason)
+            mark_persistent_fallback(reason)
+            bundle = execute_direct_bundle()
+        else:
+            from .persistent_executor import (
+                PERSISTENT_EXECUTION_MODE,
+                PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
+                PersistentExecutorClient,
+            )
+
+            client = PersistentExecutorClient(persistent_worker_socket)
+            command = "execute_bundle" if selected_by == "plan_bundle_reuse" else "execute_plan_json"
+            request_context = _build_persistent_request_context(
+                bundle_scope=bundle_scope,
+                selected_plan=chosen,
+                selection_source=selected_by,
+                graph_mode=resolved_graph_mode,
+                execution_intent=execution_intent,
+                precision=execution_config.precision,
+                allow_distributed=allow_distributed,
+                bundle_hit=(selected_by == "plan_bundle_reuse"),
+            )
+            try:
+                worker_response = client.request(
+                    {
+                        "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
+                        "command": command,
+                        "request_context": request_context,
+                        "workload_manifest": manifest,
+                        "system_manifest": system_manifest,
+                        "selected_plan": chosen,
+                        "allow_distributed": bool(allow_distributed),
+                        "config": {
+                            "objective": execution_config.objective,
+                            "precision": execution_config.precision,
+                            "probe_strategy": execution_config.probe_strategy,
+                            "measurement_repeats": execution_config.measurement_repeats,
+                            "ttfr_repeats": execution_config.ttfr_repeats,
+                            "execution_intent": execution_config.execution_intent,
+                            "replicate_idx": execution_config.replicate_idx,
+                            "graph_mode": execution_config.graph_mode,
+                            "prewarm_mode": execution_config.prewarm_mode,
+                        },
+                    }
+                )
+            except Exception as exc:
+                reason = f"persistent worker request failed: {exc}"
+                if not allow_one_shot_fallback:
+                    raise ExecutionError(reason) from exc
+                mark_persistent_fallback(reason)
+                bundle = execute_direct_bundle()
+            else:
+                persistent_executor_provenance = {
+                    **persistent_executor_provenance,
+                    **(worker_response.get("persistent_executor_provenance") or {}),
+                    "execution_mode": PERSISTENT_EXECUTION_MODE,
+                    "persistent_used": bool(worker_response.get("ok")),
+                    "bundle_hit": bool(selected_by == "plan_bundle_reuse"),
+                }
+                worker_timing = dict(worker_response.get("driver_timing_json") or {})
+                if worker_response.get("ok"):
+                    bundle = dict(worker_response["bundle"])
+                    bundle["driver_timing_json"] = {
+                        **dict(bundle.get("driver_timing_json") or {}),
+                        **worker_timing,
+                    }
+                else:
+                    reject_reason = (
+                        str(persistent_executor_provenance.get("compatibility_reject_reason") or "")
+                        or str((worker_response.get("error") or {}).get("message") or "")
+                        or "persistent worker rejected the request"
+                    )
+                    if allow_one_shot_fallback:
+                        mark_persistent_fallback(reject_reason)
+                        persistent_executor_provenance["compatibility_reject_reason"] = reject_reason
+                        bundle = execute_direct_bundle()
+                    else:
+                        bundle = _build_persistent_worker_failure_bundle(
+                            chosen=chosen,
+                            workload_manifest=manifest,
+                            system_profile=system_profile,
+                            graph_mode=resolved_graph_mode,
+                            execution_intent=execution_intent,
+                            replicate_idx=replicate_idx,
+                            error=worker_response.get("error") or {},
+                            worker_provenance=persistent_executor_provenance,
+                            worker_timing=worker_timing,
+                        )
+    else:
+        bundle = execute_direct_bundle()
     record_timing("execute_plan_bundle_s", execution_start)
     for key, value in (bundle.get("driver_timing_json") or {}).items():
         driver_timing[key] = float(value)

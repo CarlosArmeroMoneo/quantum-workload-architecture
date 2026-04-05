@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 import threading
 import time
 
@@ -10,6 +11,7 @@ from aqs.execution_real import REAL_EXECUTION_STACK_VERSION
 from aqs.persistent_executor import (
     PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
     PersistentExecutorClient,
+    PersistentExecutorError,
     PersistentRealExecutorWorker,
 )
 from aqs.utils import canonical_json, sha256_text
@@ -101,10 +103,80 @@ def _request_context(
     }
 
 
-@pytest.fixture
-def fake_worker(monkeypatch, tmp_path):
-    socket_path = tmp_path / "persistent.sock"
-    calls: list[dict[str, object]] = []
+def _request_payload(
+    *,
+    manifest: dict[str, object] | None = None,
+    system_manifest: dict[str, object] | None = None,
+    plan: dict[str, object] | None = None,
+    command: str = "execute_bundle",
+    context_overrides: dict[str, object] | None = None,
+    config_overrides: dict[str, object] | None = None,
+) -> dict[str, object]:
+    manifest = manifest or _test_manifest()
+    system_manifest = system_manifest or _test_system_manifest()
+    plan = plan or _test_plan()
+    selection_source = "plan_bundle_reuse" if command == "execute_bundle" else "plan_override"
+    bundle_hit = command == "execute_bundle"
+    request_context = _request_context(
+        manifest,
+        system_manifest,
+        plan,
+        selection_source=selection_source,
+        bundle_hit=bundle_hit,
+    )
+    if context_overrides:
+        request_context.update(context_overrides)
+    return {
+        "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
+        "command": command,
+        "request_context": request_context,
+        "workload_manifest": manifest,
+        "system_manifest": system_manifest,
+        "selected_plan": plan,
+        "allow_distributed": False,
+        "config": _test_config(**(config_overrides or {})),
+    }
+
+
+def _wait_for_client(socket_path, *, timeout_s: float = 2.0) -> PersistentExecutorClient:
+    client = PersistentExecutorClient(socket_path, timeout_s=timeout_s)
+    deadline = time.time() + timeout_s
+    last_error = None
+    while time.time() < deadline:
+        try:
+            ping = client.ping()
+            if ping.get("ok"):
+                return client
+        except Exception as exc:  # pragma: no cover - startup retry guard
+            last_error = exc
+            time.sleep(0.02)
+    raise RuntimeError(f"worker did not become ready: {last_error}")
+
+
+def _wait_for_socket_gone(socket_path, *, timeout_s: float = 2.0) -> None:
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        if not socket_path.exists():
+            return
+        time.sleep(0.02)
+    raise AssertionError(f"socket path still exists after {timeout_s}s: {socket_path}")
+
+
+def _patch_fake_worker_runtime(monkeypatch, calls: list[dict[str, object]]) -> None:
+    class FakeDevice:
+        id = 0
+
+    class FakeRuntime:
+        @staticmethod
+        def memGetInfo():
+            return 123_456_789, 987_654_321
+
+    class FakeCuda:
+        Device = FakeDevice
+        runtime = FakeRuntime
+
+    class FakeCuPy:
+        cuda = FakeCuda
 
     monkeypatch.setattr(
         "aqs.persistent_executor.capture_repo_metadata",
@@ -123,7 +195,7 @@ def fake_worker(monkeypatch, tmp_path):
                 "cuquantum_present": True,
                 "qiskit_present": True,
             },
-            "cupy": object(),
+            "cupy": FakeCuPy(),
             "Network": object(),
             "CircuitToEinsum": object(),
             "startup_s": 0.321,
@@ -183,62 +255,66 @@ def fake_worker(monkeypatch, tmp_path):
         fake_execute_real_plan_candidate_with_runtime,
     )
 
-    worker = PersistentRealExecutorWorker(socket_path)
+
+@contextmanager
+def _running_fake_worker(monkeypatch, tmp_path, *, socket_name: str = "persistent.sock", **worker_kwargs):
+    calls: list[dict[str, object]] = []
+    _patch_fake_worker_runtime(monkeypatch, calls)
+
+    socket_path = tmp_path / socket_name
+    worker = PersistentRealExecutorWorker(socket_path, **worker_kwargs)
     thread = threading.Thread(target=worker.serve_forever, daemon=True)
     thread.start()
-
-    client = PersistentExecutorClient(socket_path, timeout_s=2.0)
-    deadline = time.time() + 2.0
-    last_error = None
-    while time.time() < deadline:
-        try:
-            ping = client.ping()
-            if ping.get("ok"):
-                break
-        except Exception as exc:  # pragma: no cover - retry loop guard
-            last_error = exc
-            time.sleep(0.02)
-    else:  # pragma: no cover - startup guard
-        raise RuntimeError(f"worker did not become ready: {last_error}")
-
-    yield {
-        "socket_path": str(socket_path),
-        "client": client,
-        "thread": thread,
-        "calls": calls,
-    }
-
+    client = _wait_for_client(socket_path)
     try:
-        client.shutdown()
-    except Exception:
-        pass
-    thread.join(timeout=2.0)
+        yield {
+            "socket_path": socket_path,
+            "client": client,
+            "thread": thread,
+            "worker": worker,
+            "calls": calls,
+        }
+    finally:
+        try:
+            if socket_path.exists():
+                client.shutdown()
+        except Exception:
+            pass
+        thread.join(timeout=2.0)
 
 
-def test_persistent_worker_startup_and_shutdown_protocol(fake_worker):
+@pytest.fixture
+def fake_worker(monkeypatch, tmp_path):
+    with _running_fake_worker(monkeypatch, tmp_path) as state:
+        yield state
+
+
+def test_persistent_worker_startup_status_and_shutdown_protocol(fake_worker):
     ping = fake_worker["client"].ping()
+    status = fake_worker["client"].status()
+
     assert ping["ok"] is True
     assert ping["worker_session_id"].startswith("wrk_")
+    assert status["ok"] is True
+    assert status["runtime_metadata"]["execution_stack_version"] == EXECUTION_VERSION
+    assert status["runtime_metadata"]["real_execution_stack_version"] == REAL_EXECUTION_STACK_VERSION
+    assert status["runtime_metadata"]["bundle_schema_version"] == PLAN_BUNDLE_VERSION
+    assert status["runtime_metadata"]["system_id"] == "sys_fake"
+    assert status["health"]["worker_pid"] > 0
+    assert status["health"]["request_count"] == 0
+    assert status["health"]["device_id"] == 0
+    assert status["health"]["gpu_mem_free_bytes"] == 123_456_789
+    assert status["health"]["gpu_mem_total_bytes"] == 987_654_321
+    assert status["session_bounds"] == {"max_requests": None, "max_session_seconds": None}
+
     shutdown = fake_worker["client"].shutdown()
     assert shutdown["ok"] is True
+    fake_worker["thread"].join(timeout=2.0)
+    _wait_for_socket_gone(fake_worker["socket_path"])
 
 
 def test_persistent_worker_execute_bundle_round_trip(fake_worker):
-    manifest = _test_manifest()
-    system_manifest = _test_system_manifest()
-    plan = _test_plan()
-    response = fake_worker["client"].request(
-        {
-            "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-            "command": "execute_bundle",
-            "request_context": _request_context(manifest, system_manifest, plan, selection_source="plan_bundle_reuse", bundle_hit=True),
-            "workload_manifest": manifest,
-            "system_manifest": system_manifest,
-            "selected_plan": plan,
-            "allow_distributed": False,
-            "config": _test_config(),
-        }
-    )
+    response = fake_worker["client"].request(_request_payload())
 
     assert response["ok"] is True
     assert response["bundle"]["execution_run"]["status"] == "success"
@@ -251,21 +327,7 @@ def test_persistent_worker_execute_bundle_round_trip(fake_worker):
 
 
 def test_persistent_worker_execute_plan_json_round_trip(fake_worker):
-    manifest = _test_manifest()
-    system_manifest = _test_system_manifest()
-    plan = _test_plan()
-    response = fake_worker["client"].request(
-        {
-            "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-            "command": "execute_plan_json",
-            "request_context": _request_context(manifest, system_manifest, plan, selection_source="plan_override", bundle_hit=False),
-            "workload_manifest": manifest,
-            "system_manifest": system_manifest,
-            "selected_plan": plan,
-            "allow_distributed": False,
-            "config": _test_config(),
-        }
-    )
+    response = fake_worker["client"].request(_request_payload(command="execute_plan_json"))
 
     assert response["ok"] is True
     assert response["persistent_executor_provenance"]["bundle_hit"] is False
@@ -279,30 +341,13 @@ def test_persistent_worker_execute_plan_json_round_trip(fake_worker):
         ("objective", {"objective": "steady_state"}, {"objective": "ttfr"}),
         ("precision", {"precision": "complex64"}, {"precision": "complex128"}),
         ("graph_mode", {"graph_mode": "steady_state"}, {"graph_mode": "off"}),
+        ("repo_commit", {"repo_commit": "commit_other"}, {}),
+        ("package_version", {"package_version": "1.2.3"}, {}),
     ],
 )
 def test_persistent_worker_rejects_mismatched_request_fields(fake_worker, field, context_overrides, config_overrides):
-    manifest = _test_manifest()
-    system_manifest = _test_system_manifest()
-    plan = _test_plan()
     response = fake_worker["client"].request(
-        {
-            "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-            "command": "execute_bundle",
-            "request_context": _request_context(
-                manifest,
-                system_manifest,
-                plan,
-                selection_source="plan_bundle_reuse",
-                bundle_hit=True,
-                **context_overrides,
-            ),
-            "workload_manifest": manifest,
-            "system_manifest": system_manifest,
-            "selected_plan": plan,
-            "allow_distributed": False,
-            "config": _test_config(**config_overrides),
-        }
+        _request_payload(context_overrides=context_overrides, config_overrides=config_overrides)
     )
 
     assert response["ok"] is False
@@ -314,23 +359,11 @@ def test_persistent_worker_rejects_mismatched_request_fields(fake_worker, field,
 
 @pytest.mark.parametrize("field", ["bundle_schema_version", "execution_stack_version", "real_execution_stack_version"])
 def test_persistent_worker_rejects_version_mismatches(fake_worker, field):
-    manifest = _test_manifest()
-    system_manifest = _test_system_manifest()
-    plan = _test_plan()
-    request_context = _request_context(manifest, system_manifest, plan, selection_source="plan_bundle_reuse", bundle_hit=True)
+    request_context = dict(_request_payload()["request_context"])
     request_context[field] = "mismatch"
-    response = fake_worker["client"].request(
-        {
-            "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-            "command": "execute_bundle",
-            "request_context": request_context,
-            "workload_manifest": manifest,
-            "system_manifest": system_manifest,
-            "selected_plan": plan,
-            "allow_distributed": False,
-            "config": _test_config(),
-        }
-    )
+    payload = _request_payload()
+    payload["request_context"] = request_context
+    response = fake_worker["client"].request(payload)
 
     assert response["ok"] is False
     assert response["error"]["reason_code"] == "persistent_executor_rejected"
@@ -338,19 +371,7 @@ def test_persistent_worker_rejects_version_mismatches(fake_worker, field):
 
 
 def test_persistent_worker_emits_cold_and_warm_provenance(fake_worker):
-    manifest = _test_manifest()
-    system_manifest = _test_system_manifest()
-    plan = _test_plan()
-    request = {
-        "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-        "command": "execute_bundle",
-        "request_context": _request_context(manifest, system_manifest, plan, selection_source="plan_bundle_reuse", bundle_hit=True),
-        "workload_manifest": manifest,
-        "system_manifest": system_manifest,
-        "selected_plan": plan,
-        "allow_distributed": False,
-        "config": _test_config(),
-    }
+    request = _request_payload()
 
     cold = fake_worker["client"].request(request)
     warm = fake_worker["client"].request(request)
@@ -363,3 +384,78 @@ def test_persistent_worker_emits_cold_and_warm_provenance(fake_worker):
     assert warm["persistent_executor_provenance"]["worker_request_index"] == 2
     assert cold["bundle"]["driver_timing_json"]["import_real_stack_s"] == 0.0
     assert warm["bundle"]["driver_timing_json"]["import_real_stack_s"] == 0.0
+
+
+def test_persistent_worker_refuses_live_socket_without_replace(monkeypatch, tmp_path):
+    with _running_fake_worker(monkeypatch, tmp_path, socket_name="live.sock") as state:
+        competing = PersistentRealExecutorWorker(state["socket_path"])
+        with pytest.raises(PersistentExecutorError, match="live persistent executor already listening"):
+            competing.serve_forever()
+
+
+def test_persistent_worker_cleans_up_stale_socket(monkeypatch, tmp_path):
+    stale_path = tmp_path / "stale.sock"
+    stale_path.write_text("stale", encoding="utf-8")
+
+    with _running_fake_worker(monkeypatch, tmp_path, socket_name="stale.sock") as state:
+        assert state["worker"].startup_socket_action == "stale_socket_removed"
+        assert state["client"].ping()["ok"] is True
+
+
+def test_persistent_worker_shutdown_cleans_socket_and_allows_restart(monkeypatch, tmp_path):
+    socket_path = tmp_path / "restart.sock"
+    with _running_fake_worker(monkeypatch, tmp_path, socket_name="restart.sock") as first:
+        first_session_id = first["client"].status()["worker_session_id"]
+        first["client"].shutdown()
+        first["thread"].join(timeout=2.0)
+        _wait_for_socket_gone(socket_path)
+
+    with _running_fake_worker(monkeypatch, tmp_path, socket_name="restart.sock") as second:
+        second_session_id = second["client"].status()["worker_session_id"]
+        assert second_session_id != first_session_id
+
+
+def test_persistent_worker_replace_live_worker(monkeypatch, tmp_path):
+    with _running_fake_worker(monkeypatch, tmp_path, socket_name="replace.sock") as first:
+        socket_path = first["socket_path"]
+        first_session_id = first["client"].status()["worker_session_id"]
+
+        replacement = PersistentRealExecutorWorker(socket_path, replace_live_worker=True)
+        replacement_thread = threading.Thread(target=replacement.serve_forever, daemon=True)
+        replacement_thread.start()
+        deadline = time.time() + 2.0
+        replacement_client = None
+        replacement_status = None
+        while time.time() < deadline:
+            client = _wait_for_client(socket_path)
+            status = client.status()
+            if status["worker_session_id"] != first_session_id:
+                replacement_client = client
+                replacement_status = status
+                break
+            time.sleep(0.05)
+        assert replacement_client is not None
+        assert replacement_status is not None
+
+        assert replacement_status["worker_session_id"] != first_session_id
+        assert replacement.startup_socket_action == "replaced_live_worker"
+
+        replacement_client.shutdown()
+        replacement_thread.join(timeout=2.0)
+        _wait_for_socket_gone(socket_path)
+
+
+def test_persistent_worker_max_requests_stops_after_active_request(monkeypatch, tmp_path):
+    with _running_fake_worker(monkeypatch, tmp_path, socket_name="maxreq.sock", max_requests=1) as state:
+        response = state["client"].request(_request_payload())
+        assert response["ok"] is True
+        state["thread"].join(timeout=2.0)
+        _wait_for_socket_gone(state["socket_path"])
+        assert state["worker"].stop_reason == "max_requests_reached"
+
+
+def test_persistent_worker_max_session_seconds_stops_cleanly(monkeypatch, tmp_path):
+    with _running_fake_worker(monkeypatch, tmp_path, socket_name="maxtime.sock", max_session_seconds=0.15) as state:
+        state["thread"].join(timeout=2.0)
+        _wait_for_socket_gone(state["socket_path"])
+        assert state["worker"].stop_reason == "max_session_seconds_reached"

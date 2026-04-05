@@ -1,0 +1,33 @@
+{
+  "checks": [
+    {
+      "check": "live_socket_refusal",
+      "passed": true,
+      "stderr": "ERROR: live persistent executor already listening at /tmp/aqs_socket_recovery__v9olcdn/live.sock; pass --replace-live-worker to replace it",
+      "worker_session_id": "wrk_09d4df56e081a3b3"
+    },
+    {
+      "check": "replace_live_worker",
+      "new_session_id": "wrk_7e466bf52c861fc7",
+      "old_session_id": "wrk_09d4df56e081a3b3",
+      "passed": true,
+      "startup_socket_action": "replaced_live_worker"
+    },
+    {
+      "check": "stale_socket_cleanup",
+      "passed": true,
+      "startup_socket_action": "stale_socket_removed"
+    },
+    {
+      "check": "shutdown_cleanup",
+      "passed": true,
+      "worker_session_id": "wrk_841429ea596b8d79"
+    },
+    {
+      "check": "restart_after_cleanup",
+      "new_session_id": "wrk_60f353bd422abc25",
+      "old_session_id": "wrk_841429ea596b8d79",
+      "passed": true
+    }
+  ]
+}
