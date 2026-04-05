@@ -23,6 +23,8 @@ from .utils import canonical_json, sha256_text
 
 REAL_EXECUTION_SOURCE = "cuquantum_tensornet_gpu"
 REAL_EXECUTION_VERSION = "aqs.execution.real.v2"
+REAL_EXECUTION_STACK_VERSION = "aqs.execution.real_stack.v1"
+PREWARM_MODES = ("none", "import_context", "tiny_network")
 
 REAL_RECOVERABLE_CODES = {
     "missing_gpu",
@@ -68,6 +70,17 @@ def _safe_output_digest(result: Any) -> str:
         except Exception:
             pass
     return "out_" + sha256_text(repr(result))[:16]
+
+
+def normalize_prewarm_mode(value: Any) -> str:
+    mode = str(value or "none")
+    if mode not in PREWARM_MODES:
+        raise RealExecutionError(
+            "runtime_error",
+            f"unsupported prewarm_mode {mode!r}; expected one of {PREWARM_MODES}",
+            recoverable=False,
+        )
+    return mode
 
 
 def _require_real_capability(system_profile: dict[str, Any], module_name: str, code: str, message: str) -> None:
@@ -149,6 +162,69 @@ def _current_cupy_stream(cupy: Any) -> Any:
     if null_stream is not None:
         return null_stream
     raise RealExecutionError("graph_capture_unavailable", "CUDA Graph capture requires a CuPy stream implementation with capture support")
+
+
+def _touch_active_cupy_context(cupy: Any) -> None:
+    device_type = getattr(getattr(cupy, "cuda", None), "Device", None)
+    if callable(device_type):
+        device = device_type()
+        use = getattr(device, "use", None)
+        if callable(use):
+            use()
+    _ = _current_cupy_stream(cupy)
+    empty = getattr(cupy, "empty", None)
+    if callable(empty):
+        buffer = empty((1,), dtype=getattr(cupy, "float32", None))
+        del buffer
+    _sync_cupy(cupy)
+
+
+def _run_executor_prewarm(mode: str, *, cupy: Any, Network: Any, CircuitToEinsum: Any) -> dict[str, Any]:
+    if mode == "none":
+        return {
+            "prewarm_mode": "none",
+            "prewarm_wall_s": 0.0,
+            "prewarm_success": None,
+            "prewarm_notes": "benchmark-only prewarm disabled",
+        }
+
+    started = time.perf_counter()
+    try:
+        if mode == "import_context":
+            _touch_active_cupy_context(cupy)
+            return {
+                "prewarm_mode": mode,
+                "prewarm_wall_s": round(max(time.perf_counter() - started, 0.0), 9),
+                "prewarm_success": True,
+                "prewarm_notes": "imported the real stack, touched the active device/stream, and forced a trivial CuPy allocation/free",
+            }
+
+        from qiskit import QuantumCircuit
+
+        _touch_active_cupy_context(cupy)
+        circuit = QuantumCircuit(1)
+        circuit.h(0)
+        converter = CircuitToEinsum(circuit, dtype="complex128", backend="cupy")
+        expr, operands = converter.amplitude("0")
+        network, _ = _construct_network(Network, expr, list(operands), {"workspace_gb": 0.0})
+        with _network_context(network) as managed_network:
+            _call_network_method(managed_network.contract_path, optimize={"samples": 1})
+            _sync_cupy(cupy)
+            _call_network_method(managed_network.contract, release_workspace=True)
+            _sync_cupy(cupy)
+        return {
+            "prewarm_mode": mode,
+            "prewarm_wall_s": round(max(time.perf_counter() - started, 0.0), 9),
+            "prewarm_success": True,
+            "prewarm_notes": "constructed and tore down a tiny one-qubit amplitude network before the real execution path",
+        }
+    except Exception as exc:
+        return {
+            "prewarm_mode": mode,
+            "prewarm_wall_s": round(max(time.perf_counter() - started, 0.0), 9),
+            "prewarm_success": False,
+            "prewarm_notes": f"prewarm requested but did not complete cleanly: {exc}",
+        }
 
 
 def _begin_graph_capture(stream: Any, cupy: Any) -> None:
@@ -413,9 +489,13 @@ def execute_real_plan_candidate(
     config: Any,
 ) -> dict[str, Any]:
     system_profile = system_profile or collect_system_profile()
+    validation_started = time.perf_counter()
     preflight = validate_real_execution_request(workload_manifest, system_profile=system_profile)
+    pre_execute_request_validation_s = round(max(time.perf_counter() - validation_started, 0.0), 9)
     execution_target = preflight["execution_target"]
+    import_started = time.perf_counter()
     cupy, Network, CircuitToEinsum = _import_real_stack()
+    import_real_stack_s = round(max(time.perf_counter() - import_started, 0.0), 9)
 
     precision = str(getattr(config, "precision", "complex128"))
     if precision not in {"fp64", "complex128"}:
@@ -424,10 +504,22 @@ def execute_real_plan_candidate(
         graph_mode = normalize_graph_mode(getattr(config, "graph_mode", None), default="off")
     except ValueError as exc:
         raise RealExecutionError("runtime_error", str(exc), recoverable=False) from exc
+    prewarm_mode = normalize_prewarm_mode(getattr(config, "prewarm_mode", None))
 
     warm_repeats = min(5, max(2, int(getattr(config, "measurement_repeats", 3))))
     ttfr_repeats = max(1, int(getattr(config, "ttfr_repeats", 1)))
     profiler = PhaseRecorder()
+    prewarm_detail = _run_executor_prewarm(
+        prewarm_mode,
+        cupy=cupy,
+        Network=Network,
+        CircuitToEinsum=CircuitToEinsum,
+    )
+    pre_t_start_overhead_s = round(
+        pre_execute_request_validation_s + import_real_stack_s + float(prewarm_detail.get("prewarm_wall_s") or 0.0),
+        9,
+    )
+
     started_at = _utc_now_iso()
     t_start = time.perf_counter()
 
@@ -443,16 +535,27 @@ def execute_real_plan_candidate(
         else:
             expr, operands = converter.batched_amplitudes(_converter_fixed_qubits(circuit, execution_target))
     operands = list(operands)
+    network_build_started = time.perf_counter()
     network, network_options = _construct_network(Network, expr, operands, plan)
+    network_build_s = round(max(time.perf_counter() - network_build_started, 0.0), 9)
 
     raw_details: dict[str, Any] = {
         "execution_source": REAL_EXECUTION_SOURCE,
         "execution_version": REAL_EXECUTION_VERSION,
+        "execution_stack_version": REAL_EXECUTION_STACK_VERSION,
         "nvtx_phase_version": NVTX_PHASE_VERSION,
         "execution_target": execution_target,
         "network_options": network_options,
         "probe_strategy": getattr(config, "probe_strategy", None),
         "graph_mode": graph_mode,
+        "pre_execute_request_validation_s": pre_execute_request_validation_s,
+        "import_real_stack_s": import_real_stack_s,
+        "network_build_s": network_build_s,
+        "pre_t_start_overhead_s": pre_t_start_overhead_s,
+        "prewarm_mode": prewarm_detail["prewarm_mode"],
+        "prewarm_wall_s": prewarm_detail["prewarm_wall_s"],
+        "prewarm_success": prewarm_detail["prewarm_success"],
+        "prewarm_notes": prewarm_detail["prewarm_notes"],
         "capabilities": {
             "gpu_present": bool(system_profile.get("gpu_present")),
             "cupy_present": bool(system_profile.get("cupy_present")),
@@ -559,6 +662,7 @@ def execute_real_plan_candidate(
     total_wall_s = round(max(time.perf_counter() - t_start, 0.0), 9)
     ttfr_s = round(max(first_result_at - t_start, 0.0), 9)
     steady_iter_ms = round(statistics.median(warm_samples_ms) if warm_samples_ms else raw_details["first_contract_time_s"] * 1000.0, 6)
+    post_execution_started = time.perf_counter()
 
     payload = {
         "plan_id": plan["plan_id"],
@@ -596,12 +700,18 @@ def execute_real_plan_candidate(
         )
     )[:16]
 
+    reference_started = time.perf_counter()
     reference_result = _reference_result_from_qiskit_circuit(circuit, execution_target)
+    reference_contract_s = round(max(time.perf_counter() - reference_started, 0.0), 9)
+    accuracy_started = time.perf_counter()
     accuracy_eval = build_accuracy_eval(payload["run_id"], execution_target, _to_numpy(first_result), reference_result)
+    accuracy_eval_s = round(max(time.perf_counter() - accuracy_started, 0.0), 9)
     raw_details["reference_contract"] = {
         "reference_source": "qiskit_statevector",
         "target_kind": execution_target["kind"],
     }
+    raw_details["reference_contract_s"] = reference_contract_s
+    raw_details["accuracy_eval_s"] = accuracy_eval_s
     payload["failure_detail_json"] = {
         **payload["failure_detail_json"],
         "execution_target": execution_target,
@@ -646,6 +756,24 @@ def execute_real_plan_candidate(
                 "first_contract_stats": _sample_stats(first_contract_samples_s, digits=9),
             },
         }
+    post_execution_s = round(max(time.perf_counter() - post_execution_started, 0.0), 9)
+    raw_details["post_execution_s"] = post_execution_s
+    raw_details["result_shaping_s"] = round(max(post_execution_s - reference_contract_s - accuracy_eval_s, 0.0), 9)
+    payload["failure_detail_json"] = {
+        **payload["failure_detail_json"],
+        "prewarm_mode": prewarm_detail["prewarm_mode"],
+        "prewarm_wall_s": prewarm_detail["prewarm_wall_s"],
+        "prewarm_success": prewarm_detail["prewarm_success"],
+        "prewarm_notes": prewarm_detail["prewarm_notes"],
+        "pre_execute_request_validation_s": pre_execute_request_validation_s,
+        "import_real_stack_s": import_real_stack_s,
+        "network_build_s": network_build_s,
+        "pre_t_start_overhead_s": pre_t_start_overhead_s,
+        "reference_contract_s": reference_contract_s,
+        "accuracy_eval_s": accuracy_eval_s,
+        "post_execution_s": post_execution_s,
+        "result_shaping_s": raw_details["result_shaping_s"],
+    }
     return {
         "execution_run": payload,
         "accuracy_eval": accuracy_eval,
@@ -653,14 +781,25 @@ def execute_real_plan_candidate(
         "result": first_result,
         "warm_result": warm_result,
         "phase_times": profiler.phase_times,
+        "driver_timing_json": {
+            "real_execute_s": total_wall_s,
+            "post_execution_s": post_execution_s,
+            "pre_execute_request_validation_s": pre_execute_request_validation_s,
+            "import_real_stack_s": import_real_stack_s,
+            "network_build_s": network_build_s,
+            "pre_t_start_overhead_s": pre_t_start_overhead_s,
+        },
     }
 
 
 __all__ = [
+    "PREWARM_MODES",
     "REAL_EXECUTION_SOURCE",
     "REAL_EXECUTION_VERSION",
+    "REAL_EXECUTION_STACK_VERSION",
     "REAL_RECOVERABLE_CODES",
     "RealExecutionError",
     "execute_real_plan_candidate",
+    "normalize_prewarm_mode",
     "validate_real_execution_request",
 ]

@@ -19,6 +19,8 @@ def test_execute_selected_plan_emits_measured_run(tmp_path):
     assert run['ttfr_s'] is not None and run['ttfr_s'] >= 0.0
     assert run['steady_iter_ms'] is not None and run['steady_iter_ms'] >= 0.0
     assert payload['repo_metadata']['package_version']
+    timings = payload['driver_timing_json']
+    assert {'bundle_lookup_s', 'bundle_compatibility_check_s', 'dispatch_real_executor_s', 'real_execute_s', 'post_execution_s'} <= set(timings)
 
 
 def test_execute_selected_plan_supports_plan_override_and_replicate_lineage(tmp_path):
@@ -90,6 +92,8 @@ def test_execute_selected_plan_supports_plan_bundle_miss_then_hit(tmp_path):
     assert fresh['plan_bundle_provenance']['write_status'] == 'written'
     assert fresh['driver_timing_json']['total_s'] >= fresh['driver_timing_json']['execute_plan_bundle_s']
     assert fresh['outer_driver_overhead_s'] >= 0.0
+    assert fresh['driver_timing_json']['bundle_lookup_s'] >= 0.0
+    assert fresh['driver_timing_json']['bundle_compatibility_check_s'] == 0.0
 
     reused = execute_selected_plan(
         'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
@@ -108,6 +112,8 @@ def test_execute_selected_plan_supports_plan_bundle_miss_then_hit(tmp_path):
     assert reused['plan_bundle_provenance']['compatibility']['compatible'] is True
     assert reused['driver_timing_json']['probe_s'] == 0.0
     assert reused['driver_timing_json']['candidate_generation_s'] == 0.0
+    assert reused['driver_timing_json']['bundle_lookup_s'] >= 0.0
+    assert reused['driver_timing_json']['bundle_compatibility_check_s'] >= 0.0
 
 
 def test_execute_selected_plan_rejects_incompatible_plan_bundle(tmp_path):
@@ -138,6 +144,72 @@ def test_execute_selected_plan_rejects_incompatible_plan_bundle(tmp_path):
     assert rejected['plan_bundle_provenance']['write_status'] == 'skipped_rejected'
     assert rejected['plan_bundle_provenance']['compatibility']['compatible'] is False
     assert 'workload_id' in rejected['plan_bundle_provenance']['compatibility']['mismatched_fields']
+
+
+def test_execute_selected_plan_rejects_plan_bundle_with_execution_stack_version_mismatch(tmp_path):
+    bundle_path = tmp_path / 'selected_plan.bundle.json'
+    execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_bundle_path=str(bundle_path),
+    )
+
+    payload = json.loads(bundle_path.read_text(encoding='utf-8'))
+    payload['bundle_scope']['execution_stack_version'] = 'aqs.execution.v1'
+    bundle_path.write_text(json.dumps(payload), encoding='utf-8')
+
+    rejected = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_bundle_path=str(bundle_path),
+    )
+
+    assert rejected['plan_bundle_provenance']['cache_status'] == 'rejected'
+    assert 'execution_stack_version' in rejected['plan_bundle_provenance']['compatibility']['mismatched_fields']
+
+
+def test_execute_selected_plan_keeps_selected_plan_id_stable_across_fresh_override_and_bundle_hit(tmp_path):
+    fresh = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+    )
+    fresh_plan_id = fresh['selected_plan']['plan_id']
+
+    plan_path = tmp_path / 'selected_plan.json'
+    plan_path.write_text(json.dumps({'selected_plan': dict(fresh['selected_plan'])}), encoding='utf-8')
+    overridden = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_json_path=str(plan_path),
+    )
+
+    bundle_path = tmp_path / 'selected_plan.bundle.json'
+    seed_bundle = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_bundle_path=str(bundle_path),
+    )
+    reused = execute_selected_plan(
+        'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
+        'configs/systems/cpu_probe.yml',
+        measurement_repeats=2,
+        allow_distributed=False,
+        plan_bundle_path=str(bundle_path),
+    )
+
+    assert overridden['selected_plan']['plan_id'] == fresh_plan_id
+    assert seed_bundle['selected_plan']['plan_id'] == fresh_plan_id
+    assert reused['selected_plan']['plan_id'] == fresh_plan_id
 
 
 def test_execute_selected_plan_rejects_plan_json_and_plan_bundle_together(tmp_path):

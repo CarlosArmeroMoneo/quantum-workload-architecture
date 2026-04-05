@@ -13,7 +13,9 @@ import opt_einsum as oe
 
 from .doctor import collect_system_profile
 from .execution_real import (
+    PREWARM_MODES,
     REAL_EXECUTION_SOURCE,
+    REAL_EXECUTION_STACK_VERSION,
     RealExecutionError,
     execute_real_plan_candidate,
 )
@@ -44,6 +46,7 @@ class ExecutionConfig:
     execution_intent: str = "optional_real"
     replicate_idx: int = 0
     graph_mode: str = "off"
+    prewarm_mode: str = "none"
 
 
 class ExecutionError(RuntimeError):
@@ -75,6 +78,7 @@ def _build_plan_bundle_scope(
     workload_manifest: dict[str, Any],
     system_manifest: dict[str, Any],
     system_profile: dict[str, Any],
+    repo_metadata: dict[str, Any],
     *,
     objective: str,
     probe_strategy: str,
@@ -92,6 +96,11 @@ def _build_plan_bundle_scope(
         "system_manifest_digest": _manifest_digest(system_manifest),
         "system_name": system_manifest.get("system_name"),
         "system_id": system_profile.get("system_id"),
+        "bundle_schema_version": PLAN_BUNDLE_VERSION,
+        "execution_stack_version": EXECUTION_VERSION,
+        "real_execution_stack_version": REAL_EXECUTION_STACK_VERSION,
+        "repo_commit": repo_metadata.get("git_commit"),
+        "package_version": repo_metadata.get("package_version"),
         "objective": objective,
         "probe_strategy": probe_strategy,
         "planner_budget": planner_budget,
@@ -125,6 +134,9 @@ def _build_plan_bundle_payload(
         "api_version": PLAN_BUNDLE_VERSION,
         "bundle_id": bundle_id,
         "created_at": _utc_now_iso(),
+        "bundle_schema_version": PLAN_BUNDLE_VERSION,
+        "execution_stack_version": EXECUTION_VERSION,
+        "real_execution_stack_version": REAL_EXECUTION_STACK_VERSION,
         "bundle_scope": scope,
         "compatibility_fingerprint": scope["compatibility_fingerprint"],
         "selected_plan": dict(selected_plan),
@@ -170,6 +182,11 @@ def _assess_plan_bundle_compatibility(bundle: dict[str, Any], expected_scope: di
         "system_manifest_digest",
         "system_name",
         "system_id",
+        "bundle_schema_version",
+        "execution_stack_version",
+        "real_execution_stack_version",
+        "repo_commit",
+        "package_version",
         "objective",
         "probe_strategy",
         "planner_budget",
@@ -498,6 +515,15 @@ def execute_plan_candidate_bundle(
         graph_mode=normalize_graph_mode(plan.get("graph_mode"), default="off"),
     )
     system_profile = system_profile or collect_system_profile()
+    bundle_driver_timing = {
+        "dispatch_real_executor_s": 0.0,
+        "real_execute_s": 0.0,
+        "post_execution_s": 0.0,
+        "pre_execute_request_validation_s": 0.0,
+        "import_real_stack_s": 0.0,
+        "network_build_s": 0.0,
+        "pre_t_start_overhead_s": 0.0,
+    }
 
     if config.execution_intent == "optional_real":
         bundle = _execute_structural_plan_candidate_bundle(
@@ -512,7 +538,10 @@ def execute_plan_candidate_bundle(
                 "fallback_reason": "execution_intent=optional_real keeps the structural executor as the default path",
             },
         )
-        return bundle
+        return {
+            **bundle,
+            "driver_timing_json": bundle_driver_timing,
+        }
 
     if plan.get("mode") != "exact_tn":
         detail = {
@@ -524,7 +553,7 @@ def execute_plan_candidate_bundle(
             "graph_mode": config.graph_mode,
         }
         if config.execution_intent == "prefer_real":
-            return _execute_structural_plan_candidate_bundle(
+            bundle = _execute_structural_plan_candidate_bundle(
                 workload_manifest,
                 plan,
                 system_profile=system_profile,
@@ -536,6 +565,10 @@ def execute_plan_candidate_bundle(
                     "fallback_reason": detail["reason"],
                 },
             )
+            return {
+                **bundle,
+                "driver_timing_json": bundle_driver_timing,
+            }
         run = _failure_run(
             plan,
             workload_manifest,
@@ -545,7 +578,7 @@ def execute_plan_candidate_bundle(
             status="unsupported_semantics",
             detail=detail,
         )
-        return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": []}
+        return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": [], "driver_timing_json": bundle_driver_timing}
 
     try:
         real_bundle = execute_real_plan_candidate(
@@ -554,6 +587,9 @@ def execute_plan_candidate_bundle(
             system_profile=system_profile,
             config=config,
         )
+        for key, value in (real_bundle.get("driver_timing_json") or {}).items():
+            bundle_driver_timing[key] = float(value)
+        bundle_driver_timing["dispatch_real_executor_s"] = float(bundle_driver_timing.get("pre_t_start_overhead_s") or 0.0)
         run = real_bundle["execution_run"]
         run["failure_detail_json"] = {
             **(run.get("failure_detail_json") or {}),
@@ -563,6 +599,7 @@ def execute_plan_candidate_bundle(
         return {
             **real_bundle,
             "linked_assets": [],
+            "driver_timing_json": bundle_driver_timing,
         }
     except RealExecutionError as exc:
         detail = {
@@ -574,7 +611,7 @@ def execute_plan_candidate_bundle(
             "graph_mode": config.graph_mode,
         }
         if config.execution_intent == "prefer_real" and exc.recoverable:
-            return _execute_structural_plan_candidate_bundle(
+            bundle = _execute_structural_plan_candidate_bundle(
                 workload_manifest,
                 plan,
                 system_profile=system_profile,
@@ -586,6 +623,10 @@ def execute_plan_candidate_bundle(
                     "fallback_reason": exc.message,
                 },
             )
+            return {
+                **bundle,
+                "driver_timing_json": bundle_driver_timing,
+            }
         run = _failure_run(
             plan,
             workload_manifest,
@@ -595,7 +636,7 @@ def execute_plan_candidate_bundle(
             status=exc.status,
             detail=detail,
         )
-        return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": []}
+        return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": [], "driver_timing_json": bundle_driver_timing}
     except Exception as exc:
         detail = {
             "reason_code": "runtime_error",
@@ -614,7 +655,7 @@ def execute_plan_candidate_bundle(
             status="runtime_error",
             detail=detail,
         )
-        return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": []}
+        return {"execution_run": run, "profile_summary": None, "accuracy_eval": None, "linked_assets": [], "driver_timing_json": bundle_driver_timing}
 
 
 def execute_plan_candidate(
@@ -689,6 +730,7 @@ def execute_selected_plan(
     plan_json_path: str | None = None,
     plan_bundle_path: str | None = None,
     graph_mode: str | None = None,
+    prewarm_mode: str = "none",
 ) -> dict[str, Any]:
     if plan_json_path and plan_bundle_path:
         raise ExecutionError("Plan override JSON and reusable plan bundle are mutually exclusive")
@@ -733,6 +775,7 @@ def execute_selected_plan(
         manifest,
         system_manifest,
         system_profile,
+        repo_metadata,
         objective=objective,
         probe_strategy=probe_strategy,
         planner_budget=planner_budget,
@@ -770,7 +813,10 @@ def execute_selected_plan(
         bundle_path = Path(plan_bundle_path)
         if bundle_path.exists():
             bundle_payload = _load_plan_bundle(bundle_path)
+            driver_timing["bundle_lookup_s"] = round(max(time.perf_counter() - lookup_start, 0.0), 9)
+            compatibility_start = time.perf_counter()
             compatibility = _assess_plan_bundle_compatibility(bundle_payload, bundle_scope)
+            driver_timing["bundle_compatibility_check_s"] = round(max(time.perf_counter() - compatibility_start, 0.0), 9)
             plan_bundle_provenance["bundle_id"] = compatibility["bundle_id"]
             plan_bundle_provenance["compatibility"] = compatibility
             if compatibility["compatible"]:
@@ -786,11 +832,13 @@ def execute_selected_plan(
                 plan_bundle_provenance["write_status"] = "skipped_rejected"
                 plan_bundle_provenance["write_reason"] = "existing bundle was incompatible and was left untouched"
         else:
+            driver_timing["bundle_lookup_s"] = round(max(time.perf_counter() - lookup_start, 0.0), 9)
+            driver_timing["bundle_compatibility_check_s"] = 0.0
             plan_bundle_provenance["cache_status"] = "miss"
             plan_bundle_provenance["cache_reason"] = "bundle file was not present, so the planner selected a fresh plan"
             plan_bundle_provenance["write_status"] = "pending"
             plan_bundle_provenance["write_reason"] = "fresh planning path will write a reusable bundle after a successful run"
-        record_timing("plan_bundle_lookup_s", lookup_start)
+        driver_timing["plan_bundle_lookup_s"] = driver_timing["bundle_lookup_s"]
 
     if chosen is None:
         start = time.perf_counter()
@@ -834,6 +882,8 @@ def execute_selected_plan(
         driver_timing.setdefault("probe_s", 0.0)
         driver_timing.setdefault("candidate_generation_s", 0.0)
         driver_timing.setdefault("selection_s", 0.0)
+        driver_timing.setdefault("bundle_lookup_s", 0.0)
+        driver_timing.setdefault("bundle_compatibility_check_s", 0.0)
         driver_timing.setdefault("plan_bundle_lookup_s", 0.0)
     resolved_graph_mode = normalize_graph_mode(graph_mode if graph_mode is not None else chosen.get("graph_mode"), default="off")
     execution_start = time.perf_counter()
@@ -852,9 +902,18 @@ def execute_selected_plan(
             execution_intent=execution_intent,
             replicate_idx=replicate_idx,
             graph_mode=resolved_graph_mode,
+            prewarm_mode=prewarm_mode,
         ),
     )
     record_timing("execute_plan_bundle_s", execution_start)
+    for key, value in (bundle.get("driver_timing_json") or {}).items():
+        driver_timing[key] = float(value)
+    driver_timing.setdefault("dispatch_real_executor_s", 0.0)
+    driver_timing.setdefault("real_execute_s", float(bundle["execution_run"].get("wall_s") or 0.0))
+    driver_timing.setdefault("post_execution_s", 0.0)
+    driver_timing.setdefault("bundle_lookup_s", 0.0)
+    driver_timing.setdefault("bundle_compatibility_check_s", 0.0)
+    driver_timing.setdefault("plan_bundle_lookup_s", driver_timing["bundle_lookup_s"])
 
     if plan_bundle_path and plan_bundle_provenance["cache_status"] == "miss" and bundle["execution_run"].get("status") == "success":
         bundle_payload = _build_plan_bundle_payload(
@@ -918,6 +977,8 @@ def execute_selected_plan(
 
 __all__ = [
     "EXECUTION_VERSION",
+    "PLAN_BUNDLE_VERSION",
+    "PREWARM_MODES",
     "STRUCTURAL_EXECUTION_SOURCE",
     "ExecutionConfig",
     "ExecutionError",

@@ -147,7 +147,13 @@ def test_real_executor_maps_plan_fields_and_keeps_warm_outputs_identical(monkeyp
             return 1024 * 1024
 
     class FakeCuPy:
+        float32 = np.float32
+
         class cuda:  # noqa: D401 - simple test double
+            class Device:
+                def use(self) -> None:
+                    return None
+
             @staticmethod
             def get_current_stream() -> FakeStream:
                 return FakeStream()
@@ -155,6 +161,10 @@ def test_real_executor_maps_plan_fields_and_keeps_warm_outputs_identical(monkeyp
         @staticmethod
         def get_default_memory_pool() -> FakePool:
             return FakePool()
+
+        @staticmethod
+        def empty(shape, dtype=None):
+            return np.empty(shape, dtype=dtype)
 
     class FakeCircuit:
         qubits = [0, 1, 2]
@@ -245,6 +255,16 @@ def test_real_executor_maps_plan_fields_and_keeps_warm_outputs_identical(monkeyp
     assert fake_network.release_workspace_flags[:-1] == [False, False, False, False]
     assert fake_network.release_workspace_flags[-1] is True
     assert np.allclose(np.asarray(bundle["result"]), np.asarray(bundle["warm_result"]))
+    assert bundle["driver_timing_json"]["real_execute_s"] == run["wall_s"]
+    assert bundle["driver_timing_json"]["post_execution_s"] >= 0.0
+    assert bundle["driver_timing_json"]["network_build_s"] >= 0.0
+    assert run["failure_detail_json"]["prewarm_mode"] == "none"
+    assert run["failure_detail_json"]["prewarm_wall_s"] == 0.0
+    assert run["failure_detail_json"]["prewarm_success"] is None
+    assert run["failure_detail_json"]["pre_execute_request_validation_s"] >= 0.0
+    assert run["failure_detail_json"]["import_real_stack_s"] >= 0.0
+    assert run["failure_detail_json"]["network_build_s"] >= 0.0
+    assert run["failure_detail_json"]["post_execution_s"] >= 0.0
 
 
 def test_nvtx_phase_names_are_stable():
@@ -652,6 +672,113 @@ def test_real_executor_ttfr_repeats_emits_calibration_samples(monkeypatch):
     assert calibration["ttfr_stats"]["count"] == 3
     assert calibration["planner_time_stats"]["count"] == 3
     assert len(FakeNetwork.instances) == 3
+
+
+@pytest.mark.parametrize("prewarm_mode", ["import_context", "tiny_network"])
+def test_real_executor_emits_prewarm_provenance(monkeypatch, prewarm_mode):
+    manifest = load_yaml("workloads/manifests/imported/qiskit_qasm2_ghz3.yaml")
+    reference_result = np.asarray(1.0 + 0.0j, dtype=np.complex128)
+
+    class FakeStream:
+        def synchronize(self) -> None:
+            return None
+
+    class FakeDevice:
+        def use(self) -> None:
+            return None
+
+    class FakePool:
+        def used_bytes(self) -> int:
+            return 1024 * 1024
+
+    class FakeCuPy:
+        float32 = np.float32
+
+        class cuda:
+            @staticmethod
+            def get_current_stream() -> FakeStream:
+                return FakeStream()
+
+            Device = FakeDevice
+
+        @staticmethod
+        def get_default_memory_pool() -> FakePool:
+            return FakePool()
+
+        @staticmethod
+        def empty(shape, dtype=None):
+            return np.empty(shape, dtype=dtype)
+
+    class FakeCircuit:
+        qubits = [0, 1, 2]
+
+    class FakeConverter:
+        def __init__(self, circuit, dtype, backend):
+            self.circuit = circuit
+            self.dtype = dtype
+            self.backend = backend
+
+        def amplitude(self, bitstring):
+            return "abc->", [np.ones((1,), dtype=np.complex128)]
+
+    class FakeNetwork:
+        def __init__(self, expr, *operands, options=None):
+            self.expr = expr
+            self.operands = operands
+            self.options = options
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return None
+
+        def contract_path(self, optimize=None):
+            return ([], type("Info", (), {"largest_intermediate": 4, "opt_cost": 7.0, "num_slices": 1})())
+
+        def contract(self, release_workspace=False):
+            return np.asarray(reference_result)
+
+    monkeypatch.setattr("aqs.execution_real.maybe_load_qiskit_circuit", lambda manifest: FakeCircuit())
+    monkeypatch.setattr("aqs.execution_real._import_real_stack", lambda: (FakeCuPy(), FakeNetwork, FakeConverter))
+    monkeypatch.setattr("aqs.execution_real._reference_result_from_qiskit_circuit", lambda circuit, target: reference_result)
+
+    bundle = execute_real_plan_candidate(
+        manifest,
+        {
+            "plan_id": "plan_real_prewarm_fake",
+            "mode": "exact_tn",
+            "workspace_gb": 1.0,
+            "hyper_samples": 2,
+            "autotune": False,
+            "precision": "complex128",
+        },
+        system_profile={
+            "system_id": "sys_fake",
+            "gpu_present": True,
+            "cupy_present": True,
+            "cuquantum_present": True,
+            "qiskit_present": True,
+            "nsys_present": False,
+            "ncu_present": False,
+        },
+        config=type(
+            "Cfg",
+            (),
+            {
+                "precision": "complex128",
+                "measurement_repeats": 2,
+                "probe_strategy": "structural_real",
+                "prewarm_mode": prewarm_mode,
+            },
+        )(),
+    )
+
+    details = bundle["execution_run"]["failure_detail_json"]
+    assert details["prewarm_mode"] == prewarm_mode
+    assert details["prewarm_success"] is True
+    assert details["prewarm_wall_s"] >= 0.0
+    assert bundle["driver_timing_json"]["pre_t_start_overhead_s"] >= details["prewarm_wall_s"]
 
 
 @pytest.mark.gpu

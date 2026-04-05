@@ -26,7 +26,7 @@ from .db import (
     insert_workload_and_ir,
 )
 from .doctor import collect_doctor_report, collect_system_profile
-from .execution import execute_selected_plan
+from .execution import PREWARM_MODES, execute_selected_plan
 from .features import extract_feature_snapshot
 from .generators import PRESETS, generate_workload_manifest
 from .graph_modes import GRAPH_MODES
@@ -251,6 +251,7 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
         plan_json_path=args.plan_json,
         plan_bundle_path=args.plan_bundle,
         graph_mode=args.graph_mode,
+        prewarm_mode=args.prewarm_mode,
     )
     _print_json(payload)
     if args.out:
@@ -519,6 +520,12 @@ def build_parser() -> argparse.ArgumentParser:
     execute_tnep.add_argument("--ttfr-repeats", type=int, default=1, help="Calibration-only fresh-network cold-TTFR repeats; default keeps the single-shot path")
     execute_tnep.add_argument("--replicate-idx", type=int, default=0)
     execute_tnep.add_argument("--graph-mode", choices=list(GRAPH_MODES), default=None, help="Optional CUDA Graph execution mode override")
+    execute_tnep.add_argument(
+        "--prewarm-mode",
+        choices=list(PREWARM_MODES),
+        default="none",
+        help="Benchmark-only real-executor prewarm strategy; default remains off",
+    )
     execute_tnep.add_argument("--execution-intent", choices=["optional_real", "prefer_real", "require_real"], default="optional_real")
     execute_tnep.add_argument("--allow-distributed", action=argparse.BooleanOptionalAction, default=True)
     execute_tnep.add_argument("--max-candidates", type=int)
