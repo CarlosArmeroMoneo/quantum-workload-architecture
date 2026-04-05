@@ -171,6 +171,58 @@ python scripts/run_targeted_ttfr_replicates.py \
   --outdir artifacts/measured_validation_runs/ovh_v1_confidence/official_miss_dense_ring6_amplitude_interleaved
 ```
 
+## Explicit Plan-Bundle Reuse
+
+Use plan bundles only as an opt-in performance path. They do not change planner ranking, they do not change Gate A or Gate B semantics, and they should not be described as calibration progress.
+
+Strict v1 rules:
+
+- A bundle reuses only when the workload manifest path, workload digest, workload ID, system manifest path, system manifest digest, system ID, objective, probe strategy, planner budget, and distributed setting all match exactly.
+- A compatible hit reports `selection_source=plan_bundle_reuse` and `plan_bundle_provenance.cache_status=hit`.
+- A missing bundle path is a safe miss: the planner runs normally, then writes a compatible bundle after a successful run.
+- An incompatible bundle is rejected explicitly and left untouched; the planner falls back to a fresh selection path.
+
+Example miss-then-hit flow:
+
+```bash
+python -m aqs tnep execute \
+  --manifest workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml \
+  --system-manifest configs/systems/ovh_gra9_rtx5000_28.yml \
+  --objective ttfr \
+  --probe-strategy real_if_available \
+  --planner-budget balanced \
+  --measurement-repeats 3 \
+  --execution-intent require_real \
+  --no-allow-distributed \
+  --plan-bundle artifacts/plan_reuse/manual/01_real_dense_ring6_amplitude.plan_bundle.json \
+  --out artifacts/plan_reuse/manual/01_real_dense_ring6_amplitude.fresh.execute.json
+
+python -m aqs tnep execute \
+  --manifest workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml \
+  --system-manifest configs/systems/ovh_gra9_rtx5000_28.yml \
+  --objective ttfr \
+  --probe-strategy real_if_available \
+  --planner-budget balanced \
+  --measurement-repeats 3 \
+  --execution-intent require_real \
+  --no-allow-distributed \
+  --plan-bundle artifacts/plan_reuse/manual/01_real_dense_ring6_amplitude.plan_bundle.json \
+  --out artifacts/plan_reuse/manual/01_real_dense_ring6_amplitude.reused.execute.json
+```
+
+Tracked prototype benchmark outputs:
+
+- `artifacts/plan_reuse/ovh_plan_reuse_prototype_v1/ovh_plan_reuse_prototype_v1.json`
+- `artifacts/plan_reuse/ovh_plan_reuse_prototype_v1/ovh_plan_reuse_prototype_v1.md`
+- `docs/reports/ovh_plan_reuse_prototype_readout.md`
+
+Current interpretation:
+
+- The bundle flow is safe and fully auditable.
+- End-to-end CLI wall time improved on the two low-repeat amplitude workloads.
+- The medium-repeat control was slightly negative because cold real-executor initialization shifted into the reused execute phase.
+- This supports a performance-only follow-on, not a planner-retune branch.
+
 ## Public Evidence Layout
 
 - Curated summaries are tracked in `evidence/first_real_profiler_slice/`.

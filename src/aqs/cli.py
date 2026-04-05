@@ -232,6 +232,9 @@ def _cmd_tnep_plan(args: argparse.Namespace) -> int:
 
 
 def _cmd_tnep_execute(args: argparse.Namespace) -> int:
+    if args.plan_json and args.plan_bundle:
+        _print_json({"error": "--plan-json and --plan-bundle are mutually exclusive"})
+        return 1
     payload = execute_selected_plan(
         args.manifest,
         args.system_manifest,
@@ -246,6 +249,7 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
         execution_intent=args.execution_intent,
         replicate_idx=args.replicate_idx,
         plan_json_path=args.plan_json,
+        plan_bundle_path=args.plan_bundle,
         graph_mode=args.graph_mode,
     )
     _print_json(payload)
@@ -260,7 +264,8 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
         insert_system_profile(args.db, profile)
         insert_workload_and_ir(args.db, manifest, ir)
         insert_feature_snapshot(args.db, features)
-        insert_probe_observation(args.db, manifest["ids"]["workload_id"], profile["system_id"], payload["probe"], project="tnep")
+        if payload.get("probe"):
+            insert_probe_observation(args.db, manifest["ids"]["workload_id"], profile["system_id"], payload["probe"], project="tnep")
         insert_plan_candidate(args.db, manifest["ids"]["workload_id"], payload["selected_plan"])
         insert_execution_run(args.db, payload["execution_run"])
         accuracy = payload.get("accuracy_eval") or {}
@@ -501,6 +506,13 @@ def build_parser() -> argparse.ArgumentParser:
     execute_tnep.add_argument("--plan-rank", type=int, default=1, help="Recommendation rank to execute")
     execute_tnep.add_argument("--objective", choices=["ttfr", "steady_state", "gpu_seconds"], default="ttfr")
     execute_tnep.add_argument("--plan-json", help="Optional JSON file containing an explicit plan object to execute")
+    execute_tnep.add_argument(
+        "--plan-bundle",
+        help=(
+            "Optional reusable plan bundle path. If the bundle exists and matches the current workload/system context exactly, "
+            "the selected plan is reused. If the path is missing, the planner runs normally and writes a compatible bundle after success."
+        ),
+    )
     execute_tnep.add_argument("--probe-strategy", choices=["surrogate_only", "structural_real", "real_if_available", "cuquantum_if_available", "cuquantum_required"], default="structural_real")
     execute_tnep.add_argument("--planner-budget", choices=["quick", "balanced", "deep"], default="balanced")
     execute_tnep.add_argument("--measurement-repeats", type=int, default=3)

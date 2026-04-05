@@ -99,6 +99,7 @@ Public repo policy:
 - OVH confidence-validation readout: [`docs/reports/ovh_confidence_validation_readout.md`](docs/reports/ovh_confidence_validation_readout.md)
 - OVH confidence defaulting readout: [`docs/reports/ovh_confidence_defaulting_readout.md`](docs/reports/ovh_confidence_defaulting_readout.md)
 - TTFR variance methodology v2: [`docs/reports/ttfr_variance_methodology_v2.md`](docs/reports/ttfr_variance_methodology_v2.md)
+- OVH plan reuse prototype readout: [`docs/reports/ovh_plan_reuse_prototype_readout.md`](docs/reports/ovh_plan_reuse_prototype_readout.md)
 - Portfolio index: [`docs/reports/portfolio_index.md`](docs/reports/portfolio_index.md)
 - Tiny-MNK sidecar lab: [`sidecars/tiny_mnk_lab/README.md`](sidecars/tiny_mnk_lab/README.md)
 - Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)
@@ -116,5 +117,6 @@ Public repo policy:
 - `source_format: cudaq` is now implemented through an adapter-backed path: `source.loader: cudaq_python_file` must export `aqs_cudaq_program()`, and today that path normalizes and plans structurally but does not claim real measured CUDA-Q execution.
 - The tiny-MNK sidecar now has measured benchmark and Nsight Compute outputs, but it is a shape-isolation lab and not a parity proxy for cuTensorNet's internal kernel family.
 - Confidence-aware validation is now the default reporting surface for planner validation summaries, but the current OVH evidence still does not justify a planner retune.
+- Explicit reusable plan bundles are now available as an opt-in performance path for `aqs tnep execute`, but the current OVH evidence shows only modest low-repeat amplitude CLI wins and does not change any ranking or calibration claim.
 - Most of `artifacts/` and all of `release-assets/` are intentionally ignored so local reruns do not pollute the public tree. Small tracked truth-pass fixtures under `artifacts/truth_pass/` are the current exception.
 - `ovh.conf.example` documents the expected OVH client shape. Real credentials must live outside git.

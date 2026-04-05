@@ -29,6 +29,7 @@ from .utils import canonical_json, sha256_text
 
 EXECUTION_VERSION = "aqs.execution.v2"
 STRUCTURAL_EXECUTION_SOURCE = "measured_structural_cpu_hybrid"
+PLAN_BUNDLE_VERSION = "aqs.plan_bundle.v1"
 
 
 @dataclass(frozen=True)
@@ -58,6 +59,155 @@ def _safe_output_digest(result: Any) -> str:
         payload = result.tobytes()[:256]
         return "out_" + sha256_text(payload.hex())[:16]
     return "out_" + sha256_text(repr(result))[:16]
+
+
+def _normalized_path(path: str | Path) -> str:
+    return str(Path(path).expanduser().resolve()).replace("\\", "/")
+
+
+def _manifest_digest(payload: dict[str, Any]) -> str:
+    return sha256_text(canonical_json(payload))
+
+
+def _build_plan_bundle_scope(
+    workload_manifest_path: str | Path,
+    system_manifest_path: str | Path,
+    workload_manifest: dict[str, Any],
+    system_manifest: dict[str, Any],
+    system_profile: dict[str, Any],
+    *,
+    objective: str,
+    probe_strategy: str,
+    planner_budget: str,
+    allow_distributed: bool,
+    max_candidates: int | None,
+) -> dict[str, Any]:
+    scope = {
+        "workload_manifest_path": _normalized_path(workload_manifest_path),
+        "workload_manifest_digest": _manifest_digest(workload_manifest),
+        "workload_id": workload_manifest["ids"]["workload_id"],
+        "family_id": workload_manifest.get("family_id"),
+        "repeat_count_hint": int(workload_manifest.get("repeat_count_hint") or 1),
+        "system_manifest_path": _normalized_path(system_manifest_path),
+        "system_manifest_digest": _manifest_digest(system_manifest),
+        "system_name": system_manifest.get("system_name"),
+        "system_id": system_profile.get("system_id"),
+        "objective": objective,
+        "probe_strategy": probe_strategy,
+        "planner_budget": planner_budget,
+        "allow_distributed": bool(allow_distributed),
+        "max_candidates": int(max_candidates) if max_candidates is not None else None,
+    }
+    return {
+        **scope,
+        "compatibility_fingerprint": "pbf_" + sha256_text(canonical_json(scope))[:16],
+    }
+
+
+def _build_plan_bundle_payload(
+    *,
+    scope: dict[str, Any],
+    selected_plan: dict[str, Any],
+    repo_metadata: dict[str, Any],
+    selection_source: str,
+    plan_rank: int,
+    candidate_count: int,
+) -> dict[str, Any]:
+    bundle_id = "bundle_" + sha256_text(
+        canonical_json(
+            {
+                "scope": scope,
+                "selected_plan": selected_plan,
+            }
+        )
+    )[:16]
+    return {
+        "api_version": PLAN_BUNDLE_VERSION,
+        "bundle_id": bundle_id,
+        "created_at": _utc_now_iso(),
+        "bundle_scope": scope,
+        "compatibility_fingerprint": scope["compatibility_fingerprint"],
+        "selected_plan": dict(selected_plan),
+        "selection_context": {
+            "selection_source": selection_source,
+            "plan_rank": int(plan_rank),
+            "candidate_count": int(candidate_count),
+        },
+        "repo_metadata": repo_metadata,
+    }
+
+
+def _load_plan_bundle(path: str | Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise
+    except Exception as exc:
+        raise ExecutionError(f"Plan bundle at {path} could not be decoded as JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ExecutionError(f"Plan bundle at {path} must decode to a JSON object")
+    if payload.get("api_version") != PLAN_BUNDLE_VERSION:
+        raise ExecutionError(
+            f"Plan bundle at {path} must declare api_version={PLAN_BUNDLE_VERSION!r}, "
+            f"got {payload.get('api_version')!r}"
+        )
+    if not isinstance(payload.get("bundle_scope"), dict):
+        raise ExecutionError(f"Plan bundle at {path} must include a bundle_scope object")
+    if not isinstance(payload.get("selected_plan"), dict):
+        raise ExecutionError(f"Plan bundle at {path} must include a selected_plan object")
+    return payload
+
+
+def _assess_plan_bundle_compatibility(bundle: dict[str, Any], expected_scope: dict[str, Any]) -> dict[str, Any]:
+    bundle_scope = dict(bundle.get("bundle_scope") or {})
+    compare_keys = [
+        "workload_manifest_path",
+        "workload_manifest_digest",
+        "workload_id",
+        "family_id",
+        "repeat_count_hint",
+        "system_manifest_path",
+        "system_manifest_digest",
+        "system_name",
+        "system_id",
+        "objective",
+        "probe_strategy",
+        "planner_budget",
+        "allow_distributed",
+        "max_candidates",
+    ]
+    mismatched_fields = [
+        key
+        for key in compare_keys
+        if bundle_scope.get(key) != expected_scope.get(key)
+    ]
+    stored_fingerprint = bundle.get("compatibility_fingerprint")
+    scope_fingerprint = bundle_scope.get("compatibility_fingerprint")
+    expected_fingerprint = expected_scope.get("compatibility_fingerprint")
+    fingerprint_matches = stored_fingerprint == scope_fingerprint == expected_fingerprint
+    compatible = not mismatched_fields and fingerprint_matches
+    if compatible:
+        reason = "bundle scope matched the current workload/system selection context exactly"
+    elif mismatched_fields:
+        reason = "bundle scope mismatched the current workload/system selection context"
+    else:
+        reason = "bundle compatibility fingerprint did not match the current scope"
+    return {
+        "compatible": compatible,
+        "reason": reason,
+        "mismatched_fields": mismatched_fields,
+        "bundle_scope": bundle_scope,
+        "expected_scope": expected_scope,
+        "bundle_id": bundle.get("bundle_id"),
+        "stored_fingerprint": stored_fingerprint,
+        "expected_fingerprint": expected_fingerprint,
+    }
+
+
+def _write_plan_bundle(path: str | Path, payload: dict[str, Any]) -> None:
+    bundle_path = Path(path)
+    bundle_path.parent.mkdir(parents=True, exist_ok=True)
+    bundle_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _guardrail_error(raw: dict[str, Any], config: ExecutionConfig) -> str | None:
@@ -537,21 +687,125 @@ def execute_selected_plan(
     execution_intent: str = "optional_real",
     replicate_idx: int = 0,
     plan_json_path: str | None = None,
+    plan_bundle_path: str | None = None,
     graph_mode: str | None = None,
 ) -> dict[str, Any]:
+    if plan_json_path and plan_bundle_path:
+        raise ExecutionError("Plan override JSON and reusable plan bundle are mutually exclusive")
+
+    driver_timing: dict[str, float] = {}
+
+    def record_timing(name: str, start: float) -> None:
+        driver_timing[name] = round(max(time.perf_counter() - start, 0.0), 9)
+
+    total_start = time.perf_counter()
+
+    start = time.perf_counter()
     manifest = load_yaml(workload_manifest_path)
+    record_timing("load_manifest_s", start)
+
+    start = time.perf_counter()
     system_manifest = load_system_manifest(system_manifest_path)
+    record_timing("load_system_manifest_s", start)
+
+    start = time.perf_counter()
     system_profile = collect_system_profile()
+    record_timing("collect_system_profile_s", start)
+
+    start = time.perf_counter()
     repo_metadata = capture_repo_metadata()
-    ir = normalize_workload_manifest(manifest)
-    features = extract_feature_snapshot(manifest, ir)
-    probe = run_exact_tn_probe(manifest, ProbeConfig(objective=objective, probe_strategy=probe_strategy))
+    record_timing("capture_repo_metadata_s", start)
+
+    plan_bundle_provenance: dict[str, Any] = {
+        "requested": bool(plan_bundle_path),
+        "bundle_path": _normalized_path(plan_bundle_path) if plan_bundle_path else None,
+        "cache_status": "disabled",
+        "cache_reason": "plan bundle reuse was not requested",
+        "write_status": "disabled",
+        "write_reason": "plan bundle reuse was not requested",
+        "bundle_id": None,
+        "compatibility": None,
+    }
+
+    bundle_scope = _build_plan_bundle_scope(
+        workload_manifest_path,
+        system_manifest_path,
+        manifest,
+        system_manifest,
+        system_profile,
+        objective=objective,
+        probe_strategy=probe_strategy,
+        planner_budget=planner_budget,
+        allow_distributed=allow_distributed,
+        max_candidates=max_candidates,
+    )
+
     candidates: list[dict[str, Any]] = []
+    chosen: dict[str, Any] | None = None
+    ir = None
+    features = None
+    probe = None
     selected_by = "plan_rank"
     if plan_json_path:
+        driver_timing.setdefault("plan_bundle_lookup_s", 0.0)
+        driver_timing.setdefault("candidate_generation_s", 0.0)
+        driver_timing.setdefault("selection_s", 0.0)
+
+        start = time.perf_counter()
+        ir = normalize_workload_manifest(manifest)
+        record_timing("normalize_manifest_s", start)
+
+        start = time.perf_counter()
+        features = extract_feature_snapshot(manifest, ir)
+        record_timing("extract_features_s", start)
+
+        start = time.perf_counter()
+        probe = run_exact_tn_probe(manifest, ProbeConfig(objective=objective, probe_strategy=probe_strategy))
+        record_timing("probe_s", start)
+
         chosen = _normalize_plan_override(_load_plan_override(plan_json_path), manifest, objective=objective)
         selected_by = "plan_override"
-    else:
+    elif plan_bundle_path:
+        lookup_start = time.perf_counter()
+        bundle_path = Path(plan_bundle_path)
+        if bundle_path.exists():
+            bundle_payload = _load_plan_bundle(bundle_path)
+            compatibility = _assess_plan_bundle_compatibility(bundle_payload, bundle_scope)
+            plan_bundle_provenance["bundle_id"] = compatibility["bundle_id"]
+            plan_bundle_provenance["compatibility"] = compatibility
+            if compatibility["compatible"]:
+                chosen = _normalize_plan_override(bundle_payload["selected_plan"], manifest, objective=objective)
+                selected_by = "plan_bundle_reuse"
+                plan_bundle_provenance["cache_status"] = "hit"
+                plan_bundle_provenance["cache_reason"] = compatibility["reason"]
+                plan_bundle_provenance["write_status"] = "skipped_hit"
+                plan_bundle_provenance["write_reason"] = "existing compatible bundle was reused without rewriting"
+            else:
+                plan_bundle_provenance["cache_status"] = "rejected"
+                plan_bundle_provenance["cache_reason"] = compatibility["reason"]
+                plan_bundle_provenance["write_status"] = "skipped_rejected"
+                plan_bundle_provenance["write_reason"] = "existing bundle was incompatible and was left untouched"
+        else:
+            plan_bundle_provenance["cache_status"] = "miss"
+            plan_bundle_provenance["cache_reason"] = "bundle file was not present, so the planner selected a fresh plan"
+            plan_bundle_provenance["write_status"] = "pending"
+            plan_bundle_provenance["write_reason"] = "fresh planning path will write a reusable bundle after a successful run"
+        record_timing("plan_bundle_lookup_s", lookup_start)
+
+    if chosen is None:
+        start = time.perf_counter()
+        ir = normalize_workload_manifest(manifest)
+        record_timing("normalize_manifest_s", start)
+
+        start = time.perf_counter()
+        features = extract_feature_snapshot(manifest, ir)
+        record_timing("extract_features_s", start)
+
+        start = time.perf_counter()
+        probe = run_exact_tn_probe(manifest, ProbeConfig(objective=objective, probe_strategy=probe_strategy))
+        record_timing("probe_s", start)
+
+        start = time.perf_counter()
         candidates = generate_plan_candidates(
             manifest,
             features,
@@ -564,13 +818,25 @@ def execute_selected_plan(
                 max_candidates=max_candidates,
             ),
         )
+        record_timing("candidate_generation_s", start)
+
+        selection_start = time.perf_counter()
         chosen = next((candidate for candidate in candidates if int(candidate.get("recommendation_rank", 9999)) == plan_rank), None)
         if chosen is None:
             chosen = select_top_plan(candidates, objective=objective)
             selected_by = "planner_top_pick"
         if chosen is None:
             raise ExecutionError("No plan candidate available for execution")
+        record_timing("selection_s", selection_start)
+    else:
+        driver_timing.setdefault("normalize_manifest_s", 0.0)
+        driver_timing.setdefault("extract_features_s", 0.0)
+        driver_timing.setdefault("probe_s", 0.0)
+        driver_timing.setdefault("candidate_generation_s", 0.0)
+        driver_timing.setdefault("selection_s", 0.0)
+        driver_timing.setdefault("plan_bundle_lookup_s", 0.0)
     resolved_graph_mode = normalize_graph_mode(graph_mode if graph_mode is not None else chosen.get("graph_mode"), default="off")
+    execution_start = time.perf_counter()
     bundle = execute_plan_candidate_bundle(
         manifest,
         chosen,
@@ -588,6 +854,44 @@ def execute_selected_plan(
             graph_mode=resolved_graph_mode,
         ),
     )
+    record_timing("execute_plan_bundle_s", execution_start)
+
+    if plan_bundle_path and plan_bundle_provenance["cache_status"] == "miss" and bundle["execution_run"].get("status") == "success":
+        bundle_payload = _build_plan_bundle_payload(
+            scope=bundle_scope,
+            selected_plan=chosen,
+            repo_metadata=repo_metadata,
+            selection_source=selected_by,
+            plan_rank=plan_rank,
+            candidate_count=len(candidates),
+        )
+        write_start = time.perf_counter()
+        _write_plan_bundle(plan_bundle_path, bundle_payload)
+        record_timing("plan_bundle_write_s", write_start)
+        plan_bundle_provenance["bundle_id"] = bundle_payload["bundle_id"]
+        plan_bundle_provenance["write_status"] = "written"
+        plan_bundle_provenance["write_reason"] = "freshly selected plan was serialized into a reusable bundle"
+    else:
+        driver_timing.setdefault("plan_bundle_write_s", 0.0)
+        if plan_bundle_path and plan_bundle_provenance["cache_status"] == "miss":
+            plan_bundle_provenance["write_status"] = "skipped_no_success"
+            plan_bundle_provenance["write_reason"] = "execution did not succeed, so no reusable bundle was written"
+
+    total_s = round(max(time.perf_counter() - total_start, 0.0), 9)
+    driver_timing["total_s"] = total_s
+    driver_timing["pre_execution_s"] = round(
+        max(
+            total_s
+            - float(driver_timing.get("execute_plan_bundle_s") or 0.0)
+            - float(driver_timing.get("plan_bundle_write_s") or 0.0),
+            0.0,
+        ),
+        9,
+    )
+    outer_driver_overhead_s = round(
+        max(total_s - float(bundle["execution_run"].get("wall_s") or 0.0), 0.0),
+        9,
+    )
     return {
         "workload_id": manifest["ids"]["workload_id"],
         "family_id": manifest["family_id"],
@@ -599,6 +903,11 @@ def execute_selected_plan(
         "selected_plan": chosen,
         "selection_source": selected_by,
         "plan_override_path": str(plan_json_path).replace("\\", "/") if plan_json_path else None,
+        "plan_bundle_path": _normalized_path(plan_bundle_path) if plan_bundle_path else None,
+        "plan_bundle_provenance": plan_bundle_provenance,
+        "driver_timing_json": driver_timing,
+        "driver_total_s": total_s,
+        "outer_driver_overhead_s": outer_driver_overhead_s,
         "profile_summary": bundle.get("profile_summary"),
         "accuracy_eval": bundle.get("accuracy_eval"),
         "execution_run": bundle["execution_run"],
