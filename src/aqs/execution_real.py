@@ -88,8 +88,18 @@ def _require_real_capability(system_profile: dict[str, Any], module_name: str, c
         raise RealExecutionError(code, message)
 
 
-def validate_real_execution_request(manifest: dict[str, Any], *, system_profile: dict[str, Any] | None = None) -> dict[str, Any]:
+def validate_real_execution_environment(*, system_profile: dict[str, Any] | None = None) -> dict[str, Any]:
     system_profile = system_profile or collect_system_profile()
+    if not system_profile.get("gpu_present"):
+        raise RealExecutionError("missing_gpu", "real cuTensorNet execution requires a visible GPU")
+    _require_real_capability(system_profile, "cupy_present", "missing_cupy", "real cuTensorNet execution requires CuPy")
+    _require_real_capability(system_profile, "cuquantum_present", "missing_cuquantum", "real cuTensorNet execution requires cuQuantum Python")
+    _require_real_capability(system_profile, "qiskit_present", "missing_qiskit", "real cuTensorNet execution requires Qiskit for OpenQASM2 import")
+    return system_profile
+
+
+def validate_real_execution_request(manifest: dict[str, Any], *, system_profile: dict[str, Any] | None = None) -> dict[str, Any]:
+    system_profile = validate_real_execution_environment(system_profile=system_profile)
     if manifest.get("source_format") != "qiskit":
         raise RealExecutionError("unsupported_source_format", "real cuTensorNet execution currently supports source_format='qiskit' only")
     if manifest.get("semantic_target") not in {"amplitude", "batched_amplitudes"}:
@@ -97,11 +107,6 @@ def validate_real_execution_request(manifest: dict[str, Any], *, system_profile:
             "unsupported_semantic_target",
             "real cuTensorNet execution currently supports semantic_target in {'amplitude', 'batched_amplitudes'} only",
         )
-    if not system_profile.get("gpu_present"):
-        raise RealExecutionError("missing_gpu", "real cuTensorNet execution requires a visible GPU")
-    _require_real_capability(system_profile, "cupy_present", "missing_cupy", "real cuTensorNet execution requires CuPy")
-    _require_real_capability(system_profile, "cuquantum_present", "missing_cuquantum", "real cuTensorNet execution requires cuQuantum Python")
-    _require_real_capability(system_profile, "qiskit_present", "missing_qiskit", "real cuTensorNet execution requires Qiskit for OpenQASM2 import")
 
     summary = load_circuit_summary(manifest)
     if summary is None:
@@ -140,6 +145,27 @@ def _import_real_stack() -> tuple[Any, Any, Any]:
         from cuquantum.tensornet import CircuitToEinsum
 
     return cupy, Network, CircuitToEinsum
+
+
+def initialize_real_execution_runtime(
+    *,
+    system_profile: dict[str, Any] | None = None,
+    touch_context: bool = False,
+) -> dict[str, Any]:
+    validated_profile = validate_real_execution_environment(system_profile=system_profile)
+    started = time.perf_counter()
+    cupy, Network, CircuitToEinsum = _import_real_stack()
+    if touch_context:
+        _touch_active_cupy_context(cupy)
+    return {
+        "system_profile": validated_profile,
+        "cupy": cupy,
+        "Network": Network,
+        "CircuitToEinsum": CircuitToEinsum,
+        "startup_s": round(max(time.perf_counter() - started, 0.0), 9),
+        "startup_touch_context": bool(touch_context),
+        "started_at": _utc_now_iso(),
+    }
 
 
 def _sync_cupy(cupy: Any) -> None:
@@ -488,14 +514,35 @@ def execute_real_plan_candidate(
     system_profile: dict[str, Any] | None = None,
     config: Any,
 ) -> dict[str, Any]:
-    system_profile = system_profile or collect_system_profile()
+    runtime = initialize_real_execution_runtime(
+        system_profile=system_profile or collect_system_profile(),
+        touch_context=False,
+    )
+    runtime["request_import_real_stack_s"] = float(runtime.get("startup_s") or 0.0)
+    return execute_real_plan_candidate_with_runtime(
+        workload_manifest,
+        plan,
+        runtime=runtime,
+        config=config,
+    )
+
+
+def execute_real_plan_candidate_with_runtime(
+    workload_manifest: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    runtime: dict[str, Any],
+    config: Any,
+) -> dict[str, Any]:
+    system_profile = runtime.get("system_profile") or collect_system_profile()
     validation_started = time.perf_counter()
     preflight = validate_real_execution_request(workload_manifest, system_profile=system_profile)
     pre_execute_request_validation_s = round(max(time.perf_counter() - validation_started, 0.0), 9)
     execution_target = preflight["execution_target"]
-    import_started = time.perf_counter()
-    cupy, Network, CircuitToEinsum = _import_real_stack()
-    import_real_stack_s = round(max(time.perf_counter() - import_started, 0.0), 9)
+    cupy = runtime["cupy"]
+    Network = runtime["Network"]
+    CircuitToEinsum = runtime["CircuitToEinsum"]
+    import_real_stack_s = float(runtime.get("request_import_real_stack_s") or 0.0)
 
     precision = str(getattr(config, "precision", "complex128"))
     if precision not in {"fp64", "complex128"}:
@@ -800,6 +847,9 @@ __all__ = [
     "REAL_RECOVERABLE_CODES",
     "RealExecutionError",
     "execute_real_plan_candidate",
+    "execute_real_plan_candidate_with_runtime",
+    "initialize_real_execution_runtime",
     "normalize_prewarm_mode",
+    "validate_real_execution_environment",
     "validate_real_execution_request",
 ]

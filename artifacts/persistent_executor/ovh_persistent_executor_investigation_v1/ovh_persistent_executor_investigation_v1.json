@@ -1,0 +1,610 @@
+{
+  "benchmark_repeats": 5,
+  "execution_intent": "require_real",
+  "interpretation": "Persistent execution amortized enough bootstrap cost to beat one-shot bundle hits on the canonical low-repeat OVH workloads without materially harming the medium-repeat control. The next branch should stay performance-only and turn the worker into a tighter persistent-executor prototype.",
+  "measurement_repeats": 3,
+  "objective": "ttfr",
+  "planner_budget": "balanced",
+  "probe_strategy": "real_if_available",
+  "rows": [
+    {
+      "all_accuracy_pass": true,
+      "benchmark_repeats": 5,
+      "bundle_minus_persistent_cold_session_total_s": 0.217176889,
+      "bundle_minus_persistent_warm_cli_wall_s": 1.421073341,
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml",
+      "manifest_role": "low_repeat_amplitude",
+      "mode_rows": [
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "disabled"
+          ],
+          "cli_wall_s": 2.124360103,
+          "driver_total_s": 1.456789268,
+          "execute_plan_bundle_s": 0.051604482,
+          "execution_modes": [
+            "direct_executor"
+          ],
+          "execution_wall_s": 0.049545076,
+          "import_real_stack_s": 8.964e-06,
+          "mode": "fresh",
+          "network_build_s": 0.006242112,
+          "outer_driver_overhead_s": 1.407991583,
+          "selected_plan_ids": [
+            "plan_9681ead327789de4"
+          ],
+          "selection_sources": [
+            "plan_rank"
+          ],
+          "session_request_indices": [
+            0
+          ],
+          "session_total_s": 2.124360103,
+          "session_uptime_s": 0.0,
+          "worker_execute_s": 0.0,
+          "worker_reply_s": 0.0,
+          "worker_request_dispatch_s": 0.0,
+          "worker_startup_s": 0.0,
+          "worker_warm_states": [
+            "None"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "disabled"
+          ],
+          "cli_wall_s": 2.155523106,
+          "driver_total_s": 1.406663135,
+          "execute_plan_bundle_s": 0.050594061,
+          "execution_modes": [
+            "direct_executor"
+          ],
+          "execution_wall_s": 0.04859147,
+          "import_real_stack_s": 8.986e-06,
+          "mode": "plan_json",
+          "network_build_s": 0.006343064,
+          "outer_driver_overhead_s": 1.358080685,
+          "selected_plan_ids": [
+            "plan_9681ead327789de4"
+          ],
+          "selection_sources": [
+            "plan_override"
+          ],
+          "session_request_indices": [
+            0
+          ],
+          "session_total_s": 2.155523106,
+          "session_uptime_s": 0.0,
+          "worker_execute_s": 0.0,
+          "worker_reply_s": 0.0,
+          "worker_request_dispatch_s": 0.0,
+          "worker_startup_s": 0.0,
+          "worker_warm_states": [
+            "None"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "hit"
+          ],
+          "cli_wall_s": 2.065970713,
+          "driver_total_s": 1.379858977,
+          "execute_plan_bundle_s": 1.205562159,
+          "execution_modes": [
+            "direct_executor"
+          ],
+          "execution_wall_s": 0.333618358,
+          "import_real_stack_s": 0.89255884,
+          "mode": "bundle_hit",
+          "network_build_s": 0.110886533,
+          "outer_driver_overhead_s": 1.037108193,
+          "selected_plan_ids": [
+            "plan_9681ead327789de4"
+          ],
+          "selection_sources": [
+            "plan_bundle_reuse"
+          ],
+          "session_request_indices": [
+            0
+          ],
+          "session_total_s": 2.065970713,
+          "session_uptime_s": 0.0,
+          "worker_execute_s": 0.0,
+          "worker_reply_s": 0.0,
+          "worker_request_dispatch_s": 0.0,
+          "worker_startup_s": 0.0,
+          "worker_warm_states": [
+            "None"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "hit"
+          ],
+          "cli_wall_s": 0.77302495,
+          "driver_total_s": 0.389231717,
+          "execute_plan_bundle_s": 0.223368116,
+          "execution_modes": [
+            "persistent_executor"
+          ],
+          "execution_wall_s": 0.217623575,
+          "import_real_stack_s": 0.0,
+          "mode": "persistent_bundle_hit_cold",
+          "network_build_s": 0.147425072,
+          "outer_driver_overhead_s": 0.171608142,
+          "selected_plan_ids": [
+            "plan_9681ead327789de4"
+          ],
+          "selection_sources": [
+            "plan_bundle_reuse"
+          ],
+          "session_request_indices": [
+            1
+          ],
+          "session_total_s": 1.848793824,
+          "session_uptime_s": 1.764369649,
+          "worker_execute_s": 0.22024487,
+          "worker_reply_s": 2.677e-06,
+          "worker_request_dispatch_s": 0.000283376,
+          "worker_startup_s": 1.086793385,
+          "worker_warm_states": [
+            "False"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "hit"
+          ],
+          "cli_wall_s": 0.644897372,
+          "driver_total_s": 0.270571752,
+          "execute_plan_bundle_s": 0.083502774,
+          "execution_modes": [
+            "persistent_executor"
+          ],
+          "execution_wall_s": 0.077844436,
+          "import_real_stack_s": 0.0,
+          "mode": "persistent_bundle_hit_warm",
+          "network_build_s": 0.014941914,
+          "outer_driver_overhead_s": 0.185685268,
+          "selected_plan_ids": [
+            "plan_9681ead327789de4"
+          ],
+          "selection_sources": [
+            "plan_bundle_reuse"
+          ],
+          "session_request_indices": [
+            2
+          ],
+          "session_total_s": 1.720666246,
+          "session_uptime_s": 2.504962081,
+          "worker_execute_s": 0.080534637,
+          "worker_reply_s": 2.891e-06,
+          "worker_request_dispatch_s": 0.000301427,
+          "worker_startup_s": 1.086793385,
+          "worker_warm_states": [
+            "True"
+          ]
+        }
+      ],
+      "persistent_warm_recovery_ratio": null,
+      "plan_json_minus_bundle_cli_wall_s": -0.089552393,
+      "seed_selected_plan_id": "plan_9681ead327789de4",
+      "selection_semantics_preserved": true
+    },
+    {
+      "all_accuracy_pass": true,
+      "benchmark_repeats": 5,
+      "bundle_minus_persistent_cold_session_total_s": 0.224612878,
+      "bundle_minus_persistent_warm_cli_wall_s": 1.467792572,
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/06_star_graph_phase_amplitude_heldout_low.yaml",
+      "manifest_role": "low_repeat_amplitude_heldout",
+      "mode_rows": [
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "disabled"
+          ],
+          "cli_wall_s": 2.189604073,
+          "driver_total_s": 1.492901843,
+          "execute_plan_bundle_s": 0.053369325,
+          "execution_modes": [
+            "direct_executor"
+          ],
+          "execution_wall_s": 0.051400758,
+          "import_real_stack_s": 8.233e-06,
+          "mode": "fresh",
+          "network_build_s": 0.006232339,
+          "outer_driver_overhead_s": 1.441501085,
+          "selected_plan_ids": [
+            "plan_1e9bb43cfe444bbb"
+          ],
+          "selection_sources": [
+            "plan_rank"
+          ],
+          "session_request_indices": [
+            0
+          ],
+          "session_total_s": 2.189604073,
+          "session_uptime_s": 0.0,
+          "worker_execute_s": 0.0,
+          "worker_reply_s": 0.0,
+          "worker_request_dispatch_s": 0.0,
+          "worker_startup_s": 0.0,
+          "worker_warm_states": [
+            "None"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "disabled"
+          ],
+          "cli_wall_s": 2.101301868,
+          "driver_total_s": 1.433770167,
+          "execute_plan_bundle_s": 0.053593641,
+          "execution_modes": [
+            "direct_executor"
+          ],
+          "execution_wall_s": 0.051679152,
+          "import_real_stack_s": 8.215e-06,
+          "mode": "plan_json",
+          "network_build_s": 0.006333575,
+          "outer_driver_overhead_s": 1.381128088,
+          "selected_plan_ids": [
+            "plan_1e9bb43cfe444bbb"
+          ],
+          "selection_sources": [
+            "plan_override"
+          ],
+          "session_request_indices": [
+            0
+          ],
+          "session_total_s": 2.101301868,
+          "session_uptime_s": 0.0,
+          "worker_execute_s": 0.0,
+          "worker_reply_s": 0.0,
+          "worker_request_dispatch_s": 0.0,
+          "worker_startup_s": 0.0,
+          "worker_warm_states": [
+            "None"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "hit"
+          ],
+          "cli_wall_s": 2.106126447,
+          "driver_total_s": 1.397643608,
+          "execute_plan_bundle_s": 1.237675207,
+          "execution_modes": [
+            "direct_executor"
+          ],
+          "execution_wall_s": 0.298254041,
+          "import_real_stack_s": 0.932414316,
+          "mode": "bundle_hit",
+          "network_build_s": 0.106294877,
+          "outer_driver_overhead_s": 1.096480436,
+          "selected_plan_ids": [
+            "plan_1e9bb43cfe444bbb"
+          ],
+          "selection_sources": [
+            "plan_bundle_reuse"
+          ],
+          "session_request_indices": [
+            0
+          ],
+          "session_total_s": 2.106126447,
+          "session_uptime_s": 0.0,
+          "worker_execute_s": 0.0,
+          "worker_reply_s": 0.0,
+          "worker_request_dispatch_s": 0.0,
+          "worker_startup_s": 0.0,
+          "worker_warm_states": [
+            "None"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "hit"
+          ],
+          "cli_wall_s": 0.771101688,
+          "driver_total_s": 0.387944975,
+          "execute_plan_bundle_s": 0.226830645,
+          "execution_modes": [
+            "persistent_executor"
+          ],
+          "execution_wall_s": 0.221118471,
+          "import_real_stack_s": 0.0,
+          "mode": "persistent_bundle_hit_cold",
+          "network_build_s": 0.151399859,
+          "outer_driver_overhead_s": 0.16299393,
+          "selected_plan_ids": [
+            "plan_1e9bb43cfe444bbb"
+          ],
+          "selection_sources": [
+            "plan_bundle_reuse"
+          ],
+          "session_request_indices": [
+            1
+          ],
+          "session_total_s": 1.881513569,
+          "session_uptime_s": 1.745216316,
+          "worker_execute_s": 0.223947803,
+          "worker_reply_s": 2.638e-06,
+          "worker_request_dispatch_s": 0.000290364,
+          "worker_startup_s": 1.09770712,
+          "worker_warm_states": [
+            "False"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "hit"
+          ],
+          "cli_wall_s": 0.638333875,
+          "driver_total_s": 0.241661366,
+          "execute_plan_bundle_s": 0.092263494,
+          "execution_modes": [
+            "persistent_executor"
+          ],
+          "execution_wall_s": 0.086820451,
+          "import_real_stack_s": 0.0,
+          "mode": "persistent_bundle_hit_warm",
+          "network_build_s": 0.016852091,
+          "outer_driver_overhead_s": 0.154840915,
+          "selected_plan_ids": [
+            "plan_1e9bb43cfe444bbb"
+          ],
+          "selection_sources": [
+            "plan_bundle_reuse"
+          ],
+          "session_request_indices": [
+            2
+          ],
+          "session_total_s": 1.692940886,
+          "session_uptime_s": 2.525552805,
+          "worker_execute_s": 0.089401744,
+          "worker_reply_s": 2.905e-06,
+          "worker_request_dispatch_s": 0.000284687,
+          "worker_startup_s": 1.09770712,
+          "worker_warm_states": [
+            "True"
+          ]
+        }
+      ],
+      "persistent_warm_recovery_ratio": 304.23226,
+      "plan_json_minus_bundle_cli_wall_s": 0.004824579,
+      "seed_selected_plan_id": "plan_1e9bb43cfe444bbb",
+      "selection_semantics_preserved": true
+    },
+    {
+      "all_accuracy_pass": true,
+      "benchmark_repeats": 5,
+      "bundle_minus_persistent_cold_session_total_s": 0.171418833,
+      "bundle_minus_persistent_warm_cli_wall_s": 1.398724723,
+      "manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/08_parity_iqp_batched_heldout_medium.yaml",
+      "manifest_role": "control_medium_batched",
+      "mode_rows": [
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "disabled"
+          ],
+          "cli_wall_s": 2.183687705,
+          "driver_total_s": 1.466134268,
+          "execute_plan_bundle_s": 0.371025085,
+          "execution_modes": [
+            "direct_executor"
+          ],
+          "execution_wall_s": 0.369189175,
+          "import_real_stack_s": 6.635e-06,
+          "mode": "fresh",
+          "network_build_s": 0.104450815,
+          "outer_driver_overhead_s": 1.112456722,
+          "selected_plan_ids": [
+            "plan_7209297490c788dd"
+          ],
+          "selection_sources": [
+            "plan_rank"
+          ],
+          "session_request_indices": [
+            0
+          ],
+          "session_total_s": 2.183687705,
+          "session_uptime_s": 0.0,
+          "worker_execute_s": 0.0,
+          "worker_reply_s": 0.0,
+          "worker_request_dispatch_s": 0.0,
+          "worker_startup_s": 0.0,
+          "worker_warm_states": [
+            "None"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "disabled"
+          ],
+          "cli_wall_s": 2.134569589,
+          "driver_total_s": 1.405061171,
+          "execute_plan_bundle_s": 0.297050667,
+          "execution_modes": [
+            "direct_executor"
+          ],
+          "execution_wall_s": 0.295248933,
+          "import_real_stack_s": 6.364e-06,
+          "mode": "plan_json",
+          "network_build_s": 0.105585414,
+          "outer_driver_overhead_s": 1.103146349,
+          "selected_plan_ids": [
+            "plan_7209297490c788dd"
+          ],
+          "selection_sources": [
+            "plan_override"
+          ],
+          "session_request_indices": [
+            0
+          ],
+          "session_total_s": 2.134569589,
+          "session_uptime_s": 0.0,
+          "worker_execute_s": 0.0,
+          "worker_reply_s": 0.0,
+          "worker_request_dispatch_s": 0.0,
+          "worker_startup_s": 0.0,
+          "worker_warm_states": [
+            "None"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "hit"
+          ],
+          "cli_wall_s": 2.021989101,
+          "driver_total_s": 1.342560617,
+          "execute_plan_bundle_s": 1.190454116,
+          "execution_modes": [
+            "direct_executor"
+          ],
+          "execution_wall_s": 0.295286588,
+          "import_real_stack_s": 0.895628983,
+          "mode": "bundle_hit",
+          "network_build_s": 0.105892789,
+          "outer_driver_overhead_s": 1.049264376,
+          "selected_plan_ids": [
+            "plan_7209297490c788dd"
+          ],
+          "selection_sources": [
+            "plan_bundle_reuse"
+          ],
+          "session_request_indices": [
+            0
+          ],
+          "session_total_s": 2.021989101,
+          "session_uptime_s": 0.0,
+          "worker_execute_s": 0.0,
+          "worker_reply_s": 0.0,
+          "worker_request_dispatch_s": 0.0,
+          "worker_startup_s": 0.0,
+          "worker_warm_states": [
+            "None"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "hit"
+          ],
+          "cli_wall_s": 0.782977405,
+          "driver_total_s": 0.388557837,
+          "execute_plan_bundle_s": 0.210422319,
+          "execution_modes": [
+            "persistent_executor"
+          ],
+          "execution_wall_s": 0.205470352,
+          "import_real_stack_s": 0.0,
+          "mode": "persistent_bundle_hit_cold",
+          "network_build_s": 0.143774025,
+          "outer_driver_overhead_s": 0.173985907,
+          "selected_plan_ids": [
+            "plan_7209297490c788dd"
+          ],
+          "selection_sources": [
+            "plan_bundle_reuse"
+          ],
+          "session_request_indices": [
+            1
+          ],
+          "session_total_s": 1.850570268,
+          "session_uptime_s": 1.704273794,
+          "worker_execute_s": 0.207728456,
+          "worker_reply_s": 2.739e-06,
+          "worker_request_dispatch_s": 0.000304155,
+          "worker_startup_s": 1.062419312,
+          "worker_warm_states": [
+            "False"
+          ]
+        },
+        {
+          "accuracy_statuses": [
+            "pass"
+          ],
+          "bundle_cache_statuses": [
+            "hit"
+          ],
+          "cli_wall_s": 0.623264378,
+          "driver_total_s": 0.251156507,
+          "execute_plan_bundle_s": 0.088619461,
+          "execution_modes": [
+            "persistent_executor"
+          ],
+          "execution_wall_s": 0.083051786,
+          "import_real_stack_s": 0.0,
+          "mode": "persistent_bundle_hit_warm",
+          "network_build_s": 0.017255348,
+          "outer_driver_overhead_s": 0.1777695,
+          "selected_plan_ids": [
+            "plan_7209297490c788dd"
+          ],
+          "selection_sources": [
+            "plan_bundle_reuse"
+          ],
+          "session_request_indices": [
+            2
+          ],
+          "session_total_s": 1.675177181,
+          "session_uptime_s": 2.495227038,
+          "worker_execute_s": 0.085558296,
+          "worker_reply_s": 2.907e-06,
+          "worker_request_dispatch_s": 0.000318217,
+          "worker_startup_s": 1.062419312,
+          "worker_warm_states": [
+            "True"
+          ]
+        }
+      ],
+      "persistent_warm_recovery_ratio": null,
+      "plan_json_minus_bundle_cli_wall_s": -0.112580488,
+      "seed_selected_plan_id": "plan_7209297490c788dd",
+      "selection_semantics_preserved": true
+    }
+  ],
+  "study": "ovh_persistent_executor_investigation_v1",
+  "system_manifest_path": "/home/ubuntu/quantum-workload-architecture/configs/systems/ovh_gra9_rtx5000_28.yml"
+}

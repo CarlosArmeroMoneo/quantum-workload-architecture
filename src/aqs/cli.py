@@ -250,6 +250,7 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
         replicate_idx=args.replicate_idx,
         plan_json_path=args.plan_json,
         plan_bundle_path=args.plan_bundle,
+        persistent_worker_socket=args.persistent_worker_socket,
         graph_mode=args.graph_mode,
         prewarm_mode=args.prewarm_mode,
     )
@@ -276,6 +277,13 @@ def _cmd_tnep_execute(args: argparse.Namespace) -> int:
             insert_profile_summary(args.db, payload["profile_summary"])
         print(f"Inserted execution lineage into {args.db}")
     return 0 if payload["execution_run"]["status"] == "success" else 1
+
+
+def _cmd_persistent_worker(args: argparse.Namespace) -> int:
+    from .persistent_executor import PersistentRealExecutorWorker
+
+    worker = PersistentRealExecutorWorker(args.socket)
+    return int(worker.serve_forever())
 
 
 def _cmd_profile_nsys(args: argparse.Namespace) -> int:
@@ -514,6 +522,10 @@ def build_parser() -> argparse.ArgumentParser:
             "the selected plan is reused. If the path is missing, the planner runs normally and writes a compatible bundle after success."
         ),
     )
+    execute_tnep.add_argument(
+        "--persistent-worker-socket",
+        help="Optional Unix socket for an already-running persistent real executor. v1 only supports plan overrides or compatible bundle hits.",
+    )
     execute_tnep.add_argument("--probe-strategy", choices=["surrogate_only", "structural_real", "real_if_available", "cuquantum_if_available", "cuquantum_required"], default="structural_real")
     execute_tnep.add_argument("--planner-budget", choices=["quick", "balanced", "deep"], default="balanced")
     execute_tnep.add_argument("--measurement-repeats", type=int, default=3)
@@ -625,6 +637,10 @@ def build_parser() -> argparse.ArgumentParser:
     campaign_summarize.add_argument("--manifest", required=True)
     campaign_summarize.add_argument("--outdir")
     campaign_summarize.set_defaults(func=_cmd_campaign_summarize)
+
+    persistent_worker = sub.add_parser("persistent-worker", help="Run the local persistent real-execution worker")
+    persistent_worker.add_argument("--socket", required=True, help="Unix domain socket path for the worker")
+    persistent_worker.set_defaults(func=_cmd_persistent_worker)
 
     return parser
 

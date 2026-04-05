@@ -113,6 +113,39 @@ def _build_plan_bundle_scope(
     }
 
 
+def _build_persistent_request_context(
+    *,
+    bundle_scope: dict[str, Any],
+    selected_plan: dict[str, Any],
+    selection_source: str,
+    graph_mode: str,
+    execution_intent: str,
+    precision: str,
+    allow_distributed: bool,
+    bundle_hit: bool,
+) -> dict[str, Any]:
+    return {
+        "workload_manifest_digest": bundle_scope["workload_manifest_digest"],
+        "workload_id": bundle_scope["workload_id"],
+        "system_manifest_digest": bundle_scope["system_manifest_digest"],
+        "system_name": bundle_scope.get("system_name"),
+        "system_id": bundle_scope.get("system_id"),
+        "objective": bundle_scope["objective"],
+        "precision": precision,
+        "graph_mode": graph_mode,
+        "execution_intent": execution_intent,
+        "allow_distributed": bool(allow_distributed),
+        "bundle_schema_version": bundle_scope["bundle_schema_version"],
+        "execution_stack_version": bundle_scope["execution_stack_version"],
+        "real_execution_stack_version": bundle_scope["real_execution_stack_version"],
+        "repo_commit": bundle_scope.get("repo_commit"),
+        "package_version": bundle_scope.get("package_version"),
+        "selected_plan_id": selected_plan["plan_id"],
+        "selection_source": selection_source,
+        "bundle_hit": bool(bundle_hit),
+    }
+
+
 def _build_plan_bundle_payload(
     *,
     scope: dict[str, Any],
@@ -218,6 +251,65 @@ def _assess_plan_bundle_compatibility(bundle: dict[str, Any], expected_scope: di
         "bundle_id": bundle.get("bundle_id"),
         "stored_fingerprint": stored_fingerprint,
         "expected_fingerprint": expected_fingerprint,
+    }
+
+
+def _build_persistent_worker_failure_bundle(
+    *,
+    chosen: dict[str, Any],
+    workload_manifest: dict[str, Any],
+    system_profile: dict[str, Any],
+    graph_mode: str,
+    execution_intent: str,
+    replicate_idx: int,
+    error: dict[str, Any],
+    worker_provenance: dict[str, Any],
+    worker_timing: dict[str, Any],
+) -> dict[str, Any]:
+    failure_detail = {
+        "reason_code": str(error.get("reason_code") or "persistent_executor_rejected"),
+        "error_message": str(error.get("message") or "persistent executor rejected the request"),
+        "execution_intent": execution_intent,
+        "graph_mode": graph_mode,
+        "execution_mode": worker_provenance.get("execution_mode"),
+        "persistent_executor_provenance": worker_provenance,
+    }
+    return {
+        "execution_run": {
+            "plan_id": chosen["plan_id"],
+            "workload_id": workload_manifest["ids"]["workload_id"],
+            "system_id": system_profile["system_id"],
+            "replicate_idx": int(replicate_idx),
+            "graph_mode": graph_mode,
+            "status": "runtime_error",
+            "started_at": _utc_now_iso(),
+            "finished_at": _utc_now_iso(),
+            "wall_s": 0.0,
+            "ttfr_s": None,
+            "steady_iter_ms": None,
+            "gpu_seconds": 0.0,
+            "peak_mem_gb": None,
+            "peak_workspace_gb": round(float(chosen.get("workspace_gb") or 0.0), 9),
+            "output_digest": None,
+            "execution_source": REAL_EXECUTION_SOURCE,
+            "failure_detail_json": failure_detail,
+            "run_id": "run_" + sha256_text(
+                canonical_json(
+                    {
+                        "plan_id": chosen["plan_id"],
+                        "system_id": system_profile["system_id"],
+                        "graph_mode": graph_mode,
+                        "status": "runtime_error",
+                        "execution_source": REAL_EXECUTION_SOURCE,
+                        "reason_code": failure_detail["reason_code"],
+                    }
+                )
+            )[:16],
+        },
+        "profile_summary": None,
+        "accuracy_eval": None,
+        "linked_assets": [],
+        "driver_timing_json": worker_timing,
     }
 
 
@@ -729,6 +821,7 @@ def execute_selected_plan(
     replicate_idx: int = 0,
     plan_json_path: str | None = None,
     plan_bundle_path: str | None = None,
+    persistent_worker_socket: str | None = None,
     graph_mode: str | None = None,
     prewarm_mode: str = "none",
 ) -> dict[str, Any]:
@@ -767,6 +860,18 @@ def execute_selected_plan(
         "write_reason": "plan bundle reuse was not requested",
         "bundle_id": None,
         "compatibility": None,
+    }
+    persistent_executor_provenance: dict[str, Any] = {
+        "requested": bool(persistent_worker_socket),
+        "socket_path": _normalized_path(persistent_worker_socket) if persistent_worker_socket else None,
+        "execution_mode": "direct_executor",
+        "bundle_hit": False,
+        "worker_session_id": None,
+        "worker_warm": None,
+        "worker_start_time": None,
+        "worker_request_index": None,
+        "compatibility_match_reason": None,
+        "compatibility_reject_reason": None,
     }
 
     bundle_scope = _build_plan_bundle_scope(
@@ -887,30 +992,108 @@ def execute_selected_plan(
         driver_timing.setdefault("plan_bundle_lookup_s", 0.0)
     resolved_graph_mode = normalize_graph_mode(graph_mode if graph_mode is not None else chosen.get("graph_mode"), default="off")
     execution_start = time.perf_counter()
-    bundle = execute_plan_candidate_bundle(
-        manifest,
-        chosen,
-        system_profile=system_profile,
-        system_manifest=system_manifest,
-        probe=probe,
-        config=ExecutionConfig(
-            objective=objective,
-            precision=str(chosen.get("precision") or "complex128"),
-            probe_strategy=probe_strategy,
-            measurement_repeats=measurement_repeats,
-            ttfr_repeats=ttfr_repeats,
-            execution_intent=execution_intent,
-            replicate_idx=replicate_idx,
-            graph_mode=resolved_graph_mode,
-            prewarm_mode=prewarm_mode,
-        ),
+    execution_config = ExecutionConfig(
+        objective=objective,
+        precision=str(chosen.get("precision") or "complex128"),
+        probe_strategy=probe_strategy,
+        measurement_repeats=measurement_repeats,
+        ttfr_repeats=ttfr_repeats,
+        execution_intent=execution_intent,
+        replicate_idx=replicate_idx,
+        graph_mode=resolved_graph_mode,
+        prewarm_mode=prewarm_mode,
     )
+    if persistent_worker_socket:
+        if selected_by not in {"plan_override", "plan_bundle_reuse"}:
+            raise ExecutionError(
+                "persistent worker mode requires either an explicit plan override or a compatible plan bundle hit in v1"
+            )
+        from .persistent_executor import (
+            PERSISTENT_EXECUTION_MODE,
+            PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
+            PersistentExecutorClient,
+        )
+
+        client = PersistentExecutorClient(persistent_worker_socket)
+        command = "execute_bundle" if selected_by == "plan_bundle_reuse" else "execute_plan_json"
+        request_context = _build_persistent_request_context(
+            bundle_scope=bundle_scope,
+            selected_plan=chosen,
+            selection_source=selected_by,
+            graph_mode=resolved_graph_mode,
+            execution_intent=execution_intent,
+            precision=execution_config.precision,
+            allow_distributed=allow_distributed,
+            bundle_hit=(selected_by == "plan_bundle_reuse"),
+        )
+        worker_response = client.request(
+            {
+                "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
+                "command": command,
+                "request_context": request_context,
+                "workload_manifest": manifest,
+                "system_manifest": system_manifest,
+                "selected_plan": chosen,
+                "allow_distributed": bool(allow_distributed),
+                "config": {
+                    "objective": execution_config.objective,
+                    "precision": execution_config.precision,
+                    "probe_strategy": execution_config.probe_strategy,
+                    "measurement_repeats": execution_config.measurement_repeats,
+                    "ttfr_repeats": execution_config.ttfr_repeats,
+                    "execution_intent": execution_config.execution_intent,
+                    "replicate_idx": execution_config.replicate_idx,
+                    "graph_mode": execution_config.graph_mode,
+                    "prewarm_mode": execution_config.prewarm_mode,
+                },
+            }
+        )
+        persistent_executor_provenance = {
+            **persistent_executor_provenance,
+            **(worker_response.get("persistent_executor_provenance") or {}),
+            "execution_mode": PERSISTENT_EXECUTION_MODE,
+            "bundle_hit": bool(selected_by == "plan_bundle_reuse"),
+        }
+        worker_timing = dict(worker_response.get("driver_timing_json") or {})
+        if worker_response.get("ok"):
+            bundle = dict(worker_response["bundle"])
+            bundle["driver_timing_json"] = {
+                **dict(bundle.get("driver_timing_json") or {}),
+                **worker_timing,
+            }
+        else:
+            bundle = _build_persistent_worker_failure_bundle(
+                chosen=chosen,
+                workload_manifest=manifest,
+                system_profile=system_profile,
+                graph_mode=resolved_graph_mode,
+                execution_intent=execution_intent,
+                replicate_idx=replicate_idx,
+                error=worker_response.get("error") or {},
+                worker_provenance=persistent_executor_provenance,
+                worker_timing=worker_timing,
+            )
+    else:
+        bundle = execute_plan_candidate_bundle(
+            manifest,
+            chosen,
+            system_profile=system_profile,
+            system_manifest=system_manifest,
+            probe=probe,
+            config=execution_config,
+        )
     record_timing("execute_plan_bundle_s", execution_start)
     for key, value in (bundle.get("driver_timing_json") or {}).items():
         driver_timing[key] = float(value)
     driver_timing.setdefault("dispatch_real_executor_s", 0.0)
     driver_timing.setdefault("real_execute_s", float(bundle["execution_run"].get("wall_s") or 0.0))
     driver_timing.setdefault("post_execution_s", 0.0)
+    driver_timing.setdefault("worker_startup_s", 0.0)
+    driver_timing.setdefault("worker_request_dispatch_s", 0.0)
+    driver_timing.setdefault("worker_execute_s", 0.0)
+    driver_timing.setdefault("worker_reply_s", 0.0)
+    driver_timing.setdefault("session_request_index", 0.0)
+    driver_timing.setdefault("session_uptime_s", 0.0)
     driver_timing.setdefault("bundle_lookup_s", 0.0)
     driver_timing.setdefault("bundle_compatibility_check_s", 0.0)
     driver_timing.setdefault("plan_bundle_lookup_s", driver_timing["bundle_lookup_s"])
@@ -961,9 +1144,11 @@ def execute_selected_plan(
         "probe": probe,
         "selected_plan": chosen,
         "selection_source": selected_by,
+        "execution_mode": persistent_executor_provenance["execution_mode"],
         "plan_override_path": str(plan_json_path).replace("\\", "/") if plan_json_path else None,
         "plan_bundle_path": _normalized_path(plan_bundle_path) if plan_bundle_path else None,
         "plan_bundle_provenance": plan_bundle_provenance,
+        "persistent_executor_provenance": persistent_executor_provenance,
         "driver_timing_json": driver_timing,
         "driver_total_s": total_s,
         "outer_driver_overhead_s": outer_driver_overhead_s,
