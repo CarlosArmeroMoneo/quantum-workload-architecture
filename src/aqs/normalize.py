@@ -374,7 +374,7 @@ def normalize_workload_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     elif family_id == "qec_clifford":
         ir = _qec_ir(manifest)
     elif family_id == "repeated_sweep":
-        raise NotImplementedError("repeated_sweep should be materialized from a concrete base-family workload in a later phase")
+        raise NotImplementedError("repeated_sweep must be materialized from a concrete base-family workload before normalization")
     else:
         raise ValueError(f"Unsupported family: {family_id}")
 
