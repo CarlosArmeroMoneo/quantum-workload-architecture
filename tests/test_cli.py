@@ -40,6 +40,14 @@ def test_cli_description_uses_public_project_name():
     assert parser.description == "Quantum Workload Architecture CLI"
 
 
+def test_cli_help_does_not_expose_scaffold_wording():
+    parser = build_parser()
+    help_text = parser.format_help()
+
+    assert "Exact-TN planning, execution, and validation commands" in help_text
+    assert "scaffold" not in help_text.lower()
+
+
 def test_main_reports_cli_version(capsys):
     assert main(["--version"]) == 0
     assert capsys.readouterr().out.strip() == f"aqs {__version__}"

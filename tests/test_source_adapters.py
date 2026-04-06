@@ -1,8 +1,10 @@
 from pathlib import Path
 
+import pytest
+
 from aqs.manifest import load_yaml, validate_workload_manifest
 from aqs.normalize import normalize_workload_manifest
-from aqs.source_adapters import load_circuit_summary, parse_openqasm2_summary
+from aqs.source_adapters import SourceLoadError, load_circuit_summary, parse_openqasm2_summary
 from aqs.tnprobe import ProbeConfig, run_exact_tn_probe
 
 
@@ -41,6 +43,16 @@ def test_structural_real_probe_uses_imported_circuit_source():
     probe = run_exact_tn_probe(manifest, ProbeConfig(probe_strategy="structural_real"))
     assert probe["status"] == "success"
     assert probe["raw_info_json"]["probe_source"] == "structural_real_circuit"
+
+
+def test_unsupported_source_format_error_uses_non_scaffold_wording():
+    manifest = {
+        "source_format": "cirq",
+        "source": {},
+    }
+
+    with pytest.raises(SourceLoadError, match=r"Unsupported source format: 'cirq'"):
+        load_circuit_summary(manifest)
 
 
 def test_imported_cudaq_manifest_validates_and_normalizes():

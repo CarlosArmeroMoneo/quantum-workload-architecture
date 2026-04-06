@@ -1,6 +1,5 @@
 import csv
 import json
-from pathlib import Path
 
 import pytest
 
@@ -78,7 +77,7 @@ def test_campaign_rerun_discards_stale_cell_and_run_artifacts(tmp_path):
     assert not stale_run.exists()
 
 
-def test_repeat_roi_cpu_dry_run_emits_roi_metrics_and_report_scaffold(tmp_path):
+def test_repeat_roi_cpu_dry_run_emits_roi_metrics_and_report_outputs(tmp_path):
     outdir = tmp_path / "repeat_roi_cpu_dry_run_v1"
     summary = run_campaign_manifest("configs/campaigns/repeat_roi_cpu_dry_run_v1.yaml", outdir=outdir)
 

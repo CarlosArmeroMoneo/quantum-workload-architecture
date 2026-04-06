@@ -233,7 +233,7 @@ def load_circuit_summary(manifest: dict[str, Any]) -> CircuitSummary | None:
     if source_format == "cudaq":
         return _load_cudaq_summary(source)
 
-    raise SourceLoadError(f"Source format {source_format!r} is not implemented in this scaffold")
+    raise SourceLoadError(f"Unsupported source format: {source_format!r}")
 
 
 def maybe_load_qiskit_circuit(manifest: dict[str, Any]) -> Any | None:

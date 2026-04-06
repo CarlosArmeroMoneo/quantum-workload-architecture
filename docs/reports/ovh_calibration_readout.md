@@ -9,7 +9,7 @@ This readout closes the current OVH calibration-infrastructure milestone. It use
 - Residual export: `artifacts/measured_validation_runs/ovh_v1_calibration/validation_residuals.md`
 - Calibration-only TTFR replicate summary: `artifacts/measured_validation_runs/ovh_v1_calibration/ttfr_replicate_summary.md`
 - Merge-gate policy: `docs/reports/ovh_merge_gate_policy.md`
-- Heldout expansion scaffolding: `docs/heldout_expansion_plan.md`
+- Heldout expansion plan: `docs/heldout_expansion_plan.md`
 
 ## Answers
 
@@ -89,6 +89,6 @@ This milestone stops after diagnostics and documentation:
 - residual export added and run on stored artifacts
 - calibration-only TTFR replicate mode added and exercised on the OVH host
 - merge gates documented
-- heldout expansion scaffolding documented
+- heldout expansion plan documented
 
 No ranking retune is landed in this branch.

@@ -124,7 +124,7 @@ def synthetic_circuit_schedule(workload_manifest: dict[str, Any]) -> list[list[S
         graph = graph_from_family(family, params, seed=seed)
         n_qubits = int(params["rows"]) * int(params["cols"])
         return _graph_round_schedule(graph, rounds=int(params["layers"]), include_single_qubit=True, n_qubits=n_qubits)
-    raise NotImplementedError(f"Synthetic TN probe not yet implemented for family '{family}'")
+    raise NotImplementedError(f"Unsupported synthetic TN probe family: {family!r}")
 
 
 def _observable_support(workload_manifest: dict[str, Any], n_qubits: int) -> set[int]:
