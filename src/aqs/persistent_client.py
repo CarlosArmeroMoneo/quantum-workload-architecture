@@ -21,6 +21,13 @@ def _normalized_path(path: str | Path) -> str:
     return str(Path(path).expanduser().resolve()).replace("\\", "/")
 
 
+def _unix_socket_family() -> int:
+    family = getattr(socket, "AF_UNIX", None)
+    if family is None:
+        raise RuntimeError("AF_UNIX sockets are unavailable on this platform")
+    return int(family)
+
+
 def _recv_json_line(reader: Any) -> dict[str, Any]:
     raw = reader.readline()
     if not raw:
@@ -77,7 +84,7 @@ class PersistentExecutorClient:
     def request(self, payload: dict[str, Any]) -> dict[str, Any]:
         command = str(payload.get("command") or "")
         try:
-            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+            with socket.socket(_unix_socket_family(), socket.SOCK_STREAM) as sock:
                 sock.settimeout(self.timeout_s)
                 sock.connect(self.socket_path)
                 with sock.makefile("r", encoding="utf-8") as reader, sock.makefile("w", encoding="utf-8") as writer:

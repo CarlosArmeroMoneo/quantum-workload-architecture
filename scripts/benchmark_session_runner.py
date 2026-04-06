@@ -375,7 +375,7 @@ def _run_persistent_warm_cli_mode(
     mode = "persistent_warm_cli"
     with tempfile.TemporaryDirectory(prefix="aqs_gate_s_cli_") as tempdir:
         socket_path = Path(tempdir) / "worker.sock"
-        with PersistentWorkerProcess(socket_path) as worker:
+        with PersistentWorkerProcess(socket_path):
             client = PersistentExecutorClient(socket_path, timeout_s=30.0)
             _prime_existing_worker(client=client, base_request_material=materials["run01"])
             for benchmark_repeat in range(1, BENCHMARK_REPEATS + 1):
@@ -540,7 +540,7 @@ def _run_session_runner_mode(
 
     with tempfile.TemporaryDirectory(prefix="aqs_gate_s_session_") as tempdir:
         socket_path = Path(tempdir) / "worker.sock"
-        with PersistentWorkerProcess(socket_path) as worker:
+        with PersistentWorkerProcess(socket_path):
             client = PersistentExecutorClient(socket_path, timeout_s=30.0)
             materials = _prepare_request_materials(base_session_manifest)
             _prime_existing_worker(client=client, base_request_material=materials["run01"])

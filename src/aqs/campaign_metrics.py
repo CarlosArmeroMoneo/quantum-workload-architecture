@@ -18,7 +18,7 @@ def _mean(rows: list[dict[str, Any]], key: str) -> float | None:
 
 
 def _safe_pct(numerator: float | None, denominator: float | None) -> float | None:
-    if numerator is None or denominator in {None, 0.0}:
+    if numerator is None or denominator is None or denominator == 0.0:
         return None
     return round((numerator / denominator) * 100.0, 6)
 

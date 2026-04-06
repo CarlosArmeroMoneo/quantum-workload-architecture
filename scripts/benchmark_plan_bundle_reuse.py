@@ -147,7 +147,7 @@ def _build_markdown(payload: dict[str, Any]) -> str:
         "",
         f"- Workloads: `{len(payload.get('rows') or [])}`",
         f"- Interpretation: {payload.get('interpretation')}",
-        f"- Ranking changed: `no`",
+        "- Ranking changed: `no`",
         "",
     ]
     for row in payload.get("rows") or []:

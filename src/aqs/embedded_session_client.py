@@ -134,7 +134,7 @@ class PersistentSession:
         normalized = _normalized_path(system_manifest_path)
         cached = self._system_manifest_cache.get(normalized)
         if cached is None:
-            cached = load_system_manifest(system_manifest_path)
+            cached = load_system_manifest(normalized)
             self._system_manifest_cache[normalized] = cached
         return cached
 

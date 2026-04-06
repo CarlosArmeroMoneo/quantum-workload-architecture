@@ -3,6 +3,8 @@ from __future__ import annotations
 import csv
 import os
 import sqlite3
+import sys
+import types
 from pathlib import Path
 
 import numpy as np
@@ -739,6 +741,17 @@ def test_real_executor_emits_prewarm_provenance(monkeypatch, prewarm_mode):
         def contract(self, release_workspace=False):
             return np.asarray(reference_result)
 
+    fake_qiskit = types.ModuleType("qiskit")
+
+    class FakeQuantumCircuit:
+        def __init__(self, qubit_count: int):
+            self.qubit_count = qubit_count
+
+        def h(self, qubit_index: int) -> None:
+            return None
+
+    fake_qiskit.QuantumCircuit = FakeQuantumCircuit
+    monkeypatch.setitem(sys.modules, "qiskit", fake_qiskit)
     monkeypatch.setattr("aqs.execution_real.maybe_load_qiskit_circuit", lambda manifest: FakeCircuit())
     monkeypatch.setattr("aqs.execution_real._import_real_stack", lambda: (FakeCuPy(), FakeNetwork, FakeConverter))
     monkeypatch.setattr("aqs.execution_real._reference_result_from_qiskit_circuit", lambda circuit, target: reference_result)
