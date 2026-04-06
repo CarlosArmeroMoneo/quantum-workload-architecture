@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+import socket
 import threading
 import time
 
@@ -8,6 +9,7 @@ import pytest
 
 from aqs.execution import EXECUTION_VERSION, PLAN_BUNDLE_VERSION
 from aqs.execution_real import REAL_EXECUTION_STACK_VERSION
+from aqs.persistent_client import PersistentClientError
 from aqs.persistent_executor import (
     PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
     PersistentExecutorClient,
@@ -314,7 +316,7 @@ def test_persistent_worker_startup_status_and_shutdown_protocol(fake_worker):
 
 
 def test_persistent_worker_execute_bundle_round_trip(fake_worker):
-    response = fake_worker["client"].request(_request_payload())
+    response = fake_worker["client"].execute_bundle(_request_payload())
 
     assert response["ok"] is True
     assert response["bundle"]["execution_run"]["status"] == "success"
@@ -327,7 +329,7 @@ def test_persistent_worker_execute_bundle_round_trip(fake_worker):
 
 
 def test_persistent_worker_execute_plan_json_round_trip(fake_worker):
-    response = fake_worker["client"].request(_request_payload(command="execute_plan_json"))
+    response = fake_worker["client"].execute_plan_json(_request_payload(command="execute_plan_json"))
 
     assert response["ok"] is True
     assert response["persistent_executor_provenance"]["bundle_hit"] is False
@@ -428,7 +430,11 @@ def test_persistent_worker_replace_live_worker(monkeypatch, tmp_path):
         replacement_status = None
         while time.time() < deadline:
             client = _wait_for_client(socket_path)
-            status = client.status()
+            try:
+                status = client.status()
+            except Exception:
+                time.sleep(0.05)
+                continue
             if status["worker_session_id"] != first_session_id:
                 replacement_client = client
                 replacement_status = status
@@ -459,3 +465,27 @@ def test_persistent_worker_max_session_seconds_stops_cleanly(monkeypatch, tmp_pa
         state["thread"].join(timeout=2.0)
         _wait_for_socket_gone(state["socket_path"])
         assert state["worker"].stop_reason == "max_session_seconds_reached"
+
+
+def test_persistent_client_structured_error_on_malformed_response(tmp_path):
+    socket_path = tmp_path / "malformed.sock"
+
+    def fake_server():
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server:
+            server.bind(str(socket_path))
+            server.listen(1)
+            conn, _ = server.accept()
+            with conn:
+                conn.recv(4096)
+                conn.sendall(b"[]\n")
+
+    thread = threading.Thread(target=fake_server, daemon=True)
+    thread.start()
+    deadline = time.time() + 1.0
+    while time.time() < deadline and not socket_path.exists():
+        time.sleep(0.01)
+
+    client = PersistentExecutorClient(socket_path, timeout_s=1.0)
+    with pytest.raises(PersistentClientError, match="JSON object"):
+        client.ping()
+    thread.join(timeout=1.0)

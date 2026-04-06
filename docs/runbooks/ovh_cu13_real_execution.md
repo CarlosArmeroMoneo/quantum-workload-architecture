@@ -278,6 +278,49 @@ Reference docs:
 - `docs/reports/ovh_persistent_executor_prototype_plan.md`
 - `docs/runbooks/ovh_persistent_executor.md`
 
+## Session Runner Prototype
+
+Use the session runner only as a local, opt-in performance path above the warm persistent worker.
+
+It is intentionally separate from Gate A, Gate B, and Gate P:
+
+- Gate A and Gate B remain the ranking/calibration evaluation surfaces.
+- Gate P remains the persistent-worker performance gate.
+- Gate S is the session-packaging overhead gate above the warm worker.
+- Session mode does not change ranking logic and should not be described as calibration progress.
+
+Existing-worker session:
+
+```bash
+.venv_cu13/bin/python -m aqs persistent-executor run-session \
+  --socket /tmp/aqs-ovh.sock \
+  --session-manifest benchmarks/sessions/ovh_gate_s_trio.yaml \
+  --outdir artifacts/session_runner/manual_existing_worker
+```
+
+Autospawn temporary worker:
+
+```bash
+.venv_cu13/bin/python -m aqs persistent-executor run-session \
+  --spawn-temp-worker \
+  --socket /tmp/aqs-ovh-temp.sock \
+  --session-manifest benchmarks/sessions/ovh_gate_s_trio.yaml \
+  --outdir artifacts/session_runner/manual_autospawn
+```
+
+Canonical Gate S benchmark:
+
+```bash
+.venv_cu13/bin/python scripts/benchmark_session_runner.py \
+  --outdir artifacts/session_runner/ovh_session_runner_prototype_v1
+```
+
+Reference docs:
+
+- `docs/reports/ovh_gate_s_policy.md`
+- `docs/reports/ovh_session_runner_prototype_plan.md`
+- `docs/runbooks/ovh_session_runner.md`
+
 ## Public Evidence Layout
 
 - Curated summaries are tracked in `evidence/first_real_profiler_slice/`.

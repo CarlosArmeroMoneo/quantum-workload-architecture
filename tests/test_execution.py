@@ -290,7 +290,13 @@ def test_execute_selected_plan_keeps_selected_plan_id_stable_on_persistent_bundl
                 },
             }
 
-    monkeypatch.setattr("aqs.persistent_executor.PersistentExecutorClient", FakePersistentClient)
+        def execute_bundle(self, payload):
+            return self.request(payload)
+
+        def execute_plan_json(self, payload):
+            return self.request(payload)
+
+    monkeypatch.setattr("aqs.persistent_client.PersistentExecutorClient", FakePersistentClient)
 
     persistent = execute_selected_plan(
         'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
@@ -343,7 +349,13 @@ def test_execute_selected_plan_persistent_request_failure_can_fallback_to_direct
         def request(self, payload):
             raise RuntimeError('worker unavailable')
 
-    monkeypatch.setattr('aqs.persistent_executor.PersistentExecutorClient', FailingPersistentClient)
+        def execute_bundle(self, payload):
+            return self.request(payload)
+
+        def execute_plan_json(self, payload):
+            return self.request(payload)
+
+    monkeypatch.setattr('aqs.persistent_client.PersistentExecutorClient', FailingPersistentClient)
 
     payload = execute_selected_plan(
         'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
@@ -406,7 +418,13 @@ def test_execute_selected_plan_persistent_rejection_can_fallback_to_direct_execu
                 },
             }
 
-    monkeypatch.setattr('aqs.persistent_executor.PersistentExecutorClient', RejectingPersistentClient)
+        def execute_bundle(self, payload):
+            return self.request(payload)
+
+        def execute_plan_json(self, payload):
+            return self.request(payload)
+
+    monkeypatch.setattr('aqs.persistent_client.PersistentExecutorClient', RejectingPersistentClient)
 
     payload = execute_selected_plan(
         'workloads/manifests/imported/qiskit_qasm2_ghz3.yaml',
@@ -444,7 +462,13 @@ def test_execute_selected_plan_persistent_request_failure_is_not_silent_without_
         def request(self, payload):
             raise RuntimeError('worker unavailable')
 
-    monkeypatch.setattr('aqs.persistent_executor.PersistentExecutorClient', FailingPersistentClient)
+        def execute_bundle(self, payload):
+            return self.request(payload)
+
+        def execute_plan_json(self, payload):
+            return self.request(payload)
+
+    monkeypatch.setattr('aqs.persistent_client.PersistentExecutorClient', FailingPersistentClient)
 
     with pytest.raises(ExecutionError, match='worker unavailable'):
         execute_selected_plan(

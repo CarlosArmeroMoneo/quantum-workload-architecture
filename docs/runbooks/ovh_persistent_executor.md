@@ -163,6 +163,33 @@ The curated prototype artifact package lands under:
 - `artifacts/persistent_executor/ovh_persistent_executor_prototype_v1/sequence_summary.md`
 - `artifacts/persistent_executor/ovh_persistent_executor_prototype_v1/worker_health.jsonl`
 
+## Session Runner Layer
+
+The session runner is the next local layer above the worker.
+
+It stays performance-only and is tracked under Gate S, not Gate P.
+
+Run it against an existing worker:
+
+```bash
+.venv_cu13/bin/python -m aqs persistent-executor run-session \
+  --socket /tmp/aqs-ovh.sock \
+  --session-manifest benchmarks/sessions/ovh_gate_s_trio.yaml \
+  --outdir artifacts/session_runner/manual_existing_worker
+```
+
+Or let it autospawn a temporary worker:
+
+```bash
+.venv_cu13/bin/python -m aqs persistent-executor run-session \
+  --spawn-temp-worker \
+  --socket /tmp/aqs-ovh-temp.sock \
+  --session-manifest benchmarks/sessions/ovh_gate_s_trio.yaml \
+  --outdir artifacts/session_runner/manual_autospawn
+```
+
+See `docs/runbooks/ovh_session_runner.md` for the dedicated runbook and Gate S benchmark flow.
+
 ## Interpretation Guardrail
 
 Use this feature to reduce end-to-end latency on repeated compatible requests.

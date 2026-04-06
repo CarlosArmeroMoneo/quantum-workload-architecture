@@ -1,0 +1,97 @@
+{
+  "api_version": "aqs.plan_bundle.v1",
+  "bundle_id": "bundle_2af0537d81eb44e1",
+  "bundle_schema_version": "aqs.plan_bundle.v1",
+  "bundle_scope": {
+    "allow_distributed": false,
+    "bundle_schema_version": "aqs.plan_bundle.v1",
+    "compatibility_fingerprint": "pbf_48bfa2c1863f6fe8",
+    "execution_stack_version": "aqs.execution.v2",
+    "family_id": "dense_universal",
+    "max_candidates": null,
+    "objective": "ttfr",
+    "package_version": "0.5.0",
+    "planner_budget": "balanced",
+    "probe_strategy": "real_if_available",
+    "real_execution_stack_version": "aqs.execution.real_stack.v1",
+    "repeat_count_hint": 2,
+    "repo_commit": "c170e17dc890db19d4b1a9dd6ce90503e7a3f33b",
+    "system_id": "sys_2b947b356aff9c76",
+    "system_manifest_digest": "4e6c04565d4e13d80c9033d175004ee356b473fe86efbb2e0559b95e94ee9a78",
+    "system_manifest_path": "/home/ubuntu/quantum-workload-architecture/configs/systems/ovh_gra9_rtx5000_28.yml",
+    "system_name": "ovh_gra9_rtx5000_28",
+    "workload_id": "wkl_888bce118ad39b04",
+    "workload_manifest_digest": "f34ec5a6bdd7385b491b29bf5d84eb1461645ea389b3200d8894191361618a10",
+    "workload_manifest_path": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml"
+  },
+  "compatibility_fingerprint": "pbf_48bfa2c1863f6fe8",
+  "created_at": "2026-04-06T06:48:15.138495+00:00",
+  "execution_stack_version": "aqs.execution.v2",
+  "real_execution_stack_version": "aqs.execution.real_stack.v1",
+  "repo_metadata": {
+    "git_branch": "stack/28-ovh-session-runner-prototype",
+    "git_commit": "c170e17dc890db19d4b1a9dd6ce90503e7a3f33b",
+    "git_dirty": true,
+    "git_ref_kind": "branch",
+    "package_version": "0.5.0",
+    "python_version": "3.13.3",
+    "repo_root": "/home/ubuntu/quantum-workload-architecture"
+  },
+  "selected_plan": {
+    "autotune": false,
+    "cache_workspace_gb": 0.0,
+    "explanation_json": [
+      "small planner budget prioritizes time-to-first-result over path optimality",
+      "workspace comfortably covers the current peak estimate, limiting slicing pressure"
+    ],
+    "feasibility_label": "feasible",
+    "gpu_arch_target": "sm75",
+    "hyper_samples": 2,
+    "is_feasible": true,
+    "max_error": 0.0,
+    "mode": "exact_tn",
+    "mpi_ranks": 1,
+    "objective": "ttfr",
+    "parent_probe_ids": [
+      "probe_3c6c2657646972ee"
+    ],
+    "path_quality_factor": 0.96,
+    "plan_id": "plan_9681ead327789de4",
+    "planner_version": "aqs.tnep_planner.v0",
+    "policy_summary_json": {
+      "disable_autotune_below_repeat": 6,
+      "disable_reuse_cache_below_repeat": 8
+    },
+    "precision": "complex128",
+    "predicted_error": 0.0,
+    "predicted_gpu_seconds": 0.723637,
+    "predicted_iter_ms": 21.606094,
+    "predicted_peak_gb": 0.0,
+    "predicted_planning_s": 0.432425,
+    "predicted_setup_s": 0.248,
+    "predicted_ttfr_s": 0.702031,
+    "prediction_breakdown_json": {
+      "graph_density": 0.4,
+      "path_quality_factor": 0.96,
+      "predicted_planning_s": 0.432425,
+      "predicted_setup_s": 0.248,
+      "repeat_count_used": 2,
+      "speed_factor_used": 2.5,
+      "treewidth_proxy": 2.0,
+      "workspace_factor": 0.95
+    },
+    "project": "tnep",
+    "recommendation_rank": 1,
+    "repeat_count_used": 2,
+    "reuse_cache": false,
+    "speed_factor_used": 2.5,
+    "template_name": "quick_turnaround",
+    "workspace_factor": 0.95,
+    "workspace_gb": 2.7
+  },
+  "selection_context": {
+    "candidate_count": 3,
+    "plan_rank": 1,
+    "selection_source": "plan_rank"
+  }
+}

@@ -25,10 +25,7 @@ from aqs.execution import (  # noqa: E402
     _load_plan_bundle,
 )
 from aqs.manifest import load_yaml  # noqa: E402
-from aqs.persistent_executor import (  # noqa: E402
-    PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-    PersistentExecutorClient,
-)
+from aqs.persistent_client import PERSISTENT_EXECUTOR_PROTOCOL_VERSION, PersistentExecutorClient  # noqa: E402
 from aqs.planner import load_system_manifest  # noqa: E402
 from aqs.repo_metadata import capture_repo_metadata  # noqa: E402
 

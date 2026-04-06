@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from aqs.manifest import finalize_workload_manifest, load_yaml, validate_manifest
@@ -94,3 +95,40 @@ def test_ovh_v2_benchmark_manifests_validate():
     ):
         manifest = load_yaml(path)
         assert validate_manifest(manifest) == [], f"{path} should validate"
+
+
+def test_session_manifest_validate_real_mode(tmp_path):
+    bundle_path = tmp_path / "seed.bundle.json"
+    bundle_path.write_text(
+        json.dumps(
+            {
+                "api_version": "aqs.plan_bundle.v1",
+                "bundle_schema_version": "aqs.plan_bundle.v1",
+                "bundle_scope": {"compatibility_fingerprint": "pbf_test"},
+                "selected_plan": {"plan_id": "plan_test"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest = {
+        "api_version": "aqs.session.v1",
+        "project": "tnep",
+        "mode": "persistent_execute_sequence",
+        "system_manifest": "configs/systems/ovh_gra9_rtx5000_28.yml",
+        "objective": "ttfr",
+        "probe_strategy": "real_if_available",
+        "planner_budget": "balanced",
+        "measurement_repeats": 3,
+        "execution_intent": "require_real",
+        "graph_mode": "off",
+        "allow_distributed": False,
+        "requests": [
+            {
+                "id": "run01",
+                "workload_manifest": "workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml",
+                "plan_bundle": str(bundle_path),
+            }
+        ],
+    }
+
+    assert validate_manifest(manifest, mode="real") == []

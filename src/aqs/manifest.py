@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
 from pathlib import Path
 from typing import Any
 
@@ -149,6 +150,25 @@ CAMPAIGN_REQUIRED = {
     "execution_intent",
     "probe_strategy",
 }
+
+SESSION_REQUIRED = {
+    "api_version",
+    "project",
+    "mode",
+    "system_manifest",
+    "objective",
+    "probe_strategy",
+    "planner_budget",
+    "measurement_repeats",
+    "execution_intent",
+    "graph_mode",
+    "allow_distributed",
+    "requests",
+}
+
+SESSION_PLAN_BUNDLE_VERSION = "aqs.plan_bundle.v1"
+SESSION_MODES = {"persistent_execute_sequence"}
+PLANNER_BUDGETS = {"quick", "balanced", "deep"}
 
 
 def load_yaml(path: str | Path) -> dict[str, Any]:
@@ -445,6 +465,111 @@ def validate_campaign_manifest(manifest: dict[str, Any]) -> list[str]:
     return errors
 
 
+def _validate_session_plan_bundle(path: str | Path) -> list[str]:
+    bundle_path = Path(path).expanduser()
+    if not bundle_path.exists():
+        return [f"plan_bundle path does not exist: {bundle_path}"]
+    try:
+        payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return [f"plan_bundle at {bundle_path} could not be decoded as JSON: {exc}"]
+    if not isinstance(payload, dict):
+        return [f"plan_bundle at {bundle_path} must decode to a JSON object"]
+    errors: list[str] = []
+    if payload.get("api_version") != SESSION_PLAN_BUNDLE_VERSION:
+        errors.append(
+            f"plan_bundle at {bundle_path} must declare api_version={SESSION_PLAN_BUNDLE_VERSION!r}, "
+            f"got {payload.get('api_version')!r}"
+        )
+    if payload.get("bundle_schema_version") != SESSION_PLAN_BUNDLE_VERSION:
+        errors.append(
+            f"plan_bundle at {bundle_path} must declare bundle_schema_version={SESSION_PLAN_BUNDLE_VERSION!r}, "
+            f"got {payload.get('bundle_schema_version')!r}"
+        )
+    if not isinstance(payload.get("bundle_scope"), dict):
+        errors.append(f"plan_bundle at {bundle_path} must include a bundle_scope object")
+    if not isinstance(payload.get("selected_plan"), dict):
+        errors.append(f"plan_bundle at {bundle_path} must include a selected_plan object")
+    return errors
+
+
+def validate_session_manifest(manifest: dict[str, Any], *, mode: str = "schema") -> list[str]:
+    errors: list[str] = []
+    missing = sorted(SESSION_REQUIRED - set(manifest.keys()))
+    if missing:
+        errors.append(f"missing required fields: {missing}")
+        return errors
+    if manifest.get("api_version") != "aqs.session.v1":
+        errors.append("api_version must be 'aqs.session.v1'")
+    if manifest.get("project") != "tnep":
+        errors.append("project must be 'tnep' in session manifests")
+    if manifest.get("mode") not in SESSION_MODES:
+        errors.append(f"mode must be one of {sorted(SESSION_MODES)}")
+    if manifest.get("objective") not in {"ttfr", "steady_state", "gpu_seconds"}:
+        errors.append("objective must be one of ttfr/steady_state/gpu_seconds")
+    if manifest.get("probe_strategy") not in PROBE_STRATEGIES:
+        errors.append(f"probe_strategy must be one of {sorted(PROBE_STRATEGIES)}")
+    if manifest.get("planner_budget") not in PLANNER_BUDGETS:
+        errors.append(f"planner_budget must be one of {sorted(PLANNER_BUDGETS)}")
+    if not isinstance(manifest.get("measurement_repeats"), int) or int(manifest["measurement_repeats"]) < 1:
+        errors.append("measurement_repeats must be an integer >= 1")
+    if manifest.get("execution_intent") not in EXECUTION_INTENTS:
+        errors.append(f"execution_intent must be one of {sorted(EXECUTION_INTENTS)}")
+    if manifest.get("graph_mode") not in GRAPH_MODES:
+        errors.append(f"graph_mode must be one of {list(GRAPH_MODES)}")
+    if not isinstance(manifest.get("allow_distributed"), bool):
+        errors.append("allow_distributed must be a boolean")
+
+    system_manifest_path = manifest.get("system_manifest")
+    if not isinstance(system_manifest_path, str) or not system_manifest_path:
+        errors.append("system_manifest must be a non-empty path string")
+    else:
+        try:
+            system_payload = load_yaml(system_manifest_path)
+        except Exception as exc:
+            errors.append(f"system_manifest could not be loaded from {system_manifest_path}: {exc}")
+        else:
+            for error in validate_manifest(system_payload, mode="schema"):
+                errors.append(f"system_manifest {system_manifest_path}: {error}")
+
+    requests = manifest.get("requests")
+    if not isinstance(requests, list) or not requests:
+        errors.append("requests must be a non-empty list")
+        return errors
+
+    seen_ids: set[str] = set()
+    for index, request in enumerate(requests):
+        prefix = f"requests[{index}]"
+        if not isinstance(request, dict):
+            errors.append(f"{prefix} must be a mapping")
+            continue
+        request_id = request.get("id")
+        if not isinstance(request_id, str) or not request_id.strip():
+            errors.append(f"{prefix}.id must be a non-empty string")
+        elif request_id in seen_ids:
+            errors.append(f"{prefix}.id duplicates an earlier request id: {request_id!r}")
+        else:
+            seen_ids.add(request_id)
+        workload_manifest_path = request.get("workload_manifest")
+        if not isinstance(workload_manifest_path, str) or not workload_manifest_path:
+            errors.append(f"{prefix}.workload_manifest must be a non-empty path string")
+        else:
+            try:
+                workload_payload = load_yaml(workload_manifest_path)
+            except Exception as exc:
+                errors.append(f"{prefix}.workload_manifest could not be loaded from {workload_manifest_path}: {exc}")
+            else:
+                for error in validate_manifest(workload_payload, mode=mode):
+                    errors.append(f"{prefix}.workload_manifest {workload_manifest_path}: {error}")
+        bundle_path = request.get("plan_bundle")
+        if not isinstance(bundle_path, str) or not bundle_path:
+            errors.append(f"{prefix}.plan_bundle must be a non-empty path string")
+        else:
+            for error in _validate_session_plan_bundle(bundle_path):
+                errors.append(f"{prefix}.plan_bundle {error}")
+    return errors
+
+
 def validate_manifest(manifest: dict[str, Any], *, mode: str = "schema") -> list[str]:
     if mode not in {"schema", "implemented", "real"}:
         return [f"unsupported validation mode: {mode!r}"]
@@ -463,4 +588,6 @@ def validate_manifest(manifest: dict[str, Any], *, mode: str = "schema") -> list
         return validate_benchmark_manifest(manifest)
     if api_version == "aqs.campaign.v1":
         return validate_campaign_manifest(manifest)
+    if api_version == "aqs.session.v1":
+        return validate_session_manifest(manifest, mode=mode)
     return [f"unsupported api_version: {api_version!r}"]

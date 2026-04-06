@@ -36,6 +36,7 @@ from .normalize import normalize_workload_manifest
 from .paths import default_schema_path
 from .planner import PlanConfig, generate_plan_candidates, load_system_manifest, select_top_plan
 from .profiler_tools import ProfileToolError, run_ncu_profile, run_nsys_profile, run_profile_smoke
+from .session_runner import run_session_manifest
 from .tnprobe import ProbeConfig, run_exact_tn_probe
 from .validation import validate_planner_manifest
 from .measured_validation import validate_measured_manifest
@@ -293,7 +294,7 @@ def _cmd_persistent_executor_serve(args: argparse.Namespace) -> int:
 
 
 def _cmd_persistent_executor_ping(args: argparse.Namespace) -> int:
-    from .persistent_executor import PersistentExecutorClient
+    from .persistent_client import PersistentExecutorClient
 
     try:
         payload = PersistentExecutorClient(args.socket).ping()
@@ -305,7 +306,7 @@ def _cmd_persistent_executor_ping(args: argparse.Namespace) -> int:
 
 
 def _cmd_persistent_executor_status(args: argparse.Namespace) -> int:
-    from .persistent_executor import PersistentExecutorClient
+    from .persistent_client import PersistentExecutorClient
 
     try:
         payload = PersistentExecutorClient(args.socket).status()
@@ -317,7 +318,7 @@ def _cmd_persistent_executor_status(args: argparse.Namespace) -> int:
 
 
 def _cmd_persistent_executor_shutdown(args: argparse.Namespace) -> int:
-    from .persistent_executor import PersistentExecutorClient
+    from .persistent_client import PersistentExecutorClient
 
     try:
         payload = PersistentExecutorClient(args.socket).shutdown()
@@ -326,6 +327,32 @@ def _cmd_persistent_executor_shutdown(args: argparse.Namespace) -> int:
         return 1
     _print_json(payload)
     return 0 if payload.get("ok") else 1
+
+
+def _cmd_persistent_executor_run_session(args: argparse.Namespace) -> int:
+    if args.replace_live_worker and not args.spawn_temp_worker:
+        _print_json(
+            {
+                "ok": False,
+                "command": "run-session",
+                "error": "--replace-live-worker is only supported together with --spawn-temp-worker",
+            }
+        )
+        return 1
+    try:
+        payload = run_session_manifest(
+            args.session_manifest,
+            socket_path=args.socket,
+            outdir=args.outdir,
+            spawn_temp_worker=args.spawn_temp_worker,
+            replace_live_worker=args.replace_live_worker,
+            allow_one_shot_fallback=args.allow_one_shot_fallback,
+        )
+    except Exception as exc:
+        _print_json({"ok": False, "command": "run-session", "error": str(exc)})
+        return 1
+    _print_json({k: v for k, v in payload.items() if k not in {"trace_rows", "health_rows"}})
+    return 0
 
 
 def _cmd_profile_nsys(args: argparse.Namespace) -> int:
@@ -707,6 +734,15 @@ def build_parser() -> argparse.ArgumentParser:
     shutdown = persistent_executor_sub.add_parser("shutdown", help="Gracefully stop the persistent real-execution worker")
     shutdown.add_argument("--socket", required=True, help="Unix domain socket path for the worker")
     shutdown.set_defaults(func=_cmd_persistent_executor_shutdown)
+
+    run_session = persistent_executor_sub.add_parser("run-session", help="Run a bundle-first persistent execution session against one worker")
+    run_session.add_argument("--socket", required=True, help="Unix domain socket path for the worker")
+    run_session.add_argument("--session-manifest", required=True, help="Session manifest describing the bundle-first request sequence")
+    run_session.add_argument("--outdir", required=True, help="Directory for per-request payloads and session trace artifacts")
+    run_session.add_argument("--spawn-temp-worker", action=argparse.BooleanOptionalAction, default=False, help="Autostart a temporary local worker for the session")
+    run_session.add_argument("--replace-live-worker", action=argparse.BooleanOptionalAction, default=False, help="Replace a live worker at the same socket when autospawning")
+    run_session.add_argument("--allow-one-shot-fallback", action=argparse.BooleanOptionalAction, default=False, help="Explicitly allow one-shot fallback when persistent execution rejects a request")
+    run_session.set_defaults(func=_cmd_persistent_executor_run_session)
 
     persistent_worker = sub.add_parser("persistent-worker", help="Compatibility alias for `persistent-executor serve`")
     persistent_worker.add_argument("--socket", required=True, help="Unix domain socket path for the worker")

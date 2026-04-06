@@ -1,0 +1,57 @@
+{
+  "fallback_count": 0,
+  "gate_p_reference_summary_path": "/home/ubuntu/quantum-workload-architecture/artifacts/persistent_executor/ovh_persistent_executor_prototype_v1/summary.json",
+  "gate_s_policy_path": "/home/ubuntu/quantum-workload-architecture/docs/reports/ovh_gate_s_policy.md",
+  "health_row_count": 1155,
+  "health_summary": {
+    "monotonic_rss_increase": false,
+    "rss_bytes_delta": 16035840,
+    "rss_bytes_max": 795443200,
+    "rss_bytes_min": 532783104,
+    "sample_count": 1155,
+    "worker_execute_median_s": 0.059647033
+  },
+  "mixed_existing_worker_per_request_ms": 54.206,
+  "pass_bars": {
+    "all_passed": true,
+    "dispatch_reply_under_5ms": true,
+    "existing_worker_gain_ms_each_workload": true,
+    "mixed_existing_worker_under_500ms": true,
+    "no_correctness_drift": true,
+    "no_obvious_monotonic_memory_leak": true,
+    "no_selected_plan_drift": true,
+    "no_silent_fallback": true,
+    "worker_execute_under_120ms": true
+  },
+  "ranking_changed": false,
+  "recommendation": "worth productizing further as a lighter client/session packaging path",
+  "request_row_count": 765,
+  "same_workload_medians": [
+    {
+      "existing_worker_gain_ms": 606.651,
+      "persistent_warm_cli_ms": 659.0803520000001,
+      "request_id": "run01",
+      "session_runner_autospawn_temp_worker_ms": 51.832062,
+      "session_runner_existing_worker_ms": 52.429432,
+      "workload_manifest": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml"
+    },
+    {
+      "existing_worker_gain_ms": 616.005,
+      "persistent_warm_cli_ms": 672.209477,
+      "request_id": "run06",
+      "session_runner_autospawn_temp_worker_ms": 51.795234,
+      "session_runner_existing_worker_ms": 56.204151,
+      "workload_manifest": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/06_star_graph_phase_amplitude_heldout_low.yaml"
+    },
+    {
+      "existing_worker_gain_ms": 601.742,
+      "persistent_warm_cli_ms": 653.156207,
+      "request_id": "run08",
+      "session_runner_autospawn_temp_worker_ms": 45.899796,
+      "session_runner_existing_worker_ms": 51.413833,
+      "workload_manifest": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/08_parity_iqp_batched_heldout_medium.yaml"
+    }
+  ],
+  "sequence_row_count": 195,
+  "session_manifest_path": "/home/ubuntu/quantum-workload-architecture/benchmarks/sessions/ovh_gate_s_trio.yaml"
+}

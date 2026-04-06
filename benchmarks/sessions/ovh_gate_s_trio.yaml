@@ -1,0 +1,21 @@
+api_version: aqs.session.v1
+project: tnep
+mode: persistent_execute_sequence
+system_manifest: configs/systems/ovh_gra9_rtx5000_28.yml
+objective: ttfr
+probe_strategy: real_if_available
+planner_budget: balanced
+measurement_repeats: 3
+execution_intent: require_real
+graph_mode: "off"
+allow_distributed: false
+requests:
+  - id: run01
+    workload_manifest: workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml
+    plan_bundle: artifacts/plan_bundles/ovh_v2_seed/01_real_dense_ring6_amplitude.bundle.json
+  - id: run06
+    workload_manifest: workloads/manifests/imported/ovh_v2/06_star_graph_phase_amplitude_heldout_low.yaml
+    plan_bundle: artifacts/plan_bundles/ovh_v2_seed/06_star_graph_phase_amplitude_heldout_low.bundle.json
+  - id: run08
+    workload_manifest: workloads/manifests/imported/ovh_v2/08_parity_iqp_batched_heldout_medium.yaml
+    plan_bundle: artifacts/plan_bundles/ovh_v2_seed/08_parity_iqp_batched_heldout_medium.bundle.json

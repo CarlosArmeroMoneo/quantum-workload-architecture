@@ -146,6 +146,50 @@ def _build_persistent_request_context(
     }
 
 
+def _build_persistent_worker_request(
+    *,
+    command: str,
+    bundle_scope: dict[str, Any],
+    workload_manifest: dict[str, Any],
+    system_manifest: dict[str, Any],
+    selected_plan: dict[str, Any],
+    config: ExecutionConfig,
+    selection_source: str,
+    allow_distributed: bool,
+) -> dict[str, Any]:
+    from .persistent_client import PERSISTENT_EXECUTOR_PROTOCOL_VERSION
+
+    return {
+        "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
+        "command": command,
+        "request_context": _build_persistent_request_context(
+            bundle_scope=bundle_scope,
+            selected_plan=selected_plan,
+            selection_source=selection_source,
+            graph_mode=config.graph_mode,
+            execution_intent=config.execution_intent,
+            precision=config.precision,
+            allow_distributed=allow_distributed,
+            bundle_hit=(selection_source == "plan_bundle_reuse"),
+        ),
+        "workload_manifest": workload_manifest,
+        "system_manifest": system_manifest,
+        "selected_plan": selected_plan,
+        "allow_distributed": bool(allow_distributed),
+        "config": {
+            "objective": config.objective,
+            "precision": config.precision,
+            "probe_strategy": config.probe_strategy,
+            "measurement_repeats": config.measurement_repeats,
+            "ttfr_repeats": config.ttfr_repeats,
+            "execution_intent": config.execution_intent,
+            "replicate_idx": config.replicate_idx,
+            "graph_mode": config.graph_mode,
+            "prewarm_mode": config.prewarm_mode,
+        },
+    }
+
+
 def _build_plan_bundle_payload(
     *,
     scope: dict[str, Any],
@@ -317,6 +361,66 @@ def _write_plan_bundle(path: str | Path, payload: dict[str, Any]) -> None:
     bundle_path = Path(path)
     bundle_path.parent.mkdir(parents=True, exist_ok=True)
     bundle_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _build_execution_payload(
+    *,
+    manifest: dict[str, Any],
+    system_manifest: dict[str, Any],
+    repo_metadata: dict[str, Any],
+    probe: dict[str, Any] | None,
+    selected_plan: dict[str, Any],
+    selection_source: str,
+    execution_mode: str,
+    plan_json_path: str | None,
+    plan_bundle_path: str | None,
+    plan_bundle_provenance: dict[str, Any],
+    persistent_executor_provenance: dict[str, Any],
+    driver_timing: dict[str, Any],
+    bundle: dict[str, Any],
+    candidate_count: int,
+    total_s: float,
+) -> dict[str, Any]:
+    timing_payload = dict(driver_timing)
+    total_s = round(max(float(total_s), 0.0), 9)
+    timing_payload["total_s"] = total_s
+    timing_payload["pre_execution_s"] = round(
+        max(
+            total_s
+            - float(timing_payload.get("execute_plan_bundle_s") or 0.0)
+            - float(timing_payload.get("plan_bundle_write_s") or 0.0),
+            0.0,
+        ),
+        9,
+    )
+    outer_driver_overhead_s = round(
+        max(total_s - float(bundle["execution_run"].get("wall_s") or 0.0), 0.0),
+        9,
+    )
+    return {
+        "workload_id": manifest["ids"]["workload_id"],
+        "family_id": manifest["family_id"],
+        "repeat_count_hint": manifest.get("repeat_count_hint", 1),
+        "system_name": system_manifest["system_name"],
+        "system_manifest": system_manifest,
+        "repo_metadata": repo_metadata,
+        "probe": probe,
+        "selected_plan": selected_plan,
+        "selection_source": selection_source,
+        "execution_mode": execution_mode,
+        "plan_override_path": str(plan_json_path).replace("\\", "/") if plan_json_path else None,
+        "plan_bundle_path": _normalized_path(plan_bundle_path) if plan_bundle_path else None,
+        "plan_bundle_provenance": plan_bundle_provenance,
+        "persistent_executor_provenance": persistent_executor_provenance,
+        "driver_timing_json": timing_payload,
+        "driver_total_s": total_s,
+        "outer_driver_overhead_s": outer_driver_overhead_s,
+        "profile_summary": bundle.get("profile_summary"),
+        "accuracy_eval": bundle.get("accuracy_eval"),
+        "execution_run": bundle["execution_run"],
+        "linked_assets": bundle.get("linked_assets", []),
+        "candidate_count": int(candidate_count),
+    }
 
 
 def _guardrail_error(raw: dict[str, Any], config: ExecutionConfig) -> str | None:
@@ -1039,47 +1143,24 @@ def execute_selected_plan(
             mark_persistent_fallback(reason)
             bundle = execute_direct_bundle()
         else:
+            from .persistent_client import PersistentExecutorClient
             from .persistent_executor import (
                 PERSISTENT_EXECUTION_MODE,
-                PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-                PersistentExecutorClient,
             )
 
             client = PersistentExecutorClient(persistent_worker_socket)
-            command = "execute_bundle" if selected_by == "plan_bundle_reuse" else "execute_plan_json"
-            request_context = _build_persistent_request_context(
+            request_payload = _build_persistent_worker_request(
+                command="execute_bundle" if selected_by == "plan_bundle_reuse" else "execute_plan_json",
                 bundle_scope=bundle_scope,
+                workload_manifest=manifest,
+                system_manifest=system_manifest,
                 selected_plan=chosen,
+                config=execution_config,
                 selection_source=selected_by,
-                graph_mode=resolved_graph_mode,
-                execution_intent=execution_intent,
-                precision=execution_config.precision,
                 allow_distributed=allow_distributed,
-                bundle_hit=(selected_by == "plan_bundle_reuse"),
             )
             try:
-                worker_response = client.request(
-                    {
-                        "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-                        "command": command,
-                        "request_context": request_context,
-                        "workload_manifest": manifest,
-                        "system_manifest": system_manifest,
-                        "selected_plan": chosen,
-                        "allow_distributed": bool(allow_distributed),
-                        "config": {
-                            "objective": execution_config.objective,
-                            "precision": execution_config.precision,
-                            "probe_strategy": execution_config.probe_strategy,
-                            "measurement_repeats": execution_config.measurement_repeats,
-                            "ttfr_repeats": execution_config.ttfr_repeats,
-                            "execution_intent": execution_config.execution_intent,
-                            "replicate_idx": execution_config.replicate_idx,
-                            "graph_mode": execution_config.graph_mode,
-                            "prewarm_mode": execution_config.prewarm_mode,
-                        },
-                    }
-                )
+                worker_response = client.execute_bundle(request_payload) if selected_by == "plan_bundle_reuse" else client.execute_plan_json(request_payload)
             except Exception as exc:
                 reason = f"persistent worker request failed: {exc}"
                 if not allow_one_shot_fallback:
@@ -1163,44 +1244,23 @@ def execute_selected_plan(
             plan_bundle_provenance["write_reason"] = "execution did not succeed, so no reusable bundle was written"
 
     total_s = round(max(time.perf_counter() - total_start, 0.0), 9)
-    driver_timing["total_s"] = total_s
-    driver_timing["pre_execution_s"] = round(
-        max(
-            total_s
-            - float(driver_timing.get("execute_plan_bundle_s") or 0.0)
-            - float(driver_timing.get("plan_bundle_write_s") or 0.0),
-            0.0,
-        ),
-        9,
+    return _build_execution_payload(
+        manifest=manifest,
+        system_manifest=system_manifest,
+        repo_metadata=repo_metadata,
+        probe=probe,
+        selected_plan=chosen,
+        selection_source=selected_by,
+        execution_mode=persistent_executor_provenance["execution_mode"],
+        plan_json_path=plan_json_path,
+        plan_bundle_path=plan_bundle_path,
+        plan_bundle_provenance=plan_bundle_provenance,
+        persistent_executor_provenance=persistent_executor_provenance,
+        driver_timing=driver_timing,
+        bundle=bundle,
+        candidate_count=len(candidates),
+        total_s=total_s,
     )
-    outer_driver_overhead_s = round(
-        max(total_s - float(bundle["execution_run"].get("wall_s") or 0.0), 0.0),
-        9,
-    )
-    return {
-        "workload_id": manifest["ids"]["workload_id"],
-        "family_id": manifest["family_id"],
-        "repeat_count_hint": manifest.get("repeat_count_hint", 1),
-        "system_name": system_manifest["system_name"],
-        "system_manifest": system_manifest,
-        "repo_metadata": repo_metadata,
-        "probe": probe,
-        "selected_plan": chosen,
-        "selection_source": selected_by,
-        "execution_mode": persistent_executor_provenance["execution_mode"],
-        "plan_override_path": str(plan_json_path).replace("\\", "/") if plan_json_path else None,
-        "plan_bundle_path": _normalized_path(plan_bundle_path) if plan_bundle_path else None,
-        "plan_bundle_provenance": plan_bundle_provenance,
-        "persistent_executor_provenance": persistent_executor_provenance,
-        "driver_timing_json": driver_timing,
-        "driver_total_s": total_s,
-        "outer_driver_overhead_s": outer_driver_overhead_s,
-        "profile_summary": bundle.get("profile_summary"),
-        "accuracy_eval": bundle.get("accuracy_eval"),
-        "execution_run": bundle["execution_run"],
-        "linked_assets": bundle.get("linked_assets", []),
-        "candidate_count": len(candidates),
-    }
 
 
 __all__ = [

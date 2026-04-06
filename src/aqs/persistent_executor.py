@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import json
 import os
 from pathlib import Path
 import socket
@@ -16,11 +15,17 @@ from .execution_real import (
     initialize_real_execution_runtime,
 )
 from .graph_modes import normalize_graph_mode
+from .persistent_client import (
+    PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
+    PersistentClientError,
+    PersistentExecutorClient,
+    _normalized_path,
+    _recv_json_line,
+    _send_json_line,
+)
 from .repo_metadata import capture_repo_metadata
 from .utils import canonical_json, sha256_text
 
-
-PERSISTENT_EXECUTOR_PROTOCOL_VERSION = "aqs.persistent_executor.v1"
 PERSISTENT_EXECUTION_MODE = "persistent_executor"
 PERSISTENT_EXECUTOR_COMMANDS = ("ping", "status", "execute_bundle", "execute_plan_json", "shutdown")
 
@@ -33,24 +38,8 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _normalized_path(path: str | Path) -> str:
-    return str(Path(path).expanduser().resolve()).replace("\\", "/")
-
-
 def _manifest_digest(payload: dict[str, Any]) -> str:
     return sha256_text(canonical_json(payload))
-
-
-def _recv_json_line(reader: Any) -> dict[str, Any]:
-    raw = reader.readline()
-    if not raw:
-        raise PersistentExecutorError("worker connection closed before a response was received")
-    return json.loads(raw)
-
-
-def _send_json_line(writer: Any, payload: dict[str, Any]) -> None:
-    writer.write(canonical_json(payload) + "\n")
-    writer.flush()
 
 
 def _rss_bytes() -> int | None:
@@ -274,44 +263,6 @@ def assess_persistent_request_compatibility(
         ),
         "mismatched_fields": [],
     }
-
-
-class PersistentExecutorClient:
-    def __init__(self, socket_path: str | Path, *, timeout_s: float = 60.0):
-        self.socket_path = _normalized_path(socket_path)
-        self.timeout_s = float(timeout_s)
-
-    def request(self, payload: dict[str, Any]) -> dict[str, Any]:
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
-            sock.settimeout(self.timeout_s)
-            sock.connect(self.socket_path)
-            with sock.makefile("r", encoding="utf-8") as reader, sock.makefile("w", encoding="utf-8") as writer:
-                _send_json_line(writer, payload)
-                return _recv_json_line(reader)
-
-    def ping(self) -> dict[str, Any]:
-        return self.request(
-            {
-                "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-                "command": "ping",
-            }
-        )
-
-    def status(self) -> dict[str, Any]:
-        return self.request(
-            {
-                "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-                "command": "status",
-            }
-        )
-
-    def shutdown(self) -> dict[str, Any]:
-        return self.request(
-            {
-                "protocol_version": PERSISTENT_EXECUTOR_PROTOCOL_VERSION,
-                "command": "shutdown",
-            }
-        )
 
 
 class PersistentRealExecutorWorker:
@@ -591,6 +542,7 @@ __all__ = [
     "PERSISTENT_EXECUTION_MODE",
     "PERSISTENT_EXECUTOR_COMMANDS",
     "PERSISTENT_EXECUTOR_PROTOCOL_VERSION",
+    "PersistentClientError",
     "PersistentExecutorClient",
     "PersistentExecutorError",
     "PersistentRealExecutorWorker",
