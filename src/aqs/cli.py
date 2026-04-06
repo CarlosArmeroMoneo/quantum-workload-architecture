@@ -545,7 +545,7 @@ def build_parser() -> argparse.ArgumentParser:
     extract.add_argument("--out")
     extract.set_defaults(func=_cmd_features_extract)
 
-    tnep = sub.add_parser("tnep", help="Tensor-network execution planner scaffolding")
+    tnep = sub.add_parser("tnep", help="Exact-TN planning, execution, and validation commands")
     tnep_sub = tnep.add_subparsers(dest="tnep_command", required=True)
 
     probe = tnep_sub.add_parser("probe", help="Run an exact-TN probe path on either a surrogate or imported real-circuit structure")

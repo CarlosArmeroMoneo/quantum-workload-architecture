@@ -1,10 +1,10 @@
 # Repeat ROI Foundation
 
-This stage adds the local scaffolding for repeated-contraction ROI analysis without claiming measured GPU evidence yet.
+This report captures the local dry-run foundation for repeated-contraction ROI analysis without claiming measured GPU evidence yet.
 
 - `configs/campaigns/repeat_roi_v1.yaml` remains the remote CUDA-host manifest.
-- `configs/campaigns/repeat_roi_cpu_dry_run_v1.yaml` is the local dry-run proof that the matrix expansion, aggregation, and reporting logic work on this machine.
-- `configs/planner/repeat_roi_policy.v1.yaml` is the first planner policy hook file. It is a dry-run starting point, not a measured recommendation.
+- `configs/campaigns/repeat_roi_cpu_dry_run_v1.yaml` is the local dry-run exercise that shows the matrix expansion, aggregation, and reporting logic work on this machine.
+- `configs/planner/repeat_roi_policy.v1.yaml` is the first planner policy hook file. It is a dry-run policy file, not a measured recommendation.
 
 What this stage does:
 
