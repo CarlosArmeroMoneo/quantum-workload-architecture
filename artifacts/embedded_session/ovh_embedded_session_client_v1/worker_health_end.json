@@ -1,0 +1,43 @@
+{
+  "benchmark_repeat": 5,
+  "command": "status",
+  "health": {
+    "device_id": 0,
+    "gpu_mem_free_bytes": 15462957056,
+    "gpu_mem_total_bytes": 15634726912,
+    "request_count": 6,
+    "rss_bytes": 793817088,
+    "session_uptime_s": 1.778251033,
+    "worker_pid": 512699
+  },
+  "label": "after_session",
+  "mode": "embedded_session_autospawn_temp_worker",
+  "ok": true,
+  "protocol_version": "aqs.persistent_executor.v1",
+  "recorded_at": 1775464459.2266078,
+  "request_count": 6,
+  "request_id": null,
+  "runner_mode": "embedded_session_autospawn_temp_worker",
+  "runtime_metadata": {
+    "bundle_schema_version": "aqs.plan_bundle.v1",
+    "execution_mode": "persistent_executor",
+    "execution_stack_version": "aqs.execution.v2",
+    "package_version": "0.5.0",
+    "real_execution_stack_version": "aqs.execution.real_stack.v1",
+    "repo_commit": "4216329e8af2d544396e1be80939f5bc71bae167",
+    "system_id": "sys_2b947b356aff9c76"
+  },
+  "sequence_label": "mixed_trio_x6",
+  "session_bounds": {
+    "max_requests": null,
+    "max_session_seconds": null
+  },
+  "session_uptime_s": 1.778176194,
+  "socket_path": "/tmp/aqs-embedded-5-d06c61.sock",
+  "startup_socket_action": "fresh_bind",
+  "stop_reason": null,
+  "worker_session_id": "wrk_51be4f10190e3e4b",
+  "worker_start_time": "2026-04-06T08:34:17.448126+00:00",
+  "worker_startup_s": 1.172694604,
+  "workload_manifest": null
+}

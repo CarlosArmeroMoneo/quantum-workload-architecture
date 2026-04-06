@@ -1,0 +1,58 @@
+{
+  "fallback_count": 0,
+  "gate_s_policy_path": "/home/ubuntu/quantum-workload-architecture/docs/reports/ovh_gate_s_policy.md",
+  "gate_s_reference_summary_path": "/home/ubuntu/quantum-workload-architecture/artifacts/session_runner/ovh_session_runner_prototype_v1/summary.json",
+  "health_row_count": 1540,
+  "health_summary": {
+    "monotonic_rss_increase": false,
+    "rss_bytes_delta": 16236544,
+    "rss_bytes_max": 795631616,
+    "rss_bytes_min": 532733952,
+    "sample_count": 1540,
+    "worker_execute_median_s": 0.051887652
+  },
+  "mixed_autospawn_per_request_ms": 49.235,
+  "mixed_existing_per_request_ms": 55.606,
+  "pass_bars": {
+    "all_passed": true,
+    "dispatch_reply_under_5ms": true,
+    "embedded_existing_within_15pct_of_session_runner": true,
+    "mixed_autospawn_under_60ms": true,
+    "mixed_existing_under_60ms": true,
+    "no_correctness_drift": true,
+    "no_obvious_monotonic_memory_leak": true,
+    "no_selected_plan_drift": true,
+    "no_silent_fallback": true,
+    "worker_execute_under_120ms": true
+  },
+  "ranking_changed": false,
+  "recommendation": "embedded session client is worth productizing as the reusable local fast path; pivot next to second-platform validation",
+  "request_row_count": 1020,
+  "same_workload_medians": [
+    {
+      "embedded_session_autospawn_temp_worker_ms": 47.363861,
+      "embedded_session_existing_worker_ms": 53.937396,
+      "persistent_warm_cli_ms": 651.811481,
+      "request_id": "run01",
+      "session_runner_existing_worker_ms": 53.186653,
+      "workload_manifest": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/01_real_dense_ring6_amplitude.yaml"
+    },
+    {
+      "embedded_session_autospawn_temp_worker_ms": 51.528962,
+      "embedded_session_existing_worker_ms": 57.035114,
+      "persistent_warm_cli_ms": 659.576126,
+      "request_id": "run06",
+      "session_runner_existing_worker_ms": 56.233932,
+      "workload_manifest": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/06_star_graph_phase_amplitude_heldout_low.yaml"
+    },
+    {
+      "embedded_session_autospawn_temp_worker_ms": 49.892282,
+      "embedded_session_existing_worker_ms": 51.491741,
+      "persistent_warm_cli_ms": 653.634969,
+      "request_id": "run08",
+      "session_runner_existing_worker_ms": 51.564721,
+      "workload_manifest": "/home/ubuntu/quantum-workload-architecture/workloads/manifests/imported/ovh_v2/08_parity_iqp_batched_heldout_medium.yaml"
+    }
+  ],
+  "sequence_row_count": 260
+}

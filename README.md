@@ -106,11 +106,13 @@ Public repo policy:
 - OVH Gate S policy: [`docs/reports/ovh_gate_s_policy.md`](docs/reports/ovh_gate_s_policy.md)
 - OVH session runner prototype plan: [`docs/reports/ovh_session_runner_prototype_plan.md`](docs/reports/ovh_session_runner_prototype_plan.md)
 - OVH session runner prototype readout: [`docs/reports/ovh_session_runner_prototype_v1.md`](docs/reports/ovh_session_runner_prototype_v1.md)
+- OVH embedded session client readout: [`docs/reports/ovh_embedded_session_client_v1.md`](docs/reports/ovh_embedded_session_client_v1.md)
 - Portfolio index: [`docs/reports/portfolio_index.md`](docs/reports/portfolio_index.md)
 - Tiny-MNK sidecar lab: [`sidecars/tiny_mnk_lab/README.md`](sidecars/tiny_mnk_lab/README.md)
 - Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)
 - OVH persistent executor runbook: [`docs/runbooks/ovh_persistent_executor.md`](docs/runbooks/ovh_persistent_executor.md)
 - OVH session runner runbook: [`docs/runbooks/ovh_session_runner.md`](docs/runbooks/ovh_session_runner.md)
+- OVH embedded session client runbook: [`docs/runbooks/ovh_embedded_session_client.md`](docs/runbooks/ovh_embedded_session_client.md)
 - Portfolio demo runbook: [`docs/runbooks/portfolio_demo.md`](docs/runbooks/portfolio_demo.md)
 - Canonical OVH session summary: [`docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md`](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md)
 - Generic profiler-host runbook: [`docs/runbooks/profiler_linux_host.md`](docs/runbooks/profiler_linux_host.md)
@@ -128,5 +130,6 @@ Public repo policy:
 - Explicit reusable plan bundles are now available as an opt-in performance path for `aqs tnep execute`, but the current OVH evidence shows only modest low-repeat amplitude CLI wins and does not change any ranking or calibration claim.
 - Persistent execution is now a separate local experimental performance path behind `persistent-executor` and Gate P; on the canonical OVH trio it cut warm bundle-hit CLI wall by about `1.48 s` per request while keeping selected-plan identity, correctness, and compatibility strict.
 - The new session runner is another local experimental performance path behind Gate S; on the same OVH trio it cut the remaining warm persistent CLI wall from about `653-672 ms` down to about `51-56 ms` per request with no plan-id drift, no fallback, and no ranking implication.
+- The embedded session client now packages that same OVH fast path as a reusable local Python API; on the canonical trio it stayed in the same regime at about `51-57 ms` per request for existing-worker sessions and about `47-52 ms` with autospawn, again with no plan-id drift, no fallback, and no ranking implication.
 - Most of `artifacts/` and all of `release-assets/` are intentionally ignored so local reruns do not pollute the public tree. Small tracked truth-pass fixtures under `artifacts/truth_pass/` are the current exception.
 - `ovh.conf.example` documents the expected OVH client shape. Real credentials must live outside git.
