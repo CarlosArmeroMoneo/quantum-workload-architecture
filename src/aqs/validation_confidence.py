@@ -27,7 +27,10 @@ def is_near_tie(gap_s: float | None, gap_pct: float | None) -> bool:
 def pair_lookup_key(workload_id: str | None, template_a: str | None, template_b: str | None) -> tuple[str, tuple[str, str]] | None:
     if not workload_id or not template_a or not template_b:
         return None
-    return str(workload_id), tuple(sorted((str(template_a), str(template_b))))
+    left = str(template_a)
+    right = str(template_b)
+    ordered = (left, right) if left <= right else (right, left)
+    return str(workload_id), ordered
 
 
 def build_replicate_lookup(pair_payloads: list[dict[str, Any]]) -> dict[tuple[str, tuple[str, str]], dict[str, Any]]:

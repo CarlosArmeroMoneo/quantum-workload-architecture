@@ -4,7 +4,6 @@ import csv
 import json
 import subprocess
 import sys
-from pathlib import Path
 
 
 def test_extract_reference_kernel_finds_tracked_tiny_mnk_shape(tmp_path):
