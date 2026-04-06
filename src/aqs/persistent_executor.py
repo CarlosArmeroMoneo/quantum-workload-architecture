@@ -9,7 +9,6 @@ from typing import Any
 
 from .execution import EXECUTION_VERSION, PLAN_BUNDLE_VERSION
 from .execution_real import (
-    REAL_EXECUTION_SOURCE,
     REAL_EXECUTION_STACK_VERSION,
     execute_real_plan_candidate_with_runtime,
     initialize_real_execution_runtime,
@@ -22,6 +21,7 @@ from .persistent_client import (
     _normalized_path,
     _recv_json_line,
     _send_json_line,
+    _unix_socket_family,
 )
 from .repo_metadata import capture_repo_metadata
 from .utils import canonical_json, sha256_text
@@ -57,7 +57,7 @@ def _rss_bytes() -> int | None:
 
 
 def _gpu_health_snapshot(runtime: dict[str, Any] | None) -> dict[str, Any]:
-    snapshot = {
+    snapshot: dict[str, int | None] = {
         "device_id": None,
         "gpu_mem_free_bytes": None,
         "gpu_mem_total_bytes": None,
@@ -372,7 +372,7 @@ class PersistentRealExecutorWorker:
                 f"live persistent executor already listening at {self.socket_path}; pass --replace-live-worker to replace it"
             )
 
-        shutdown_response = client.shutdown()
+        client.shutdown()
         deadline = time.time() + self.startup_wait_seconds
         while time.time() < deadline:
             if not socket_path.exists():
@@ -436,7 +436,7 @@ class PersistentRealExecutorWorker:
         )
         worker_execute_s = round(max(time.perf_counter() - execute_started, 0.0), 9)
 
-        worker_timing = {
+        driver_timing_json: dict[str, float | int] = {
             "worker_startup_s": round(max(self.worker_startup_s, 0.0), 9),
             "worker_request_dispatch_s": worker_request_dispatch_s,
             "worker_execute_s": worker_execute_s,
@@ -460,7 +460,7 @@ class PersistentRealExecutorWorker:
             "ok": True,
             "command": request.get("command"),
             "persistent_executor_provenance": provenance,
-            "driver_timing_json": worker_timing,
+            "driver_timing_json": driver_timing_json,
             "bundle": {
                 "execution_run": bundle["execution_run"],
                 "accuracy_eval": bundle.get("accuracy_eval"),
@@ -469,7 +469,7 @@ class PersistentRealExecutorWorker:
                 "driver_timing_json": bundle.get("driver_timing_json") or {},
             },
         }
-        response["driver_timing_json"]["worker_reply_s"] = round(max(time.perf_counter() - response_started, 0.0), 9)
+        driver_timing_json["worker_reply_s"] = round(max(time.perf_counter() - response_started, 0.0), 9)
         return response
 
     def handle_request(self, request: dict[str, Any]) -> dict[str, Any]:
@@ -504,7 +504,7 @@ class PersistentRealExecutorWorker:
         self._prepare_socket_path()
         self._startup()
 
-        server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        server = socket.socket(_unix_socket_family(), socket.SOCK_STREAM)
         server.bind(self.socket_path)
         server.listen(1)
         server.settimeout(0.25)
