@@ -1,0 +1,25 @@
+api_version: aqs.system.v1
+system_name: gcp_l4_24gb
+status: template_no_evidence
+role: future_l4_portability_host
+provider: gcp
+machine_type: g2-standard-4
+accelerator_type: nvidia-l4
+node_label: gcp-l4-24gb-template
+gpu_model: NVIDIA L4
+gpu_count: 1
+gpu_mem_gb: 24
+gpu_arch_target: sm89
+ram_gb: 16
+interconnect: pcie
+os_release: Ubuntu 22.04 LTS
+kernel_version: provider_default
+driver_version: provider_default_cuda12
+profiling_host:
+  canonical_tool_source:
+    nsys: host_installed_or_cuda_repo
+    qdstrm_importer: host_installed_or_cuda_repo
+    ncu: host_installed_or_cuda_repo
+  gpu_performance_counters: must_be_verified
+  readiness_artifact: artifacts/readiness/gcp_l4_24gb/profiling_ready.json
+notes: Future L4 portability template; never substitute this for the pending A100 lane.

@@ -1,0 +1,3 @@
+run_id,system_name,gpu_model,workload_id,execution_source,profiler_kind,predicted_ttfr_s,actual_ttfr_s,ttfr_error_ratio,predicted_iter_ms,actual_iter_ms,iter_error_ratio,bottleneck_family,nomination_source,kernel_family_counts_json,interpretation_class,tiny_workload_warning
+run_6e3b0bf4154a4a94,ovh_gra9_rtx5000_28,Quadro RTX 5000,wkl_3a3d42fe7b94a2ed,cuquantum_tensornet_gpu,ncu,0.480977,1.041988242,2.166399,6.649115,392.928316,59.094829,launch_overhead,real_profiler_analysis,"{""cutensor_contraction_tiny_mnk"": 4}",real_arch_nomination,False
+run_219ba8a96d5d0d44,ovh_gra9_rtx5000_28,Quadro RTX 5000,wkl_5361a0b920fc4e05,cuquantum_tensornet_gpu,nsys,0.497969,0.023177829,0.046545,4.996248,0.201421,0.040314,reuse_cache,real_profiler_analysis,{},real_arch_nomination,True

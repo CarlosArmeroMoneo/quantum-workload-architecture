@@ -1,0 +1,42 @@
+api_version: aqs.profiler_slice.v1
+slice_name: gcp_a100_portability_slice
+status: pending_real_a100_capture
+public_claim: pending
+purpose: portability and profiler validation on a confirmed GCP A100 40GB host, not throughput benchmarking
+
+required_device:
+  provider: gcp
+  machine_type: a2-highgpu-1g
+  accelerator_type: nvidia-tesla-a100
+  ncu_display_name: NVIDIA A100-SXM4-40GB
+  compute_capability: "8.0"
+  gpu_mem_gb: 40
+
+required_environment:
+  cuda_major: 12
+  python_env: .venv_cu12
+  execution_source: cuquantum_tensornet_gpu
+  profiler: ncu
+
+workload:
+  manifest: workloads/manifests/imported/real_ghz3_amplitude.yaml
+  interpretation: tiny GHZ amplitude portability smoke; overhead dominated and not a throughput benchmark
+
+acceptance_criteria:
+  - nvidia-smi reports an A100 40GB device
+  - ncu CSV device__attribute_display_name reports NVIDIA A100-SXM4-40GB
+  - ncu CSV CC reports 8.0
+  - execution payload status is success with execution_source cuquantum_tensornet_gpu
+  - accuracy_eval status is pass
+  - profile summary records tiny_workload_overhead_dominated=true
+  - artifact references are concrete digest-stem paths, not wildcards
+  - OVH remains the canonical first profiler-backed architecture slice
+
+rejected_device_models:
+  - NVIDIA L4
+  - NVIDIA T4
+  - NVIDIA H100
+
+notes:
+  - A June 2026 local GCP draft used an L4-backed g2-standard-4 instance and is not accepted as A100 evidence.
+  - Do not create a public A100 artifact manifest until the required device checks pass.

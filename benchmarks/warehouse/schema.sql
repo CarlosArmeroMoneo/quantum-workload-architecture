@@ -502,9 +502,19 @@ SELECT
     p.predicted_ttfr_s,
     r.ttfr_s,
     (r.ttfr_s - p.predicted_ttfr_s) AS ttfr_residual_s,
+    CASE
+        WHEN p.predicted_ttfr_s IS NOT NULL AND p.predicted_ttfr_s > 0 AND r.ttfr_s IS NOT NULL
+        THEN r.ttfr_s / p.predicted_ttfr_s
+        ELSE NULL
+    END AS ttfr_error_ratio,
     p.predicted_iter_ms,
     r.steady_iter_ms,
     (r.steady_iter_ms - p.predicted_iter_ms) AS iter_residual_ms,
+    CASE
+        WHEN p.predicted_iter_ms IS NOT NULL AND p.predicted_iter_ms > 0 AND r.steady_iter_ms IS NOT NULL
+        THEN r.steady_iter_ms / p.predicted_iter_ms
+        ELSE NULL
+    END AS iter_error_ratio,
     p.predicted_peak_gb,
     r.peak_mem_gb,
     (r.peak_mem_gb - p.predicted_peak_gb) AS peak_residual_gb,

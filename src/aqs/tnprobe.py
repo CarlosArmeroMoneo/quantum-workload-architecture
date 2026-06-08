@@ -306,7 +306,7 @@ def _build_circuit_to_einsum_probe_input(workload_manifest: dict[str, Any], conf
     if circuit is None:
         return None
     try:
-        from cuquantum.tensornet import CircuitToEinsum
+        from cuquantum import CircuitToEinsum
     except Exception:
         return None
 
@@ -364,7 +364,7 @@ def _select_probe_input(workload_manifest: dict[str, Any], config: ProbeConfig, 
 
 
 def _probe_with_cuquantum(args: list[Any], config: ProbeConfig) -> tuple[list[Any], Any]:
-    from cuquantum.tensornet import contract_path
+    from cuquantum import contract_path
 
     optimize: dict[str, Any] = {}
     if config.hyper_samples is not None:

@@ -11,6 +11,7 @@ artifacts/*
 !artifacts/truth_pass/
 !artifacts/truth_pass/**
 ovh.conf
+qwa_storage.env
 release-assets/
 *.qdstrm
 *.nsys-rep
@@ -18,3 +19,18 @@ release-assets/
 *.sqlite
 *.db
 *.log
+
+# Local scratch and rejected GCP draft artifacts from ad hoc profiler sessions.
+qwa.zip
+test.py
+fix_path.sh
+generate_env_helper.py
+run_profile.sh
+run_profile_ncu.sh
+configs/profiling/first_a100_portability_slice.yaml
+configs/systems/gcp_a100_1g.yml
+configs/systems/gcp_a100_1g.profiling_ready.json
+configs/systems/gcp_gpu_node.yml
+docs/runbooks/profiler_gcp_a100_session.md
+scripts/bootstrap_gcp_node.sh
+scripts/provision_gcp_node.ps1

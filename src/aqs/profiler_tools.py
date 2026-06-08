@@ -21,6 +21,7 @@ from .db import (
     link_run_asset,
     upsert_asset_file,
 )
+from .kernel_taxonomy import enrich_kernel_entry, summarize_kernel_families
 from .manifest import load_yaml
 from .nvtx import NVTX_PHASE_VERSION
 from .paths import repo_root
@@ -388,13 +389,14 @@ def reduce_nsys_artifacts(execution_payload: dict[str, Any], sqlite_path: Path, 
         time_s = _csv_time_s(row)
         if name is None or time_s is None:
             continue
-        top_kernels.append({"name": name, "time_s": time_s, "kind": "gpu_kernel"})
+        top_kernels.append(enrich_kernel_entry({"name": name, "time_s": time_s, "kind": "gpu_kernel"}))
 
     cuda_api_total = sum(_csv_time_s(row) or 0.0 for row in api_rows)
     run = execution_payload["execution_run"]
     execution_detail = _dict_or_empty(run.get("failure_detail_json"))
     repo_metadata = execution_payload.get("repo_metadata") or capture_repo_metadata()
     profile_id = "prof_" + sha256_text(canonical_json({"run_id": run["run_id"], "kind": "nsys", "version": PROFILE_REDUCTION_VERSION}))[:16]
+    kernel_summary = summarize_kernel_families(top_kernels, occupancy_pct=None)
     return {
         "profile_id": profile_id,
         "run_id": run["run_id"],
@@ -417,6 +419,10 @@ def reduce_nsys_artifacts(execution_payload: dict[str, Any], sqlite_path: Path, 
             "cuda_api_total_time": cuda_api_total,
             "stats_csv": {name: str(path).replace("\\", "/") for name, path in stats_csv.items()},
             "graph_mode": run.get("graph_mode") or execution_detail.get("graph_mode") or "off",
+            "kernel_family_counts": kernel_summary["kernel_family_counts"],
+            "kernel_category_counts": kernel_summary["kernel_category_counts"],
+            "top_kernel_families": kernel_summary["top_kernel_families"],
+            "occupancy_band": kernel_summary["occupancy_band"],
             "repo_metadata": repo_metadata,
         },
     }
@@ -451,7 +457,7 @@ def reduce_ncu_artifacts(
             entry: dict[str, Any] = {"name": name, "kind": "gpu_kernel"}
             if time_s is not None:
                 entry["time_s"] = time_s
-            top_kernels.append(entry)
+            top_kernels.append(enrich_kernel_entry(entry))
         dram_util = dram_util if dram_util is not None else _csv_float(row, "DRAM Throughput %", "dram__throughput.avg.pct_of_peak_sustained_elapsed")
         sm_util = sm_util if sm_util is not None else _csv_float(row, "SM Throughput %", "sm__throughput.avg.pct_of_peak_sustained_elapsed")
         occupancy = occupancy if occupancy is not None else _csv_float(row, "Achieved Occupancy %", "sm__warps_active.avg.pct_of_peak_sustained_active")
@@ -480,6 +486,7 @@ def reduce_ncu_artifacts(
             memory_bound_signal = "medium"
     launch_bound_signal = "high" if launch_proxy_pct is not None and avg_kernel_time_ms is not None and launch_proxy_pct >= 30.0 and avg_kernel_time_ms <= 0.75 else "low"
     reuse_signal = "likely" if cold_to_steady_ratio is not None and repeat_count >= 8 and cold_to_steady_ratio >= 1.2 else "unlikely"
+    kernel_summary = summarize_kernel_families(top_kernels, occupancy_pct=occupancy)
 
     repo_metadata = execution_payload.get("repo_metadata") or capture_repo_metadata()
     profile_id = "prof_" + sha256_text(canonical_json({"run_id": run["run_id"], "kind": "ncu", "version": PROFILE_REDUCTION_VERSION}))[:16]
@@ -521,6 +528,10 @@ def reduce_ncu_artifacts(
             "memory_bound_signal": memory_bound_signal,
             "launch_bound_signal": launch_bound_signal,
             "reuse_signal": reuse_signal,
+            "kernel_family_counts": kernel_summary["kernel_family_counts"],
+            "kernel_category_counts": kernel_summary["kernel_category_counts"],
+            "top_kernel_families": kernel_summary["top_kernel_families"],
+            "occupancy_band": kernel_summary["occupancy_band"],
             "repo_metadata": repo_metadata,
         },
     }
@@ -898,6 +909,7 @@ def run_nsys_smoke(*, outdir: str | Path | None = None, db_path: str | Path | No
             "gpukernsum",
             "--format",
             "csv",
+            "--force-export=true",
             "--output",
             str(stats_prefix),
             str(report_path),
@@ -1263,6 +1275,7 @@ def run_nsys_profile(
             "gpukernsum",
             "--format",
             "csv",
+            "--force-export=true",
             "--output",
             str(stats_prefix),
             str(report_path),

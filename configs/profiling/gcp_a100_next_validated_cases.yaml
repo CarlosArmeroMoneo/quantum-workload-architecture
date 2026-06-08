@@ -1,0 +1,18 @@
+api_version: qwa.gcp_a100_next_cases.v1
+status: pending_quota
+purpose: next validated A100 portability and calibration cases after device identity gate passes
+system_manifest: configs/systems/gcp_a100_sxm4_40gb.yml
+acceptance_gate: docs/runbooks/gcp_a100_acceptance_gate.md
+broad_sweep_allowed: false
+claim_policy:
+  first_ghz_case: Tier 2 portability/calibration only
+  throughput_claims: blocked until medium case passes with pinned profiler evidence
+cases:
+  - case_id: canonical_batched_exact_tn
+    manifest: workloads/manifests/imported/real_dense_ring6_batched.yaml
+    intended_tier: Tier 2 until reviewed for architecture nomination
+    reason: rerun the canonical OVH workload shape on a confirmed A100 host for portability and calibration
+  - case_id: medium_ladder_brickwork_amplitude
+    manifest: workloads/manifests/imported/ovh_inputs/ladder_brickwork_amplitude_medium.yaml
+    intended_tier: Tier 2 until profiler evidence supports nomination
+    reason: add one medium exact-TN candidate without starting a broad sweep

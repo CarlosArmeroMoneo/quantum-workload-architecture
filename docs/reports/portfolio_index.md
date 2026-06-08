@@ -27,7 +27,7 @@ This index packages the stacked-branch rollout as it exists in this workspace on
 
 ## Notes
 
-- The measured host for the packaged remote results is OVH `ovh_gra9_rtx5000_28`: Quadro RTX 5000, Ubuntu `25.04`, driver `580.95.05`, and green profiling readiness in `configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json`.
+- The measured host for the packaged remote results is OVH `ovh_gra9_rtx5000_28`: Quadro RTX 5000, Ubuntu `24.04.3 LTS`, driver `580.126.09`, and green profiling readiness in `configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json`.
 - A measured-validation follow-on assessment now exists in [`docs/reports/ovh_measured_validation_follow_on.md`](ovh_measured_validation_follow_on.md); it confirms a real OVH `require_real` slice and recurring `planner_roi`, but it does not yet claim a clean planner-calibration success.
 - The frozen measured-validation baseline now lives in [`docs/reports/ovh_v1_baseline.md`](ovh_v1_baseline.md), with the top-3 wording audit captured in [`docs/reports/ovh_top3_reconcile_note.md`](ovh_top3_reconcile_note.md).
 - Confidence-aware follow-on reporting now lives in [`docs/reports/ovh_confidence_validation_readout.md`](ovh_confidence_validation_readout.md) and [`docs/reports/ovh_confidence_defaulting_readout.md`](ovh_confidence_defaulting_readout.md), with canonical Gate A / Gate B confidence artifacts now emitted beside the frozen summaries.

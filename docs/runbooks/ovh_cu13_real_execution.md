@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Use this runbook to reproduce the canonical profiler-backed slice and the measured follow-on OVH reports on the Ubuntu 25.04 RTX 5000 host.
+Use this runbook to reproduce the canonical profiler-backed slice and the measured follow-on OVH reports on the Ubuntu 24.04.3 LTS RTX 5000 host.
 
 ## Host Roles
 
 - Local Windows + WSL2 + RTX 4050: development and negative-control profiling host.
-- OVH Ubuntu 25.04 + Quadro RTX 5000: canonical public evidence host.
+- OVH Ubuntu 24.04.3 LTS + Quadro RTX 5000: canonical public evidence host.
 
 ## Connect And Prepare
 

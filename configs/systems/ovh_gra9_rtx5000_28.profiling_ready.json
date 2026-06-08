@@ -132,7 +132,7 @@
     "cuquantum_present": true,
     "cuquantum_python_version": null,
     "cuquantum_sdk_version": null,
-    "driver_version": "580.95.05",
+    "driver_version": "580.126.09",
     "gpu_count": 1,
     "gpu_mem_gb": 15.0,
     "gpu_model": "Quadro RTX 5000",
@@ -145,7 +145,7 @@
     "nsight_compute_version": "NVIDIA (R) Nsight Compute Command Line Profiler",
     "nsight_systems_version": "NVIDIA Nsight Systems version 2023.2.3.1004-33186433v0",
     "nsys_present": true,
-    "os_release": "Ubuntu 25.04",
+    "os_release": "Ubuntu 24.04.3 LTS",
     "qiskit_present": true,
     "ram_gb": 26.76,
     "system_id": "sys_2b947b356aff9c76"

@@ -1,0 +1,16 @@
+api_version: qwa.gcp_project.v1
+status: template
+project_id: null
+region: null
+zone: null
+billing_label: quantum-workload-atlas
+
+usage:
+  - future GPU portability captures
+  - future Batch-managed GPU sweeps
+  - future TPU JAX/XLA sister workloads
+
+public_repo_policy:
+  - keep project IDs, service accounts, and bucket names out of git
+  - keep credentials outside the repository
+  - publish only pinned, scrubbed artifact manifests

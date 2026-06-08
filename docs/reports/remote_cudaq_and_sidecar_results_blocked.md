@@ -1,7 +1,7 @@
 # Remote CUDA-Q and Tiny-MNK Sidecar Results: OVH Measured Pass
 
 - Date: `2026-04-04` UTC
-- Live host: OVH `ovh_gra9_rtx5000_28` with Quadro RTX 5000, driver `580.95.05`, Ubuntu `25.04`, green profiling readiness, and a working CUDA build toolchain after installing `cmake` plus `nvidia-cuda-toolkit`
+- Live host: OVH `ovh_gra9_rtx5000_28` with Quadro RTX 5000, driver `580.126.09`, Ubuntu `24.04.3 LTS`, green profiling readiness, and a working CUDA build toolchain after installing `cmake` plus `nvidia-cuda-toolkit`
 
 ## CUDA-Q Comparison
 

@@ -1,0 +1,25 @@
+api_version: aqs.system.v1
+system_name: gcp_h100_a3
+status: template_no_evidence
+role: future_h100_scale_host
+provider: gcp
+machine_type: a3-highgpu-8g
+accelerator_type: nvidia-h100-80gb
+node_label: gcp-h100-a3-template
+gpu_model: NVIDIA H100 80GB HBM3
+gpu_count: 8
+gpu_mem_gb: 80
+gpu_arch_target: sm90
+ram_gb: 1872
+interconnect: nvlink
+os_release: Ubuntu 22.04 LTS
+kernel_version: provider_default
+driver_version: provider_default_cuda12
+profiling_host:
+  canonical_tool_source:
+    nsys: host_installed_or_cuda_repo
+    qdstrm_importer: host_installed_or_cuda_repo
+    ncu: host_installed_or_cuda_repo
+  gpu_performance_counters: must_be_verified
+  readiness_artifact: artifacts/readiness/gcp_h100_a3/profiling_ready.json
+notes: Future multi-GPU H100 template for later sweeps; no current evidence or ranking claim.

@@ -139,10 +139,10 @@ def validate_real_execution_request(manifest: dict[str, Any], *, system_profile:
 def _import_real_stack() -> tuple[Any, Any, Any]:
     import cupy
     try:
-        from cuquantum.tensornet import CircuitToEinsum, Network
+        from cuquantum import CircuitToEinsum, Network
     except ImportError:  # pragma: no cover - compatibility with older cuQuantum wheels
         from cuquantum import Network
-        from cuquantum.tensornet import CircuitToEinsum
+        from cuquantum import CircuitToEinsum
 
     return cupy, Network, CircuitToEinsum
 

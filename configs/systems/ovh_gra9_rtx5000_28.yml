@@ -7,9 +7,9 @@ gpu_mem_gb: 15.0
 gpu_arch_target: sm75
 ram_gb: 26.76
 interconnect: pcie
-os_release: Ubuntu 25.04
+os_release: Ubuntu 24.04.3 LTS
 kernel_version: 6.14.0-34-generic
-driver_version: "580.95.05"
+driver_version: "580.126.09"
 
 container_runtime:
   kind: unavailable_on_path

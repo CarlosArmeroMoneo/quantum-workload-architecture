@@ -37,7 +37,7 @@ def test_distribution_metadata_matches_imported_version():
 
 def test_cli_description_uses_public_project_name():
     parser = build_parser()
-    assert parser.description == "Quantum Workload Architecture CLI"
+    assert parser.description == "Quantum Workload Atlas CLI"
 
 
 def test_cli_help_does_not_expose_scaffold_wording():

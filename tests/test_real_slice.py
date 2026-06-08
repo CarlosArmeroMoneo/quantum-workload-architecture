@@ -411,6 +411,9 @@ def test_reduce_ncu_artifacts_from_fixture_csv(tmp_path):
     assert summary["derived_signals_json"]["graph_mode"] == "steady_state"
     assert summary["derived_signals_json"]["ncu_parse_source"] == "csv_fallback"
     assert summary["derived_signals_json"]["memory_bound_signal"] == "high"
+    assert summary["top_kernels_json"][0]["kernel_family"] == "generic_contraction"
+    assert summary["derived_signals_json"]["kernel_family_counts"] == {"generic_contraction": 1}
+    assert summary["derived_signals_json"]["occupancy_band"] == "medium"
 
 
 def test_reduce_ncu_artifacts_prefers_report_import_text_over_csv_fallback(tmp_path):

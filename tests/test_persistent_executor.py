@@ -19,6 +19,12 @@ from aqs.persistent_executor import (
 from aqs.utils import canonical_json, sha256_text
 
 
+pytestmark = pytest.mark.skipif(
+    not hasattr(socket, "AF_UNIX"),
+    reason="persistent executor tests require AF_UNIX sockets",
+)
+
+
 def _manifest_digest(payload):
     return sha256_text(canonical_json(payload))
 

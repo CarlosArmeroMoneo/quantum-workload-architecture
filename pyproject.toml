@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "aqs"
 dynamic = ["version"]
-description = "Quantum workload architecture toolkit and evidence trail"
+description = "Quantum Workload Atlas toolkit and evidence trail"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

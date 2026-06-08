@@ -1,0 +1,17 @@
+api_version: aqs.system.v1
+system_name: gcp_tpu_v6e
+status: roadmap_template_no_evidence
+role: future_tpu_sister_workload_host
+provider: gcp
+machine_type: tpu-v6e
+accelerator_type: tpu-v6e
+node_label: gcp-tpu-v6e-template
+gpu_model: null
+gpu_count: 0
+gpu_mem_gb: 0
+gpu_arch_target: xla_tpu
+ram_gb: 0
+interconnect: tpu_ici
+tpu_device_type: v6e
+xla_backend: tpu
+notes: Future JAX/XLA sister-workload template only; not a cuQuantum execution target.

@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -n "${PYTHON:-}" ]]; then
+  PYTHON_CMD=("$PYTHON")
+else
+  PYTHON_CMD=()
+  for candidate in "python" "py -3" "py.exe -3" "python.exe" "python3"; do
+    read -r -a parts <<< "$candidate"
+    if command -v "${parts[0]}" >/dev/null 2>&1 && "${parts[@]}" -c "import pytest" >/dev/null 2>&1; then
+      PYTHON_CMD=("${parts[@]}")
+      break
+    fi
+  done
+  if [[ "${#PYTHON_CMD[@]}" -eq 0 ]] && command -v powershell.exe >/dev/null 2>&1; then
+    win_python="$(
+      powershell.exe -NoProfile -Command "(Get-Command python -ErrorAction SilentlyContinue).Source" 2>/dev/null \
+        | tr -d '\r' \
+        | head -n 1
+    )"
+    if [[ -n "$win_python" ]] && "$win_python" -c "import pytest" >/dev/null 2>&1; then
+      PYTHON_CMD=("$win_python")
+    fi
+  fi
+fi
+
+if [[ "${#PYTHON_CMD[@]}" -eq 0 ]]; then
+  echo "python interpreter with pytest not found; set PYTHON=/path/to/python" >&2
+  exit 1
+fi
+
+RG_EXCLUDES=(
+  -g '!configs/systems/linux_profiler_node.template.yml'
+  -g '!tests/test_system_manifests.py'
+  -g '!scripts/public_check.sh'
+  -g '!configs/systems/gcp_a100_1g*'
+  -g '!configs/systems/gcp_gpu_node.yml'
+  -g '!configs/profiling/first_a100_portability_slice.yaml'
+  -g '!docs/runbooks/profiler_gcp_a100_session.md'
+)
+
+GREP_EXCLUDES=(
+  --exclude=linux_profiler_node.template.yml
+  --exclude=test_system_manifests.py
+  --exclude=public_check.sh
+  --exclude='gcp_a100_1g*'
+  --exclude=gcp_gpu_node.yml
+  --exclude=first_a100_portability_slice.yaml
+  --exclude=profiler_gcp_a100_session.md
+  --exclude='*.pyc'
+  --exclude-dir=__pycache__
+  --exclude-dir=.pytest_cache
+)
+
+search_public() {
+  local pattern="$1"
+  shift
+  if command -v rg >/dev/null 2>&1; then
+    rg -n "$pattern" "$@" "${RG_EXCLUDES[@]}"
+  else
+    grep -R -n -I -E "${GREP_EXCLUDES[@]}" "$pattern" "$@"
+  fi
+}
+
+echo "==> Shell syntax"
+bash -n scripts/setup_ovh_cu13_env.sh
+for script in \
+  scripts/setup_gcp_a100_cu12_env.sh \
+  scripts/setup_gcp_storage.sh \
+  scripts/gcp_sync_artifacts.sh \
+  scripts/drive_sync_docs.sh; do
+  if [[ -f "$script" ]]; then
+    bash -n "$script"
+  fi
+done
+bash -n scripts/public_check.sh
+
+echo "==> Focused public tests"
+"${PYTHON_CMD[@]}" -m pytest \
+  tests/test_cli.py \
+  tests/test_arch.py \
+  tests/test_profiler_readiness.py \
+  tests/test_system_manifests.py \
+  tests/test_real_slice.py \
+  -m "not gpu and not profiler" \
+  -q
+
+echo "==> Non-GPU tests"
+"${PYTHON_CMD[@]}" -m pytest -m "not gpu and not profiler" -q
+
+echo "==> Public hygiene"
+forbidden=0
+
+if search_public "<fill_me_in>|fill_me|<digest>|<host_slug>|<PROJECT_ID>" README.md docs configs scripts tests; then
+  forbidden=1
+fi
+
+if search_public "container_bundled" configs/systems/ovh_gra9_rtx5000_28.yml configs/profiling/first_real_profiler_slice_ovh_gra9_rtx5000_28.yaml; then
+  forbidden=1
+fi
+
+if search_public "synthetic_profile_analysis" README.md docs configs; then
+  forbidden=1
+fi
+
+if search_public "\\*\\.execution\\.json|\\*\\.profile_summary\\.json" README.md docs configs; then
+  forbidden=1
+fi
+
+if search_public "Ubuntu 25\\.04|580\\.95\\.05" README.md docs configs tests; then
+  forbidden=1
+fi
+
+if search_public "Portability result: GCP A100|GCP A100-SXM4-40GB" README.md docs configs; then
+  forbidden=1
+fi
+
+if ! search_public "docs/runbooks/storage_management.md" README.md >/dev/null; then
+  echo "README.md must link docs/runbooks/storage_management.md" >&2
+  forbidden=1
+fi
+
+if [[ "$forbidden" -ne 0 ]]; then
+  echo "public hygiene checks failed" >&2
+  exit 1
+fi
+
+echo "==> Public check passed"

@@ -1,7 +1,7 @@
 # Remote NCU Diagnostics and CUDA Graphs Results: OVH Measured Pass
 
 - Date: `2026-04-04` UTC
-- Live host: OVH `ovh_gra9_rtx5000_28` with Quadro RTX 5000, driver `580.95.05`, Ubuntu `25.04`, and green profiling readiness in `configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json`
+- Live host: OVH `ovh_gra9_rtx5000_28` with Quadro RTX 5000, driver `580.126.09`, Ubuntu `24.04.3 LTS`, and green profiling readiness in `configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json`
 - Diagnostic command: `python -m aqs profile ncu --manifest workloads/manifests/imported/real_dense_ring6_batched.yaml --system-manifest configs/systems/ovh_gra9_rtx5000_28.yml --profile-mode diagnostic --graph-mode off`
 - CUDA Graphs manifest: `configs/campaigns/cuda_graphs_ablation_v1.yaml`
 

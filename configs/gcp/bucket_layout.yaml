@@ -1,0 +1,42 @@
+api_version: qwa.gcp_bucket_layout.v1
+status: template
+authority: gcp_cloud_storage
+drive_role: human_facing_docs_only
+
+required_prefixes:
+  profiler_artifacts:
+    canonical: profiler-artifacts/canonical/
+    scratch: profiler-artifacts/scratch/
+  execution_payloads: execution-payloads/
+  profile_summaries: profile-summaries/
+  architecture_outputs: architecture-outputs/
+  batch_logs: batch-logs/
+  tpu_runs: tpu-runs/
+  release_manifests: release-manifests/
+
+retention_policy:
+  profiler_artifacts_canonical:
+    delete_after_days: null
+    transitions:
+      - age_days: 30
+        storage_class: NEARLINE
+      - age_days: 180
+        storage_class: COLDLINE
+      - age_days: 365
+        storage_class: ARCHIVE
+  profiler_artifacts_scratch:
+    delete_after_days: 30
+  batch_logs:
+    nearline_after_days: 30
+    delete_after_days: 180
+  tpu_runs:
+    nearline_after_days: 30
+    delete_after_days: 180
+  curated_outputs:
+    delete_after_days: null
+
+public_repo_policy:
+  - store heavyweight profiler binaries outside git
+  - mirror only curated summaries or release-manifest references into the repository
+  - keep concrete project IDs, bucket names, and Drive paths in ignored local config
+  - use concrete digest stems for published artifact paths

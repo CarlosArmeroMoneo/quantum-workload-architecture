@@ -493,7 +493,7 @@ def _cmd_campaign_summarize(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="aqs", description="Quantum Workload Architecture CLI")
+    parser = argparse.ArgumentParser(prog="aqs", description="Quantum Workload Atlas CLI")
     parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 

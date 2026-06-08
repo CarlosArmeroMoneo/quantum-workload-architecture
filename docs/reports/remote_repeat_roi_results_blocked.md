@@ -1,7 +1,7 @@
 # Remote Repeat ROI Results: OVH Measured Pass
 
 - Date: `2026-04-04` UTC
-- Host: OVH `ovh_gra9_rtx5000_28` with Quadro RTX 5000, driver `580.95.05`, CUDA 13 Python stack, and green profiling readiness in `configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json`
+- Host: OVH `ovh_gra9_rtx5000_28` with Quadro RTX 5000, driver `580.126.09`, CUDA 13 Python stack, and green profiling readiness in `configs/systems/ovh_gra9_rtx5000_28.profiling_ready.json`
 - Manifest: `configs/campaigns/repeat_roi_v1.yaml`
 
 ## Campaign Outcome

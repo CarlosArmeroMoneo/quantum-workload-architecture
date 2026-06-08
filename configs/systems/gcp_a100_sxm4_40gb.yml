@@ -1,0 +1,26 @@
+api_version: aqs.system.v1
+system_name: gcp_a100_sxm4_40gb
+status: template_no_evidence
+role: future_portability_validation_host
+provider: gcp
+machine_type: a2-highgpu-1g
+accelerator_type: nvidia-tesla-a100
+node_label: gcp-a100-sxm4-40gb-template
+gpu_model: NVIDIA A100-SXM4-40GB
+gpu_count: 1
+gpu_mem_gb: 40
+gpu_arch_target: sm80
+ram_gb: 85
+interconnect: sxm4_single_gpu
+os_release: Ubuntu 22.04 LTS
+kernel_version: provider_default
+driver_version: provider_default_cuda12
+profiling_host:
+  canonical_tool_source:
+    nsys: host_installed_or_cuda_repo
+    qdstrm_importer: host_installed_or_cuda_repo
+    ncu: host_installed_or_cuda_repo
+  gpu_performance_counters: must_be_verified
+  readiness_artifact: artifacts/readiness/gcp_a100_sxm4_40gb/profiling_ready.json
+  execution_runbook: docs/runbooks/gcp_a100_portability.md
+notes: Future GCP A100 portability template only; not accepted public evidence until device identity and artifacts are pinned.

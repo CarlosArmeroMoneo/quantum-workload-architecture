@@ -9,10 +9,10 @@ Canonical first-slice evidence date: March 14, 2026
 - Provider: OVH Public Cloud
 - Region: GRA9
 - Flavor: `rtx5000-28`
-- OS: Ubuntu 25.04
+- OS: Ubuntu 24.04.3 LTS
 - Kernel: `6.14.0-34-generic`
 - GPU: Quadro RTX 5000
-- Driver: `580.95.05`
+- Driver: `580.126.09`
 - Profiler tools: host-installed `nsys`, `QdstrmImporter`, and `ncu`
 - Tool versions:
   - `nsys`: `NVIDIA Nsight Systems version 2023.2.3.1004-33186433v0`

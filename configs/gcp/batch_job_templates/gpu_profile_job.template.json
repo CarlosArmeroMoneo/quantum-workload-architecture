@@ -1,0 +1,48 @@
+{
+  "taskGroups": [
+    {
+      "taskCount": 1,
+      "parallelism": 1,
+      "taskSpec": {
+        "runnables": [
+          {
+            "script": {
+              "text": "set -euo pipefail\npython -m aqs profile ncu --manifest {{WORKLOAD_MANIFEST}} --system-manifest {{SYSTEM_MANIFEST}} --measurement-repeats 1 --execution-intent require_real --planner-budget balanced --plan-rank 1 --no-allow-distributed --profile-mode {{PROFILE_MODE}} --outdir {{PROFILE_OUTDIR}}"
+            }
+          }
+        ],
+        "computeResource": {
+          "cpuMilli": 4000,
+          "memoryMib": 16384
+        },
+        "maxRunDuration": "{{MAX_RUN_DURATION}}"
+      }
+    }
+  ],
+  "allocationPolicy": {
+    "instances": [
+      {
+        "policy": {
+          "machineType": "{{MACHINE_TYPE}}",
+          "accelerators": [
+            {
+              "type": "{{ACCELERATOR_TYPE}}",
+              "count": "{{ACCELERATOR_COUNT}}"
+            }
+          ],
+          "bootDisk": {
+            "sizeGb": "{{BOOT_DISK_GB}}"
+          }
+        }
+      }
+    ]
+  },
+  "logsPolicy": {
+    "destination": "CLOUD_LOGGING"
+  },
+  "labels": {
+    "project": "quantum-workload-atlas",
+    "lane": "gpu-profile",
+    "claim": "pending"
+  }
+}
