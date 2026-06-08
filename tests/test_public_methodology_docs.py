@@ -66,9 +66,9 @@ def test_gcp_a100_next_cases_are_narrow_and_acceptance_gated():
     assert "GHZ3 result should be Tier 2 portability/calibration evidence only" in gate
 
 
-def test_readme_and_portfolio_link_methodology_package():
+def test_readme_and_project_overview_link_methodology_package():
     readme = _text("README.md")
-    portfolio = _text("PORTFOLIO.md")
+    overview = _text("PROJECT_OVERVIEW.md")
 
     required_links = [
         "docs/reports/how_to_review_this_project.md",
@@ -78,14 +78,45 @@ def test_readme_and_portfolio_link_methodology_package():
         "docs/reports/model_calibration_table.md",
         "docs/reports/v0_1_first_real_profiler_slice_release_notes.md",
         "docs/reports/next_pr_roadmap.md",
-        "docs/architecture/profiler_signal_taxonomy.md",
     ]
     for link in required_links:
         assert link in readme
-        assert link in portfolio
+        assert link in overview
 
     assert "docs/runbooks/gcp_a100_acceptance_gate.md" in readme
-    assert "docs/architecture/evidence_contract.md" in portfolio
+    assert "PROJECT_OVERVIEW.md" in readme
+
+
+def test_public_docs_do_not_expose_career_positioning():
+    public_paths = [
+        Path("README.md"),
+        Path("PROJECT_OVERVIEW.md"),
+        Path("docs/reports/how_to_review_this_project.md"),
+        Path("docs/reports/next_pr_roadmap.md"),
+        Path("docs/reports/v0_1_first_real_profiler_slice_release_notes.md"),
+    ]
+    forbidden_terms = [
+        "/".join(["docs", "career"]),
+        "Career " + "Package",
+        "resume" + "_bullets",
+        "Interview " + "Walkthrough",
+        "NVIDIA" + "-facing",
+        "job" + "-application",
+        "application " + "snippets",
+        "role " + "alignment",
+        "hir" + "ing",
+        "ba" + "it",
+        "portfolio " + "anchor",
+        "nvidia" + "_project_pitch",
+        "nvidia" + "_methodology",
+        "nvidia" + "_role_alignment",
+    ]
+
+    assert not (Path("docs") / "career").exists()
+    for path in public_paths:
+        text = path.read_text(encoding="utf-8")
+        for term in forbidden_terms:
+            assert term not in text
 
 
 def test_review_guide_is_time_boxed_and_claim_safe():
@@ -105,7 +136,7 @@ def test_next_pr_roadmap_keeps_later_work_scoped():
     assert "PR 1" in text
     assert "PR 8" in text
     assert "No broad sweeps, dashboards, or runtime expansion" in text
-    assert "Do not modify the v0.1 tag" in text
+    assert "Release tags should stay fixed except for explicit public-hygiene corrections" in text
 
 
 def test_v0_1_release_notes_keep_pending_lanes_pending():

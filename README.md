@@ -8,7 +8,7 @@ The repo takes workloads from normalized manifests through planning, real `cuTen
 
 | Item | Status |
 | --- | --- |
-| Public anchor | `v0.1-first-real-profiler-slice` released |
+| Public release | `v0.1-first-real-profiler-slice` released |
 | Canonical evidence | OVH RTX 5000 Tier 3 profiler-backed exact-TN slice |
 | CI | Green on the released public package |
 | Public check | `bash scripts/public_check.sh` passing |
@@ -31,7 +31,7 @@ The repo takes workloads from normalized manifests through planning, real `cuTen
 | First architecture nomination | `nomination_source=real_profiler_analysis` | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
 | Bottleneck family | `launch_overhead` | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
 | Setup share | `21.86%` on the canonical batched run | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
-| Portfolio follow-on package | Measured repeat-ROI, NCU, CUDA Graph, CUDA-Q adapter, and tiny-MNK sidecar reports from the OVH host | [Portfolio index](docs/reports/portfolio_index.md) |
+| Follow-on evidence package | Measured repeat-ROI, NCU, CUDA Graph, CUDA-Q adapter, and tiny-MNK sidecar reports from the OVH host | [Evidence package index](docs/reports/portfolio_index.md) |
 | Reproducibility path | Canonical rerun guide and pinned release assets | [OVH rerun guide](docs/runbooks/ovh_cu13_real_execution.md), [release `v0.5.0-evidence`](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.5.0-evidence) |
 
 ![Canonical profiler-backed architecture snapshot](docs/reports/assets/first_real_profiler_slice_canonical.svg)
@@ -125,7 +125,7 @@ Public repo policy:
 - OVH session runner prototype plan: [`docs/reports/ovh_session_runner_prototype_plan.md`](docs/reports/ovh_session_runner_prototype_plan.md)
 - OVH session runner prototype readout: [`docs/reports/ovh_session_runner_prototype_v1.md`](docs/reports/ovh_session_runner_prototype_v1.md)
 - OVH embedded session client readout: [`docs/reports/ovh_embedded_session_client_v1.md`](docs/reports/ovh_embedded_session_client_v1.md)
-- Portfolio index: [`docs/reports/portfolio_index.md`](docs/reports/portfolio_index.md)
+- Evidence package index: [`docs/reports/portfolio_index.md`](docs/reports/portfolio_index.md)
 - How to review this project: [`docs/reports/how_to_review_this_project.md`](docs/reports/how_to_review_this_project.md)
 - Technical report v0.1: [`docs/reports/quantum_workload_atlas_v0_1_report.md`](docs/reports/quantum_workload_atlas_v0_1_report.md)
 - Evidence contract: [`docs/architecture/evidence_contract.md`](docs/architecture/evidence_contract.md)
@@ -136,18 +136,16 @@ Public repo policy:
 - Launch-overhead counterfactual: [`docs/experiments/launch_overhead_counterfactual.md`](docs/experiments/launch_overhead_counterfactual.md)
 - v0.1 release notes: [`docs/reports/v0_1_first_real_profiler_slice_release_notes.md`](docs/reports/v0_1_first_real_profiler_slice_release_notes.md)
 - Next PR roadmap: [`docs/reports/next_pr_roadmap.md`](docs/reports/next_pr_roadmap.md)
-- Portfolio landing page: [`PORTFOLIO.md`](PORTFOLIO.md)
+- Project overview: [`PROJECT_OVERVIEW.md`](PROJECT_OVERVIEW.md)
 - GCP A100 portability lane: [`docs/reports/gcp_a100_portability_index.md`](docs/reports/gcp_a100_portability_index.md)
 - GCP A100 acceptance gate: [`docs/runbooks/gcp_a100_acceptance_gate.md`](docs/runbooks/gcp_a100_acceptance_gate.md)
 - Accelerator lab architecture: [`docs/architecture/accelerator_lab_architecture.md`](docs/architecture/accelerator_lab_architecture.md)
-- Evidence methodology: [`docs/reports/technical_report.md`](docs/reports/technical_report.md)
-- Profiler signal taxonomy: [`docs/architecture/profiler_signal_taxonomy.md`](docs/architecture/profiler_signal_taxonomy.md)
 - Tiny-MNK sidecar lab: [`sidecars/tiny_mnk_lab/README.md`](sidecars/tiny_mnk_lab/README.md)
 - Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)
 - OVH persistent executor runbook: [`docs/runbooks/ovh_persistent_executor.md`](docs/runbooks/ovh_persistent_executor.md)
 - OVH session runner runbook: [`docs/runbooks/ovh_session_runner.md`](docs/runbooks/ovh_session_runner.md)
 - OVH embedded session client runbook: [`docs/runbooks/ovh_embedded_session_client.md`](docs/runbooks/ovh_embedded_session_client.md)
-- Portfolio demo runbook: [`docs/runbooks/portfolio_demo.md`](docs/runbooks/portfolio_demo.md)
+- Evidence package demo runbook: [`docs/runbooks/portfolio_demo.md`](docs/runbooks/portfolio_demo.md)
 - Canonical OVH session summary: [`docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md`](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md)
 - Generic profiler-host runbook: [`docs/runbooks/profiler_linux_host.md`](docs/runbooks/profiler_linux_host.md)
 - GCP Batch GPU sweeps roadmap: [`docs/runbooks/gcp_batch_gpu_sweeps.md`](docs/runbooks/gcp_batch_gpu_sweeps.md)

@@ -4,7 +4,7 @@
 
 This release packages Quantum Workload Atlas as a public evidence system around the first real profiler-backed exact-TN architecture slice.
 
-## Public Anchor
+## Release Focus
 
 - Canonical result: OVH RTX 5000 `real_dense_ring6_batched`.
 - Evidence tier: Tier 3 architecture nomination.
@@ -15,7 +15,7 @@ This release packages Quantum Workload Atlas as a public evidence system around 
 
 ## Included Public Surfaces
 
-- README front door and portfolio landing page.
+- README front door and project overview.
 - Evidence contract and profiler signal taxonomy.
 - Public evidence catalog with prediction-error ratios.
 - Model calibration report from accepted evidence only.

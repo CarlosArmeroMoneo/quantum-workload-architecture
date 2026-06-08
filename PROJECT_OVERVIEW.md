@@ -1,18 +1,16 @@
-# Quantum Workload Atlas Portfolio
+# Quantum Workload Atlas Project Overview
 
 Quantum Workload Atlas is a profiler-backed evidence system for quantum tensor-network workloads on accelerators. It connects workload structure, exact-TN planning, real cuQuantum execution, Nsight evidence, model calibration, and architecture-facing recommendations.
 
-## Pinned Project
+## Released Slice
 
-**v0.1 First Real Profiler-Backed Slice** is the release reference for this project.
+**v0.1 First Real Profiler-Backed Slice** freezes the first public evidence package around the OVH Tier 3 profiler-backed exact-TN result.
 
 - Release: [v0.1-first-real-profiler-slice](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.1-first-real-profiler-slice)
-- Commit/tag purpose: freeze the first public evidence package around the OVH Tier 3 profiler-backed exact-TN slice.
+- Canonical result: OVH RTX 5000 `real_dense_ring6_batched`.
 - Claim boundary: GCP A100 remains pending until confirmed A100 artifacts are pinned.
 
 ## Main Result
-
-The canonical public result is the OVH RTX 5000 profiler-backed slice:
 
 ```text
 real_dense_ring6_batched -> cuquantum_tensornet_gpu -> Nsight Compute summary -> launch_overhead nomination
@@ -39,11 +37,3 @@ Evidence starts here:
 - The architecture nomination uses `real_profiler_analysis`, not synthetic scoring.
 - Prediction-error ratios are visible instead of hidden.
 - The GCP A100 lane is still pending; the June 2026 GCP draft was L4, not A100.
-
-## Evidence Methodology
-
-- Technical report: [docs/reports/technical_report.md](docs/reports/technical_report.md)
-- Profiler signal taxonomy: [docs/architecture/profiler_signal_taxonomy.md](docs/architecture/profiler_signal_taxonomy.md)
-- Evidence contract: [docs/architecture/evidence_contract.md](docs/architecture/evidence_contract.md)
-- Evidence index: [docs/reports/first_real_profiler_slice_index.md](docs/reports/first_real_profiler_slice_index.md)
-- Review guide: [docs/reports/how_to_review_this_project.md](docs/reports/how_to_review_this_project.md)
