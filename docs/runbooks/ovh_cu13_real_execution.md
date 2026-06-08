@@ -332,4 +332,4 @@ Reference docs:
 - Repeat ROI results: `docs/reports/remote_repeat_roi_results_blocked.md`
 - Diagnostic NCU and CUDA Graphs results: `docs/reports/remote_ncu_and_graphs_results_blocked.md`
 - CUDA-Q adapter and tiny-MNK sidecar results: `docs/reports/remote_cudaq_and_sidecar_results_blocked.md`
-- Portfolio package index: `docs/reports/portfolio_index.md`
+- Evidence package index: `docs/reports/portfolio_index.md`

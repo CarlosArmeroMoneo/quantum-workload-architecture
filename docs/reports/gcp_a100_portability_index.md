@@ -27,3 +27,5 @@ Before this lane can move from pending to approved:
 - Artifact references must use concrete digest-stem paths and a pinned public artifact manifest.
 
 See `configs/profiling/gcp_a100_portability_slice.yaml` for the machine-readable acceptance criteria.
+
+The executable offline gate is `scripts/validate_gcp_a100_acceptance.py`, configured by `configs/profiling/gcp_a100_acceptance_gate.yaml`. It must pass before any pinned GCP A100 artifact set is listed here as accepted evidence.

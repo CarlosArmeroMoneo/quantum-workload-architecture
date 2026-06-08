@@ -1,0 +1,66 @@
+api_version: qwa.gcp_a100_acceptance_gate.v1
+gate_name: gcp_a100_offline_acceptance
+status: active_offline_gate
+purpose: >
+  Validate candidate GCP A100 portability/profiler evidence without calling GCP
+  APIs, requiring GPU access, or changing the OVH canonical v0.1 result.
+
+expected_device:
+  gpu_model_contains: A100
+  gpu_arch_target: sm80
+  gpu_mem_gb_min: 39
+
+required_execution:
+  execution_source: cuquantum_tensornet_gpu
+  status: success
+  rejected_reason_codes:
+    - missing_cuquantum
+    - missing_qiskit
+    - missing_gpu
+    - runtime_error
+    - profiler_failed
+    - execution_failed
+
+required_accuracy:
+  status: pass
+
+accepted_profile_sources:
+  - real_ncu_profile
+  - real_nsys_profile
+
+ncu_requirements:
+  csv_nonempty: true
+  kernels_captured: true
+
+artifact_manifest:
+  require_concrete_paths: true
+  forbidden_wildcards:
+    - "*"
+    - "?"
+    - "["
+    - "]"
+
+interpretation:
+  required_key: interpretation_class
+  allowed_classes:
+    - portability_validation
+    - tiny_workload_overhead_dominated
+    - performance_only
+    - real_arch_nomination
+
+tiny_workload_policy:
+  max_qubits: 3
+  ghz_name_markers:
+    - ghz3
+    - real_ghz3
+  forbid_throughput_benchmark: true
+
+outcomes:
+  accepted_exit_code: 0
+  pending_exit_code: 1
+  rejected_exit_code: 2
+
+claim_boundaries:
+  canonical_slice: ovh_gra9_rtx5000_28
+  canonical_status: OVH RTX 5000 remains the first real profiler-backed architecture slice.
+  gcp_a100_status: Accepted GCP A100 evidence is portability/profiler evidence unless a larger accepted workload justifies a stronger claim.

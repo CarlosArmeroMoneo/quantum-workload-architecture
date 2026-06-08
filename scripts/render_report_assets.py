@@ -18,7 +18,7 @@ PORTFOLIO_ITEMS = [
     ("stack/10-remote-repeat-roi-results", "Measured repeat ROI results on the OVH CUDA host", "complete"),
     ("stack/11-remote-ncu-and-graphs-results", "Measured diagnostic NCU and graph A/B results", "complete"),
     ("stack/12-remote-cudaq-and-sidecar-results", "Measured CUDA-Q adapter comparison and sidecar results", "complete"),
-    ("stack/13-portfolio-packaging", "Portfolio packaging and release manifest", "complete"),
+    ("stack/13-portfolio-packaging", "Evidence packaging and release manifest", "complete"),
 ]
 
 STATUS_COLORS = {
@@ -46,7 +46,7 @@ def render_svg(output_path: str | Path) -> None:
         '.status{font-size:11px;font-weight:700}',
         '</style>',
         '<rect x="0" y="0" width="1080" height="100%" fill="#f8fafc"/>',
-        '<text x="28" y="34" class="title">Portfolio Stack Status</text>',
+        '<text x="28" y="34" class="title">Evidence Package Status</text>',
         '<text x="28" y="56" class="subtitle">The measured OVH host pass now completes stack/10 through stack/12, and stack/13 packages the curated evidence.</text>',
     ]
     for index, (branch, detail, status) in enumerate(PORTFOLIO_ITEMS):
@@ -63,7 +63,7 @@ def render_svg(output_path: str | Path) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Render portfolio report SVG assets")
+    parser = argparse.ArgumentParser(description="Render evidence-package SVG assets")
     parser.add_argument(
         "--output",
         default="docs/reports/assets/portfolio_status.svg",

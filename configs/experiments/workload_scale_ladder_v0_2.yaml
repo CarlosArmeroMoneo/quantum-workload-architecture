@@ -1,0 +1,45 @@
+api_version: qwa.workload_scale_ladder.v0_2
+status: planning_no_execution
+purpose: Curated v0.2 exact-TN workload ladder for preflight, calibration, and bounded cloud runs.
+broad_sweeps_allowed: false
+claim_policy:
+  local_nvidia_laptop_6gb: preflight_only
+  ovh_gra9_rtx5000_28: canonical_current_evidence
+  gcp_a100_sxm4_40gb: pending_acceptance_gate
+levels:
+  - level: 0
+    name: tiny_sanity
+    workload_manifest: workloads/manifests/imported/real_ghz3_amplitude.yaml
+    expected_role: import, execution, manifest, and portability sanity
+    local_6gb_allowed: true
+    cloud_gpu_preferred: false
+    evidence_restrictions:
+      - GHZ3 is not a throughput benchmark.
+      - Local 6GB evidence is preflight only.
+  - level: 1
+    name: small_batched
+    workload_manifest: workloads/manifests/imported/real_dense_ring6_batched.yaml
+    expected_role: compare shape with the accepted OVH canonical workload
+    local_6gb_allowed: memory_permitting_preflight_only
+    cloud_gpu_preferred: true
+    evidence_restrictions:
+      - Local 6GB runs cannot become canonical evidence.
+      - OVH remains the accepted profiler-backed reference.
+  - level: 2
+    name: medium_structured
+    workload_manifest: workloads/manifests/generated/dense_universal_smoke.yaml
+    expected_role: move toward contraction-work behavior without a broad sweep
+    local_6gb_allowed: false
+    cloud_gpu_preferred: true
+    evidence_restrictions:
+      - Use cloud GPU only after artifacts and stop rules are defined.
+      - Performance conclusions require accepted profiler evidence.
+  - level: 3
+    name: repeated_structure
+    workload_manifest: workloads/manifests/validation/grid_2d_shallow_val.yaml
+    expected_role: test repeat/reuse and launch-overhead counterfactuals
+    local_6gb_allowed: false
+    cloud_gpu_preferred: true
+    evidence_restrictions:
+      - Run only bounded paired arms, not a Cartesian sweep.
+      - Requires correctness and profiler artifacts before interpretation.

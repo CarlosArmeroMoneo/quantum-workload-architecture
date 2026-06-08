@@ -19,7 +19,7 @@ def test_public_evidence_catalog_extracts_tracked_ovh_runs(tmp_path):
     assert batched["iter_error_ratio"] == 59.094829
     assert batched["bottleneck_family"] == "launch_overhead"
     assert batched["nomination_source"] == "real_profiler_analysis"
-    assert json.loads(batched["kernel_family_counts_json"]) == {"cutensor_contraction_tiny_mnk": 4}
+    assert json.loads(batched["kernel_family_counts_json"]) == {"cutensor_tiny_mnk": 4}
     assert batched["interpretation_class"] == "real_arch_nomination"
     assert batched["tiny_workload_warning"] is False
 

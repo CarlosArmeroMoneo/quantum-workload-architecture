@@ -1,0 +1,26 @@
+api_version: aqs.system.v1
+system_name: hyperstack_a6000
+status: template_no_evidence
+role: future_budget_campaign_fallback_host
+provider: hyperstack
+node_label: hyperstack-a6000-template
+gpu_model: NVIDIA RTX A6000
+gpu_count: 1
+gpu_mem_gb: 48
+gpu_arch_target: sm86
+ram_gb: provider_default
+interconnect: provider_default_single_gpu
+os_release: Ubuntu 22.04 LTS
+kernel_version: provider_default
+driver_version: provider_default_cuda12
+evidence_policy: future_campaign_only
+accepted_for_public_performance_claims: false
+profiling_host:
+  canonical_tool_source:
+    nsys: host_installed_or_cuda_repo
+    qdstrm_importer: host_installed_or_cuda_repo
+    ncu: host_installed_or_cuda_repo
+  gpu_performance_counters: must_be_verified
+  readiness_artifact: artifacts/readiness/hyperstack_a6000/profiling_ready.json
+  execution_runbook: docs/runbooks/hyperstack_crossover_campaign.md
+notes: Fallback Hyperstack campaign template only; no result exists until pinned artifacts are captured and reviewed.

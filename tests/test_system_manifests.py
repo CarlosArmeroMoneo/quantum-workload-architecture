@@ -3,6 +3,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+from aqs.local_preflight import (
+    can_satisfy_gcp_a100_acceptance,
+    classify_local_preflight_use,
+    is_local_preflight_host,
+)
 from aqs.manifest import load_yaml, validate_system_manifest
 
 
@@ -120,6 +125,41 @@ def test_future_gcp_system_templates_are_valid_and_non_evidence():
     assert a100["notes"].startswith("Future GCP A100 portability template only")
 
 
+def test_local_nvidia_laptop_6gb_template_is_preflight_only():
+    manifest = load_yaml("configs/systems/local_nvidia_laptop_6gb.template.yml")
+
+    assert validate_system_manifest(manifest) == []
+    assert manifest["system_name"] == "local_nvidia_laptop_6gb"
+    assert manifest["role"] == "preflight_dev_host"
+    assert manifest["gpu_mem_gb"] == 6.0
+    assert manifest["evidence_policy"] == "local_preflight_only"
+    assert manifest["accepted_for_public_performance_claims"] is False
+    assert can_satisfy_gcp_a100_acceptance(manifest) is False
+    assert is_local_preflight_host(manifest) is True
+
+    preflight = classify_local_preflight_use(manifest, "preflight")
+    assert preflight["allowed"] is True
+    assert preflight["allowed_evidence_tiers"] == ["Tier 0", "Tier 1"]
+
+    accepted_profile = classify_local_preflight_use(manifest, "accepted_profile")
+    assert accepted_profile["blocked"] is True
+    assert "local_preflight_not_public_evidence" in accepted_profile["reason_codes"]
+
+
+def test_hyperstack_system_templates_are_valid_and_non_evidence():
+    for path, model, arch in [
+        ("configs/systems/hyperstack_a100.template.yml", "NVIDIA A100", "sm80"),
+        ("configs/systems/hyperstack_a6000.template.yml", "NVIDIA RTX A6000", "sm86"),
+    ]:
+        manifest = load_yaml(path)
+        assert validate_system_manifest(manifest) == []
+        assert manifest["status"] == "template_no_evidence"
+        assert manifest["provider"] == "hyperstack"
+        assert manifest["gpu_model"] == model
+        assert manifest["gpu_arch_target"] == arch
+        assert manifest["accepted_for_public_performance_claims"] is False
+
+
 def test_gcp_bucket_layout_defines_project_storage_roles():
     manifest = load_yaml("configs/gcp/bucket_layout.yaml")
 
@@ -205,8 +245,16 @@ def test_gcp_batch_template_renders_without_submission():
             "g2-standard-4",
             "--accelerator-type",
             "nvidia-l4",
-            "--system-manifest",
+            "--system",
             "configs/systems/gcp_l4_24gb.yml",
+            "--workload",
+            "workloads/manifests/imported/real_dense_ring6_batched.yaml",
+            "--profiler",
+            "ncu",
+            "--output-prefix",
+            "gs://bucket/qwa/runs/l4-dry-run",
+            "--job-name",
+            "qwa-l4-dry-run",
             "--profile-outdir",
             "artifacts/profiles/gcp_l4_24gb/ncu",
         ],
@@ -220,7 +268,7 @@ def test_gcp_batch_template_renders_without_submission():
     assert policy["machineType"] == "g2-standard-4"
     assert policy["accelerators"][0] == {"type": "nvidia-l4", "count": 1}
     assert policy["bootDisk"]["sizeGb"] == 200
-    command = payload["taskGroups"][0]["taskSpec"]["runnables"][0]["script"]["text"]
+    command = payload["taskGroups"][0]["taskSpec"]["runnables"][0]["container"]["commands"][2]
     assert "--system-manifest configs/systems/gcp_l4_24gb.yml" in command
     assert "gcloud" not in command
 

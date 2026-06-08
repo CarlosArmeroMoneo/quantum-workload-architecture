@@ -1,6 +1,6 @@
-# Portfolio Demo Runbook
+# Evidence Package Demo Runbook
 
-This is the canonical local demo path for the measured portfolio package frozen on April 4, 2026. It validates the implemented workflow, re-renders the package asset, and inspects the curated OVH measurements without re-running the full remote campaigns.
+This is the canonical local demo path for the measured evidence package frozen on April 4, 2026. It validates the implemented workflow, re-renders the package asset, and inspects the curated OVH measurements without re-running the full remote campaigns.
 
 ## 1. Activate the Canonical Shell
 
@@ -26,7 +26,7 @@ python -m aqs campaign run \
   --outdir artifacts/campaigns/cpu_dry_run_v1
 ```
 
-## 4. Render the Portfolio Asset
+## 4. Render the Evidence Package Asset
 
 ```bash
 python scripts/render_report_assets.py

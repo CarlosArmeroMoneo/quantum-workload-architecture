@@ -1,0 +1,66 @@
+api_version: qwa.launch_overhead_counterfactual.v0_2
+status: planning_no_execution
+source_nomination:
+  host: ovh_gra9_rtx5000_28
+  workload: workloads/manifests/imported/real_dense_ring6_batched.yaml
+  nomination: launch_overhead
+  nomination_source: real_profiler_analysis
+broad_sweeps_allowed: false
+arm_selection: paired_not_cartesian
+knobs:
+  repeat_count_hint: [1, 8, 32]
+  plan_bundle_reuse: [false, true]
+  persistent_executor: [false, true]
+  cache_workspace_gb: [0, 2, 8]
+  graph_mode: [off, on_if_supported]
+candidate_arms:
+  - arm_id: baseline_repeat_1
+    repeat_count_hint: 1
+    plan_bundle_reuse: false
+    persistent_executor: false
+    cache_workspace_gb: 0
+    graph_mode: off
+  - arm_id: repeat_8_plan_reuse
+    repeat_count_hint: 8
+    plan_bundle_reuse: true
+    persistent_executor: false
+    cache_workspace_gb: 2
+    graph_mode: off
+  - arm_id: repeat_32_plan_reuse
+    repeat_count_hint: 32
+    plan_bundle_reuse: true
+    persistent_executor: false
+    cache_workspace_gb: 8
+    graph_mode: off
+  - arm_id: repeat_8_persistent
+    repeat_count_hint: 8
+    plan_bundle_reuse: true
+    persistent_executor: true
+    cache_workspace_gb: 2
+    graph_mode: off
+  - arm_id: repeat_8_graph_if_supported
+    repeat_count_hint: 8
+    plan_bundle_reuse: true
+    persistent_executor: false
+    cache_workspace_gb: 2
+    graph_mode: on_if_supported
+required_metrics:
+  - ttfr_s
+  - steady_iter_ms
+  - setup_share_pct
+  - contract_share_pct
+  - correctness_pass
+  - profile_summary_exists
+  - nomination_change
+stop_criteria:
+  - correctness failure
+  - profiler evidence missing
+  - TTFR improvement under 10 percent
+  - budget cap reached
+  - overhead merely moved outside measured region
+required_artifacts:
+  - execution_payload
+  - profile_summary
+  - artifact_manifest
+  - correctness_eval
+  - architecture_output

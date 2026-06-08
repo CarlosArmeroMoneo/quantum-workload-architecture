@@ -17,6 +17,7 @@ This contract defines what public Atlas claims mean. Every result should state a
 - OVH GHZ3 amplitude: Tier 3 for evidence mechanics, but tiny-workload caveats must stay attached. It is not a throughput benchmark.
 - GCP A100 GHZ3 lane: pending. Once a confirmed A100 40GB host passes the acceptance gate, the intended claim is Tier 2 portability/calibration, not throughput.
 - WSL2 RTX4050 host: negative-control and dev-host readiness evidence. It should not be used as the public architecture result.
+- Local `local_nvidia_laptop_6gb`: preflight/dev only. It may support Tier 0/Tier 1 local checks, but not canonical public performance claims or A100 acceptance.
 - Rejected local GCP draft: no A100 tier. Its device was L4, so it cannot support A100 claims.
 
 ## Required Public Wording

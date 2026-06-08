@@ -1,0 +1,34 @@
+api_version: qwa.tpu_sister_workload.v1
+status: future_only_placeholder
+workload_id: tpu_jax_compile_vs_execute
+family_id: jax_compile_vs_execute_repeated_shape
+display_name: JAX compile-vs-execute repeated-shape sister workload
+execution_backend: jax_xla
+target_platform: tpu
+not_cuquantum_on_tpu: true
+not_qpu_execution: true
+purpose: >
+  Future JAX/XLA workload for separating compilation latency from repeated
+  execution latency on a fixed tensor shape. It is not accepted evidence and
+  does not imply cuQuantum execution on TPU.
+shape_signature:
+  operation: repeated_shape_contract_and_elementwise_update
+  batch_size: 64
+  tensor_shape: [64, 128, 128]
+  repeat_count_hint: 128
+  dtype: float32
+suggested_metrics:
+  - compile_time_s
+  - first_execute_s
+  - steady_iter_ms
+  - shape_signature
+  - batch_size
+  - xla_backend
+  - device_type
+  - memory_estimate_gb
+acceptance_boundary:
+  future_only: true
+  conceptual_comparison_only: true
+  requires_real_tpu_payload: true
+  requires_pinned_artifacts: true
+  no_current_evidence_claim: true

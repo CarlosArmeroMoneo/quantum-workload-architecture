@@ -1,4 +1,12 @@
 {
+  "name": "{{JOB_NAME}}",
+  "labels": {
+    "app": "qwa",
+    "lane": "gpu-profile",
+    "claim": "pending",
+    "dry_run": "true",
+    "profiler": "{{PROFILER_KIND}}"
+  },
   "taskGroups": [
     {
       "taskCount": 1,
@@ -6,14 +14,31 @@
       "taskSpec": {
         "runnables": [
           {
-            "script": {
-              "text": "set -euo pipefail\npython -m aqs profile ncu --manifest {{WORKLOAD_MANIFEST}} --system-manifest {{SYSTEM_MANIFEST}} --measurement-repeats 1 --execution-intent require_real --planner-budget balanced --plan-rank 1 --no-allow-distributed --profile-mode {{PROFILE_MODE}} --outdir {{PROFILE_OUTDIR}}"
+            "container": {
+              "imageUri": "{{CONTAINER_IMAGE}}",
+              "commands": [
+                "bash",
+                "-lc",
+                "{{STARTUP_COMMAND}}"
+              ]
             }
           }
         ],
+        "environment": {
+          "variables": {
+            "QWA_DRY_RUN": "true",
+            "QWA_DRY_RUN_SOURCE": "scripts/render_gcp_batch_job.py",
+            "QWA_JOB_NAME": "{{JOB_NAME}}",
+            "QWA_WORKLOAD_MANIFEST": "{{WORKLOAD_MANIFEST}}",
+            "QWA_SYSTEM_MANIFEST": "{{SYSTEM_MANIFEST}}",
+            "QWA_PROFILER_KIND": "{{PROFILER_KIND}}",
+            "QWA_OUTPUT_GCS_PREFIX": "{{OUTPUT_GCS_PREFIX}}",
+            "QWA_PROFILE_OUTDIR": "{{PROFILE_OUTDIR}}"
+          }
+        },
         "computeResource": {
-          "cpuMilli": 4000,
-          "memoryMib": 16384
+          "cpuMilli": "{{CPU_MILLI}}",
+          "memoryMib": "{{MEMORY_MIB}}"
         },
         "maxRunDuration": "{{MAX_RUN_DURATION}}"
       }
@@ -39,10 +64,5 @@
   },
   "logsPolicy": {
     "destination": "CLOUD_LOGGING"
-  },
-  "labels": {
-    "project": "quantum-workload-atlas",
-    "lane": "gpu-profile",
-    "claim": "pending"
   }
 }

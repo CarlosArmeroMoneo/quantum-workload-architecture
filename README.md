@@ -13,6 +13,7 @@ The repo takes workloads from normalized manifests through planning, real `cuTen
 | CI | Green on the released public package |
 | Public check | `bash scripts/public_check.sh` passing |
 | GCP A100 | Pending acceptance-gated portability evidence |
+| Local NVIDIA 6GB | Preflight/dev host only; not public performance evidence |
 
 ## What It Shows
 
@@ -44,9 +45,13 @@ The A100 portability lane is intentionally pending until a confirmed A100 40GB h
 
 The intended A100 validation is documented as a future portability/profiler check, not a throughput benchmark. It must confirm the device identity, preserve the tiny-workload overhead caveat, and keep OVH as the canonical first profiler-backed architecture slice.
 
+### Local preflight lane
+
+`configs/systems/local_nvidia_laptop_6gb.template.yml` documents a constrained local NVIDIA laptop GPU lane for environment checks, manifest validation, and tiny sanity runs. Results from that host are local preflight evidence only and do not weaken the OVH or GCP claim boundaries.
+
 ## Capability Matrix
 
-This table is the compact truth pass for public claims. The longer audit lives in [docs/reports/current_state_truth_pass.md](docs/reports/current_state_truth_pass.md).
+This table is the compact truth pass for public claims. The longer capability audit lives in [docs/reports/current_state_truth_pass.md](docs/reports/current_state_truth_pass.md), and the current public-release audit lives in [docs/reports/public_release_audit.md](docs/reports/public_release_audit.md).
 
 | Area | Manifest/schema allows | Actually implemented | Real measured evidence exists | Proof file | Claim allowed in README |
 | --- | --- | --- | --- | --- | --- |
@@ -104,6 +109,7 @@ Public repo policy:
 ## Technical Appendix
 
 - Capability truth pass: [`docs/reports/current_state_truth_pass.md`](docs/reports/current_state_truth_pass.md)
+- Public release audit: [`docs/reports/public_release_audit.md`](docs/reports/public_release_audit.md)
 - Public evidence index: [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md)
 - Repeat ROI foundation: [`docs/reports/repeat_roi_foundation.md`](docs/reports/repeat_roi_foundation.md)
 - Measured repeat ROI results: [`docs/reports/remote_repeat_roi_results_blocked.md`](docs/reports/remote_repeat_roi_results_blocked.md)
@@ -130,9 +136,15 @@ Public repo policy:
 - Technical report v0.1: [`docs/reports/quantum_workload_atlas_v0_1_report.md`](docs/reports/quantum_workload_atlas_v0_1_report.md)
 - Evidence contract: [`docs/architecture/evidence_contract.md`](docs/architecture/evidence_contract.md)
 - Profiler signal taxonomy: [`docs/architecture/profiler_signal_taxonomy.md`](docs/architecture/profiler_signal_taxonomy.md)
+- Crossover calibration schema: [`docs/architecture/calibration_dataset_schema.md`](docs/architecture/calibration_dataset_schema.md)
+- Workload scale ladder: [`docs/architecture/workload_scale_ladder.md`](docs/architecture/workload_scale_ladder.md)
+- Current profiler-kernel taxonomy report: [`docs/reports/profiler_kernel_taxonomy_current_evidence.md`](docs/reports/profiler_kernel_taxonomy_current_evidence.md)
 - Current model-calibration report: [`docs/reports/model_calibration_current_evidence.md`](docs/reports/model_calibration_current_evidence.md)
 - Model calibration table: [`docs/reports/model_calibration_table.md`](docs/reports/model_calibration_table.md)
+- v0.2 crossover calibration skeleton: [`docs/reports/quantum_workload_atlas_v0_2_crossover_calibration.md`](docs/reports/quantum_workload_atlas_v0_2_crossover_calibration.md)
+- v0.2 release notes: [`docs/reports/v0_2_crossover_release_notes.md`](docs/reports/v0_2_crossover_release_notes.md)
 - Public evidence catalog: [`docs/reports/public_evidence_catalog.md`](docs/reports/public_evidence_catalog.md), [`docs/reports/public_evidence_catalog.csv`](docs/reports/public_evidence_catalog.csv)
+- Experiment card template: [`docs/experiments/experiment_card_template.md`](docs/experiments/experiment_card_template.md)
 - Launch-overhead counterfactual: [`docs/experiments/launch_overhead_counterfactual.md`](docs/experiments/launch_overhead_counterfactual.md)
 - v0.1 release notes: [`docs/reports/v0_1_first_real_profiler_slice_release_notes.md`](docs/reports/v0_1_first_real_profiler_slice_release_notes.md)
 - Next PR roadmap: [`docs/reports/next_pr_roadmap.md`](docs/reports/next_pr_roadmap.md)
@@ -142,6 +154,11 @@ Public repo policy:
 - Accelerator lab architecture: [`docs/architecture/accelerator_lab_architecture.md`](docs/architecture/accelerator_lab_architecture.md)
 - Tiny-MNK sidecar lab: [`sidecars/tiny_mnk_lab/README.md`](sidecars/tiny_mnk_lab/README.md)
 - Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)
+- Local 6GB preflight runbook: [`docs/runbooks/local_6gb_preflight.md`](docs/runbooks/local_6gb_preflight.md)
+- Run triage runbook: [`docs/runbooks/run_triage.md`](docs/runbooks/run_triage.md)
+- Hyperstack crossover campaign runbook: [`docs/runbooks/hyperstack_crossover_campaign.md`](docs/runbooks/hyperstack_crossover_campaign.md)
+- Post-run ingestion runbook: [`docs/runbooks/post_run_ingestion.md`](docs/runbooks/post_run_ingestion.md)
+- Launch-overhead counterfactual runbook: [`docs/runbooks/launch_overhead_counterfactual_runbook.md`](docs/runbooks/launch_overhead_counterfactual_runbook.md)
 - OVH persistent executor runbook: [`docs/runbooks/ovh_persistent_executor.md`](docs/runbooks/ovh_persistent_executor.md)
 - OVH session runner runbook: [`docs/runbooks/ovh_session_runner.md`](docs/runbooks/ovh_session_runner.md)
 - OVH embedded session client runbook: [`docs/runbooks/ovh_embedded_session_client.md`](docs/runbooks/ovh_embedded_session_client.md)
@@ -150,6 +167,7 @@ Public repo policy:
 - Generic profiler-host runbook: [`docs/runbooks/profiler_linux_host.md`](docs/runbooks/profiler_linux_host.md)
 - GCP Batch GPU sweeps roadmap: [`docs/runbooks/gcp_batch_gpu_sweeps.md`](docs/runbooks/gcp_batch_gpu_sweeps.md)
 - GCP TPU JAX workloads roadmap: [`docs/runbooks/gcp_tpu_jax_workloads.md`](docs/runbooks/gcp_tpu_jax_workloads.md)
+- TPU sister-workload lane: [`docs/architecture/tpu_sister_workload_lane.md`](docs/architecture/tpu_sister_workload_lane.md)
 - Storage management runbook: [`docs/runbooks/storage_management.md`](docs/runbooks/storage_management.md)
 - Known local-host blockers: [`docs/known_limitations/profiler_host_blockers.md`](docs/known_limitations/profiler_host_blockers.md)
 
