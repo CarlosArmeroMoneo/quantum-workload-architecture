@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from typing import Any
 
 
@@ -69,7 +69,7 @@ def occupancy_band(occupancy_pct: float | int | None) -> str:
 def summarize_kernel_families(kernels: list[dict[str, Any]], *, occupancy_pct: float | int | None = None) -> dict[str, Any]:
     family_counts: Counter[str] = Counter()
     category_counts: Counter[str] = Counter()
-    family_times: Counter[str] = Counter()
+    family_times: defaultdict[str, float] = defaultdict(float)
 
     for raw_entry in kernels:
         entry = enrich_kernel_entry(raw_entry)

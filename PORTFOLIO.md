@@ -2,6 +2,14 @@
 
 Quantum Workload Atlas is a profiler-backed evidence system for quantum tensor-network workloads on accelerators. It connects workload structure, exact-TN planning, real cuQuantum execution, Nsight evidence, model calibration, and architecture-facing recommendations.
 
+## Pinned Project
+
+**v0.1 First Real Profiler-Backed Slice** is the release reference for this project.
+
+- Release: [v0.1-first-real-profiler-slice](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.1-first-real-profiler-slice)
+- Commit/tag purpose: freeze the first public evidence package around the OVH Tier 3 profiler-backed exact-TN slice.
+- Claim boundary: GCP A100 remains pending until confirmed A100 artifacts are pinned.
+
 ## Main Result
 
 The canonical public result is the OVH RTX 5000 profiler-backed slice:
