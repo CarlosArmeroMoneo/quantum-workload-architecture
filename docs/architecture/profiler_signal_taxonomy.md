@@ -5,12 +5,21 @@ Atlas reduces profiler artifacts into workload-level signals instead of leaving 
 ## Kernel Families
 
 - `cutensor_contraction`: cuTensor/cuTensorNet contraction kernels.
-- `cutensor_contraction_tiny_mnk`: tiny-MNK cuTensor contraction kernels.
+- `cutensor_tiny_mnk`: tiny-MNK cuTensor contraction kernels.
 - `reduction`: reduction or aggregation kernels.
 - `initialization`: array initialization and arange-style kernels.
 - `memory_transfer`: memcpy, memset, and related transfer kernels.
 - `framework_overhead`: CuPy, framework, pointwise, or dispatch helper kernels.
 - `unknown`: kernels that should stay visible until classified.
+
+## Profiler Signals
+
+- `launch_bound_signal`: profiler evidence suggests setup, launch, framework, or sparse-summary overhead should be tested with a counterfactual.
+- `memory_bound_signal`: memory-transfer families dominate the reduced kernel summary.
+- `low_utilization_tiny_workload`: occupancy is low or the profile is dominated by tiny-MNK kernels.
+- `contraction_kernel_family_present`: a cuTensor/cuTensorNet contraction family appears in the reduced summary.
+- `profiler_replay_warning`: profiler replay metadata suggests the capture may have distorted timing.
+- `sparse_profile_summary_warning`: the reduced profile has no top-kernel rows, so kernel-family inference should stay limited.
 
 ## Phase Families
 

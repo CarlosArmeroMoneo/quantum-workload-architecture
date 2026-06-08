@@ -1,6 +1,6 @@
-# Portfolio Index
+# Evidence Package Index
 
-![Portfolio stack status](assets/portfolio_status.svg)
+![Evidence package status](assets/portfolio_status.svg)
 
 This index packages the stacked-branch rollout as it exists in this workspace on April 4, 2026, after the measured OVH pass refreshed `stack/10` through `stack/12`.
 
@@ -35,3 +35,4 @@ This index packages the stacked-branch rollout as it exists in this workspace on
 - CUDA Graph capture failed on the default (legacy) stream in every measured attempt, so the package keeps `graph_mode=off` as the recommendation.
 - CUDA-Q remains adapter-backed for structural comparison only; the repo still does not claim native CUDA-Q runtime execution evidence.
 - The tiny-MNK sidecar is now measured and curated, but it remains a shape-isolation lab rather than a parity proxy for the internal cuTensorNet kernel family.
+- The local `local_nvidia_laptop_6gb` lane is a constrained preflight/dev host only; it is not part of the accepted public performance evidence chain.

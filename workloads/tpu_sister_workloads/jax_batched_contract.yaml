@@ -1,0 +1,34 @@
+api_version: qwa.tpu_sister_workload.v1
+status: future_only_placeholder
+workload_id: tpu_jax_batched_contract
+family_id: jax_batched_tensor_contraction
+display_name: JAX batched tensor contraction sister workload
+execution_backend: jax_xla
+target_platform: tpu
+not_cuquantum_on_tpu: true
+not_qpu_execution: true
+purpose: >
+  Future shape-stable JAX/XLA sister workload for studying batched tensor
+  contraction behavior on TPU. It is not accepted evidence and does not imply
+  cuQuantum execution on TPU.
+shape_signature:
+  expression: "bij,bjk->bik"
+  batch_size: 128
+  lhs_shape: [128, 64, 64]
+  rhs_shape: [128, 64, 64]
+  dtype: float32
+suggested_metrics:
+  - compile_time_s
+  - first_execute_s
+  - steady_iter_ms
+  - shape_signature
+  - batch_size
+  - xla_backend
+  - device_type
+  - memory_estimate_gb
+acceptance_boundary:
+  future_only: true
+  conceptual_comparison_only: true
+  requires_real_tpu_payload: true
+  requires_pinned_artifacts: true
+  no_current_evidence_claim: true

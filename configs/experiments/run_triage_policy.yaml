@@ -1,0 +1,71 @@
+api_version: qwa.run_triage_policy.v1
+status: offline_policy
+budget_currency: EUR
+broad_sweeps_allowed: false
+local_6gb:
+  system_name: local_nvidia_laptop_6gb
+  max_gpu_mem_gb: 6.0
+  allowed_goals:
+    - preflight
+  allowed_levels:
+    - tiny
+  blocked_goals:
+    - accepted_profile
+    - calibration_campaign
+  stop_rules:
+    - stop if memory estimate exceeds local capacity
+    - stop if correctness fails
+    - stop if profiler tools are missing
+hyperstack_budget:
+  max_campaign_budget_eur: 15.0
+  preferred_target: hyperstack_a100
+  fallback_target: hyperstack_a6000
+  allowed_goals:
+    - real_execution
+    - profiler_smoke
+    - calibration_campaign
+  required_artifacts:
+    - execution_payload
+    - profile_summary
+    - artifact_manifest
+    - accuracy_eval
+  stop_rules:
+    - delete VM when phase completes
+    - stop if profiler readiness fails
+    - stop when phase budget is reached
+gcp_a100:
+  system_name: gcp_a100_sxm4_40gb
+  quota_required: true
+  acceptance_gate: configs/profiling/gcp_a100_acceptance_gate.yaml
+  allowed_goals:
+    - accepted_profile
+  required_artifacts:
+    - execution_payload
+    - profile_summary
+    - ncu_csv_or_nsys_report
+    - artifact_manifest
+    - accuracy_eval
+required_artifacts_by_goal:
+  preflight:
+    - execution_payload_if_run
+    - local_probe_output
+  real_execution:
+    - execution_payload
+    - accuracy_eval
+  profiler_smoke:
+    - execution_payload
+    - profile_summary
+  accepted_profile:
+    - execution_payload
+    - profile_summary
+    - artifact_manifest
+    - acceptance_gate_output
+  calibration_campaign:
+    - execution_payload
+    - profile_summary
+    - calibration_record
+workload_overrides:
+  workloads/manifests/imported/real_ghz3_amplitude.yaml: tiny
+  workloads/manifests/imported/real_dense_ring6_batched.yaml: small
+  workloads/manifests/generated/dense_universal_smoke.yaml: medium
+  workloads/manifests/validation/grid_2d_shallow_val.yaml: repeated

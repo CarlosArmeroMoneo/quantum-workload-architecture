@@ -43,5 +43,8 @@ The release archive contains the heavyweight profiler binaries that are intentio
 - Nomination source: `real_profiler_analysis`
 - Bottleneck family: `launch_overhead`
 - Setup share: approximately `21.86%`
+- Profiler-kernel taxonomy report: `docs/reports/profiler_kernel_taxonomy_current_evidence.md`
+- Counterfactual experiment card: `docs/experiments/launch_overhead_counterfactual.md`
+- Reusable experiment-card template: `docs/experiments/experiment_card_template.md`
 
 This result is grounded in the OVH CUDA 13 host execution path. The negative-control WSL2 host remains useful for debugging and failure classification, but it is not the evidence source for the public result above.

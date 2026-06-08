@@ -1,6 +1,6 @@
 # OVH Measured Validation Follow-On
 
-This follow-on report captures the April 4, 2026 measured-validation pass on `ovh_gra9_rtx5000_28` after the portfolio package was refreshed. It uses only measured outputs from the OVH host and keeps the negative calibration result intact.
+This follow-on report captures the April 4, 2026 measured-validation pass on `ovh_gra9_rtx5000_28` after the evidence package was refreshed. It uses only measured outputs from the OVH host and keeps the negative calibration result intact.
 
 ## Scope
 

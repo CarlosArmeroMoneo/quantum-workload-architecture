@@ -66,6 +66,9 @@ Ratios below `1.0` mean the model overpredicted time. Ratios above `1.0` mean th
 - tiny-workload classifier
 - uncertainty or abstention label when evidence is too narrow
 - interpretation class tied to the evidence contract tier
+- crossover classifier from `src/aqs/calibration.py`
+
+The v0.2 schema and first heuristic classifier are documented in `docs/architecture/calibration_dataset_schema.md`. They remain a transparent interpretation layer, not a retuned model.
 
 ## Next Calibration Work
 

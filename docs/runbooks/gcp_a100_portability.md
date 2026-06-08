@@ -40,3 +40,13 @@ python -m aqs profile ncu \
 - NCU captures cuTensorNet contraction kernels.
 - The profile summary marks the tiny GHZ workload as overhead dominated.
 - The result is documented as portability validation and does not replace the OVH canonical slice.
+
+Before publishing the result, run the offline acceptance gate:
+
+```bash
+python scripts/validate_gcp_a100_acceptance.py \
+  --gate configs/profiling/gcp_a100_acceptance_gate.yaml \
+  --evidence-dir artifacts/profiles/gcp_a100_sxm4_40gb/ncu
+```
+
+An accepted GHZ3 result remains portability/calibration evidence. It is not a throughput benchmark.

@@ -1,0 +1,42 @@
+api_version: aqs.system.v1
+system_name: local_nvidia_laptop_6gb
+status: local_template_no_public_evidence
+role: preflight_dev_host
+provider: local
+node_label: local-nvidia-laptop-6gb-template
+gpu_model: unconfirmed_local_nvidia_laptop_gpu
+gpu_count: 1
+gpu_mem_gb: 6.0
+gpu_arch_target: local_cuda_sm_unknown
+ram_gb: null
+interconnect: laptop_pcie
+os_release: local_unconfirmed
+kernel_version: local_unconfirmed
+driver_version: local_unconfirmed
+evidence_policy: local_preflight_only
+accepted_for_public_performance_claims: false
+can_satisfy_gcp_a100_acceptance: false
+allowed_evidence_tiers:
+  - Tier 0
+  - Tier 1
+allowed_uses:
+  - manifest_validation
+  - environment_smoke
+  - tiny_real_execute_if_supported
+  - local_artifact_parser_testing
+blocked_uses:
+  - canonical_public_performance_claim
+  - accepted_a100_portability_gate
+  - medium_exact_tn_profiling_claim
+  - throughput_conclusion
+identity_probe:
+  command: nvidia-smi --query-gpu=name,memory.total,compute_cap --format=csv
+profiling_host:
+  canonical_tool_source:
+    nsys: local_optional
+    qdstrm_importer: local_optional
+    ncu: local_optional
+  gpu_performance_counters: local_policy_dependent
+  readiness_artifact: artifacts/readiness/local_nvidia_laptop_6gb/profiling_ready.json
+  execution_runbook: docs/runbooks/local_6gb_preflight.md
+notes: Local constrained NVIDIA laptop GPU template for preflight and tiny-run development only; not canonical public performance evidence.

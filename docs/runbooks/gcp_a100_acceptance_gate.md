@@ -17,6 +17,20 @@ The GCP A100 lane is a portability and calibration lane first. It must not be de
 - Interpretation class is assigned.
 - Tiny-workload warning is preserved for GHZ3.
 
+## Offline Validator
+
+Use the offline validator before describing any GCP artifact set as accepted A100 evidence:
+
+```bash
+python scripts/validate_gcp_a100_acceptance.py \
+  --gate configs/profiling/gcp_a100_acceptance_gate.yaml \
+  --execution evidence/gcp_a100/real_ghz3.ncu.abcdef.execution.json \
+  --profile-summary evidence/gcp_a100/real_ghz3.ncu.abcdef.profile_summary.json \
+  --artifact-manifest evidence/gcp_a100/real_ghz3.ncu.abcdef.artifacts.json
+```
+
+The validator does not call GCP APIs and does not require GPU access. It returns JSON and exits with `0` for accepted, `1` for pending or incomplete, and `2` for rejected.
+
 ## Rejection Conditions
 
 - Device is L4, T4, H100, or any non-A100 GPU.

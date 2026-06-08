@@ -1,0 +1,53 @@
+api_version: qwa.hyperstack_crossover_campaign.v0_2
+status: planning_no_execution
+budget_currency: EUR
+total_budget_cap: 15.0
+broad_sweeps_allowed: false
+preferred_system_template: configs/systems/hyperstack_a100.template.yml
+fallback_system_template: configs/systems/hyperstack_a6000.template.yml
+triage_policy: configs/experiments/run_triage_policy.yaml
+artifact_acceptance:
+  require_execution_payload: true
+  require_accuracy_pass: true
+  require_profile_summary: true
+  require_concrete_artifact_manifest: true
+  require_system_identity: true
+phases:
+  - phase: 0
+    name: environment_sanity
+    max_spend_eur: 3.0
+    workloads:
+      - workloads/manifests/imported/real_ghz3_amplitude.yaml
+    required_actions:
+      - run doctor
+      - run profiler smoke
+      - sync artifacts immediately
+    stop_rules:
+      - stop if profiler readiness fails
+      - stop if real execution cannot import dependencies
+  - phase: 1
+    name: first_accepted_run_candidate
+    max_additional_spend_eur: 5.0
+    workloads:
+      - workloads/manifests/imported/real_dense_ring6_batched.yaml
+    profiler: nsys_or_ncu
+    stop_rules:
+      - stop if correctness fails
+      - stop if profile summary is missing
+      - stop if artifact sync fails
+  - phase: 2
+    name: one_medium_or_repeat_case
+    spend_policy: remaining_budget_only
+    workload_options:
+      - workloads/manifests/generated/dense_universal_smoke.yaml
+      - workloads/manifests/validation/grid_2d_shallow_val.yaml
+    max_selected_workloads: 1
+    start_condition: phase_1_accepted
+    stop_rules:
+      - stop when remaining budget is reached
+      - stop after one selected workload
+      - stop if overhead merely moves outside measured region
+claim_boundary:
+  no_existing_hyperstack_result: true
+  ovh_remains_canonical: true
+  local_6gb_preflight_only: true
