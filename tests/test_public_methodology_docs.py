@@ -71,10 +71,13 @@ def test_readme_and_portfolio_link_methodology_package():
     portfolio = _text("PORTFOLIO.md")
 
     required_links = [
+        "docs/reports/how_to_review_this_project.md",
         "docs/architecture/evidence_contract.md",
         "docs/architecture/profiler_signal_taxonomy.md",
         "docs/experiments/launch_overhead_counterfactual.md",
+        "docs/reports/model_calibration_table.md",
         "docs/reports/v0_1_first_real_profiler_slice_release_notes.md",
+        "docs/reports/next_pr_roadmap.md",
         "docs/architecture/profiler_signal_taxonomy.md",
     ]
     for link in required_links:
@@ -83,6 +86,26 @@ def test_readme_and_portfolio_link_methodology_package():
 
     assert "docs/runbooks/gcp_a100_acceptance_gate.md" in readme
     assert "docs/architecture/evidence_contract.md" in portfolio
+
+
+def test_review_guide_is_time_boxed_and_claim_safe():
+    text = _text("docs/reports/how_to_review_this_project.md")
+
+    assert "If You Have 3 Minutes" in text
+    assert "If You Have 10 Minutes" in text
+    assert "If You Have 30 Minutes" in text
+    assert "OVH RTX 5000 remains the canonical" in text
+    assert "GCP A100 remains pending" in text
+    assert "CUDA-Q is adapter-backed structural planning only" in text
+
+
+def test_next_pr_roadmap_keeps_later_work_scoped():
+    text = _text("docs/reports/next_pr_roadmap.md")
+
+    assert "PR 1" in text
+    assert "PR 8" in text
+    assert "No broad sweeps, dashboards, or runtime expansion" in text
+    assert "Do not modify the v0.1 tag" in text
 
 
 def test_v0_1_release_notes_keep_pending_lanes_pending():

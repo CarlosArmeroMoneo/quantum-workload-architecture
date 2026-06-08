@@ -2,6 +2,12 @@
 
 This report uses accepted tracked evidence only. It does not include the rejected local GCP L4 draft and does not claim a GCP A100 result.
 
+The generated table lives in `docs/reports/model_calibration_table.md` and can be refreshed with:
+
+```bash
+python scripts/build_model_calibration_table.py
+```
+
 ## Current Rows
 
 | Run | Workload | Profiler | Predicted TTFR s | Actual TTFR s | TTFR ratio | Predicted iter ms | Actual iter ms | Iter ratio | Interpretation |

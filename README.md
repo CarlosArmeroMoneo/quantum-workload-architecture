@@ -4,6 +4,16 @@ Quantum Workload Atlas is a workload-to-accelerator evidence system for quantum 
 
 The repo takes workloads from normalized manifests through planning, real `cuTensorNet` execution, profiler reduction, and architecture analysis, with the supporting artifacts either tracked in git or linked from a pinned release.
 
+## Release Status
+
+| Item | Status |
+| --- | --- |
+| Public anchor | `v0.1-first-real-profiler-slice` released |
+| Canonical evidence | OVH RTX 5000 Tier 3 profiler-backed exact-TN slice |
+| CI | Green on the released public package |
+| Public check | `bash scripts/public_check.sh` passing |
+| GCP A100 | Pending acceptance-gated portability evidence |
+
 ## What It Shows
 
 - A workload can be normalized, probed, planned, and executed through one reproducible CLI flow.
@@ -116,13 +126,16 @@ Public repo policy:
 - OVH session runner prototype readout: [`docs/reports/ovh_session_runner_prototype_v1.md`](docs/reports/ovh_session_runner_prototype_v1.md)
 - OVH embedded session client readout: [`docs/reports/ovh_embedded_session_client_v1.md`](docs/reports/ovh_embedded_session_client_v1.md)
 - Portfolio index: [`docs/reports/portfolio_index.md`](docs/reports/portfolio_index.md)
+- How to review this project: [`docs/reports/how_to_review_this_project.md`](docs/reports/how_to_review_this_project.md)
 - Technical report v0.1: [`docs/reports/quantum_workload_atlas_v0_1_report.md`](docs/reports/quantum_workload_atlas_v0_1_report.md)
 - Evidence contract: [`docs/architecture/evidence_contract.md`](docs/architecture/evidence_contract.md)
 - Profiler signal taxonomy: [`docs/architecture/profiler_signal_taxonomy.md`](docs/architecture/profiler_signal_taxonomy.md)
 - Current model-calibration report: [`docs/reports/model_calibration_current_evidence.md`](docs/reports/model_calibration_current_evidence.md)
+- Model calibration table: [`docs/reports/model_calibration_table.md`](docs/reports/model_calibration_table.md)
 - Public evidence catalog: [`docs/reports/public_evidence_catalog.md`](docs/reports/public_evidence_catalog.md), [`docs/reports/public_evidence_catalog.csv`](docs/reports/public_evidence_catalog.csv)
 - Launch-overhead counterfactual: [`docs/experiments/launch_overhead_counterfactual.md`](docs/experiments/launch_overhead_counterfactual.md)
 - v0.1 release notes: [`docs/reports/v0_1_first_real_profiler_slice_release_notes.md`](docs/reports/v0_1_first_real_profiler_slice_release_notes.md)
+- Next PR roadmap: [`docs/reports/next_pr_roadmap.md`](docs/reports/next_pr_roadmap.md)
 - Portfolio landing page: [`PORTFOLIO.md`](PORTFOLIO.md)
 - GCP A100 portability lane: [`docs/reports/gcp_a100_portability_index.md`](docs/reports/gcp_a100_portability_index.md)
 - GCP A100 acceptance gate: [`docs/runbooks/gcp_a100_acceptance_gate.md`](docs/runbooks/gcp_a100_acceptance_gate.md)
