@@ -15,8 +15,6 @@ jobs:
   preview-smoke:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
-    env:
-      ANDROID_AVD_HOME: ${{ runner.temp }}/pixel-drift-avd
 
     steps:
       - name: Check out exact APK payload
@@ -39,6 +37,8 @@ jobs:
 
       - name: Install API 36 emulator image
         run: |
+          export ANDROID_AVD_HOME="${RUNNER_TEMP}/pixel-drift-avd"
+          echo "ANDROID_AVD_HOME=${ANDROID_AVD_HOME}" >> "${GITHUB_ENV}"
           mkdir -p "${ANDROID_AVD_HOME}"
           sdkmanager "platform-tools" "emulator" "system-images;android-36;google_apis;x86_64"
           echo no | avdmanager create avd \
