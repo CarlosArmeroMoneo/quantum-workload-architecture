@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           base64 --decode pixel-drift-source.zip.b64 > pixel-drift-source.zip
-          echo "83a6269bbd78e1e4d87bcd62e0ed4378f06c3f7be8d51cb1d31a1b25576e51c2  pixel-drift-source.zip" | sha256sum --check
+          echo "354dc9bd09fc72f6b90374d41f927c0257d96a7ffc0a818c5ac2b86f53b81a68  pixel-drift-source.zip" | sha256sum --check
           unzip -q pixel-drift-source.zip -d .ci-source
 
       - name: Set up fixed JDK
@@ -82,7 +82,7 @@ jobs:
           cd app/build/verified-apks
           sha256sum *.apk > SHA256SUMS
           {
-            echo "source_zip_sha256=83a6269bbd78e1e4d87bcd62e0ed4378f06c3f7be8d51cb1d31a1b25576e51c2"
+            echo "source_zip_sha256=354dc9bd09fc72f6b90374d41f927c0257d96a7ffc0a818c5ac2b86f53b81a68"
             echo "github_sha=${GITHUB_SHA}"
             echo "workflow_run_id=${GITHUB_RUN_ID}"
             echo "runner=ubuntu-24.04"
