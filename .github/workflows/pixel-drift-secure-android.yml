@@ -68,7 +68,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew --no-daemon --warning-mode all testDebugUnitTest lintDebug lintProfile assembleDebug assembleProfile assembleRelease
+          ./gradlew --no-daemon --write-verification-metadata sha256 --warning-mode all testDebugUnitTest lintDebug lintProfile assembleDebug assembleProfile assembleRelease
 
       - name: Generate verification manifest
         working-directory: .ci-source/PixelDrift
@@ -119,6 +119,7 @@ jobs:
           retention-days: 14
           include-hidden-files: false
           path: |
+            .ci-source/PixelDrift/gradle/verification-metadata.xml
             .ci-source/PixelDrift/app/build/dependency-report.txt
             .ci-source/PixelDrift/app/build/reports/
             .ci-source/PixelDrift/app/build/test-results/
