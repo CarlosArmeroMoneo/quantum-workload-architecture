@@ -1,7 +1,6 @@
 name: Pixel Drift preview fix verification
 
 on:
-  pull_request:
   workflow_dispatch:
 
 permissions:
