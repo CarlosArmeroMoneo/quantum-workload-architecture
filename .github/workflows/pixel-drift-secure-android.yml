@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           base64 --decode pixel-drift-source.zip.b64 > pixel-drift-source.zip
-          echo "354dc9bd09fc72f6b90374d41f927c0257d96a7ffc0a818c5ac2b86f53b81a68  pixel-drift-source.zip" | sha256sum --check
+          echo "46e2b1623d32e7897a507a50876467f6397ddac3c6b783eea1d926bf3c411d7f  pixel-drift-source.zip" | sha256sum --check
           unzip -q pixel-drift-source.zip -d .ci-source
 
       - name: Set up fixed JDK
@@ -59,6 +59,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check
+          echo "a130d75392c7f27987e832a0ffab892d12ecc57ca5a721831f1bb4cd1be1212d  gradle/verification-metadata.xml" | sha256sum --check
           grep --fixed-strings "distributionSha256Sum=20f1b1176237254a6fc204d8434196fa11a4cfb387567519c61556e8710aed78" gradle/wrapper/gradle-wrapper.properties
           chmod +x gradlew
           ./gradlew --no-daemon --version
@@ -68,7 +69,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ./gradlew --no-daemon --write-verification-metadata sha256 --warning-mode all testDebugUnitTest lintDebug lintProfile assembleDebug assembleProfile assembleRelease
+          ./gradlew --no-daemon --dependency-verification=strict --warning-mode all testDebugUnitTest lintDebug lintProfile assembleDebug assembleProfile assembleRelease
 
       - name: Generate verification manifest
         working-directory: .ci-source/PixelDrift
@@ -82,7 +83,7 @@ jobs:
           cd app/build/verified-apks
           sha256sum *.apk > SHA256SUMS
           {
-            echo "source_zip_sha256=354dc9bd09fc72f6b90374d41f927c0257d96a7ffc0a818c5ac2b86f53b81a68"
+            echo "source_zip_sha256=46e2b1623d32e7897a507a50876467f6397ddac3c6b783eea1d926bf3c411d7f"
             echo "github_sha=${GITHUB_SHA}"
             echo "workflow_run_id=${GITHUB_RUN_ID}"
             echo "runner=ubuntu-24.04"
@@ -91,6 +92,8 @@ jobs:
             echo "build_tools=36.0.0"
             echo "gradle=8.13"
             echo "agp=8.13.2"
+            echo "dependency_verification=strict"
+            echo "verification_metadata_sha256=a130d75392c7f27987e832a0ffab892d12ecc57ca5a721831f1bb4cd1be1212d"
           } > BUILD_INFO.txt
 
       - name: Generate dependency inventory
