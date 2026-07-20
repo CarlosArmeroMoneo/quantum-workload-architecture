@@ -15,6 +15,8 @@ jobs:
   preview-smoke:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    env:
+      ANDROID_AVD_HOME: ${{ runner.temp }}/pixel-drift-avd
 
     steps:
       - name: Check out exact APK payload
@@ -37,10 +39,11 @@ jobs:
 
       - name: Install API 36 emulator image
         run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
           sdkmanager "platform-tools" "emulator" "system-images;android-36;google_apis;x86_64"
           echo no | avdmanager create avd \
             --force \
-            --name pixel-drift-api36 \
+            --name pixel_drift_api36 \
             --package "system-images;android-36;google_apis;x86_64" \
             --device pixel_6
 
@@ -49,7 +52,7 @@ jobs:
           set -euo pipefail
           sudo chmod 666 /dev/kvm
           nohup "${ANDROID_HOME}/emulator/emulator" \
-            -avd pixel-drift-api36 \
+            -avd pixel_drift_api36 \
             -no-window \
             -no-audio \
             -no-boot-anim \
