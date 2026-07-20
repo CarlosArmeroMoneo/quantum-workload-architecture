@@ -1,0 +1,100 @@
+name: Pixel Drift API 36 preview smoke
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pixel-drift-api36-smoke-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out exact APK payload
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+
+      - name: Restore and verify signed APK
+        run: |
+          mkdir -p smoke-output
+          base64 --decode ci/PixelDrift-0.1.1.apk.b64 > smoke-output/PixelDrift-0.1.1.apk
+          echo "d9b424fb5dd710fd6aeab717f6823fda1e8f35d2a603f4273efae5ff74d468d1  smoke-output/PixelDrift-0.1.1.apk" | sha256sum --check
+
+      - name: Set up Android SDK tools
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          cmdline-tools-version: "12266719"
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+
+      - name: Install API 36 emulator image
+        run: |
+          sdkmanager "platform-tools" "emulator" "system-images;android-36;google_apis;x86_64"
+          echo no | avdmanager create avd \
+            --force \
+            --name pixel-drift-api36 \
+            --package "system-images;android-36;google_apis;x86_64" \
+            --device pixel_6
+
+      - name: Start emulator and open real wallpaper preview
+        run: |
+          set -euo pipefail
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" \
+            -avd pixel-drift-api36 \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot \
+            -gpu swiftshader_indirect \
+            -no-metrics \
+            > smoke-output/emulator.log 2>&1 &
+
+          adb wait-for-device
+          timeout 240 bash -c 'until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 2; done'
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+          adb install smoke-output/PixelDrift-0.1.1.apk
+          adb logcat -c
+
+          adb shell am start -W \
+            -a android.service.wallpaper.CHANGE_LIVE_WALLPAPER \
+            --ecn android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT \
+            com.pixeldrift.wallpaper/.PixelWallpaperService \
+            > smoke-output/preview-launch.txt
+          sleep 10
+
+          adb logcat -d -v threadtime > smoke-output/logcat.txt
+          adb shell dumpsys activity services com.pixeldrift.wallpaper \
+            > smoke-output/wallpaper-service.txt
+          adb shell dumpsys wallpaper > smoke-output/wallpaper-state.txt
+
+          if grep --fixed-strings "Wallpapers do not support keep screen on" smoke-output/logcat.txt; then
+            echo "Forbidden wallpaper SurfaceHolder call reached at runtime" >&2
+            exit 1
+          fi
+          if grep -A 20 "FATAL EXCEPTION" smoke-output/logcat.txt | grep --fixed-strings "com.pixeldrift.wallpaper"; then
+            echo "Pixel Drift crashed during live-wallpaper preview" >&2
+            exit 1
+          fi
+          test -n "$(adb shell pidof com.pixeldrift.wallpaper | tr -d '\r')"
+          printf 'api=36\napk_sha256=d9b424fb5dd710fd6aeab717f6823fda1e8f35d2a603f4273efae5ff74d468d1\npreview_process_alive=true\nfatal_exception=false\n' \
+            > smoke-output/SMOKE_RESULT.txt
+
+      - name: Upload smoke evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pixel-drift-api36-preview-smoke
+          if-no-files-found: warn
+          retention-days: 14
+          path: smoke-output/
