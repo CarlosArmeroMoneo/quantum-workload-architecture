@@ -1,0 +1,116 @@
+name: Pixel Drift secure Android build
+
+on:
+  push:
+    branches: [pixel-drift-secure-ci]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pixel-drift-secure-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out isolated build branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Decode and verify audited source
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode pixel-drift-source.zip.b64 > pixel-drift-source.zip
+          echo "1b3875100d0e905a7e14e2f4f25838f26c27600950e08efc28c1921d2e09eb15  pixel-drift-source.zip" | sha256sum --check
+          unzip -q pixel-drift-source.zip -d .ci-source
+
+      - name: Set up fixed JDK
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install fixed Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify Gradle bootstrap
+        working-directory: .ci-source/PixelDrift
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check
+          grep --fixed-strings "distributionSha256Sum=20f1b1176237254a6fc204d8434196fa11a4cfb387567519c61556e8710aed78" gradle/wrapper/gradle-wrapper.properties
+          chmod +x gradlew
+          ./gradlew --no-daemon --version
+
+      - name: Test, lint, and build APKs
+        working-directory: .ci-source/PixelDrift
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon --warning-mode all testDebugUnitTest lintDebug lintProfile assembleDebug assembleProfile assembleRelease
+
+      - name: Generate verification manifest
+        working-directory: .ci-source/PixelDrift
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p app/build/verified-apks
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/verified-apks/
+          cp app/build/outputs/apk/profile/app-profile.apk app/build/verified-apks/
+          cp app/build/outputs/apk/release/app-release-unsigned.apk app/build/verified-apks/
+          cd app/build/verified-apks
+          sha256sum *.apk > SHA256SUMS
+          {
+            echo "source_zip_sha256=1b3875100d0e905a7e14e2f4f25838f26c27600950e08efc28c1921d2e09eb15"
+            echo "workflow_commit=${GITHUB_SHA}"
+            echo "workflow_run_id=${GITHUB_RUN_ID}"
+            echo "runner=ubuntu-24.04"
+            echo "jdk=temurin-17"
+            echo "android_sdk=36"
+            echo "build_tools=36.0.0"
+            echo "gradle=8.13"
+            echo "agp=8.13.2"
+          } > BUILD_INFO.txt
+
+      - name: Generate dependency inventory
+        working-directory: .ci-source/PixelDrift
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon app:dependencies > app/build/dependency-report.txt
+
+      - name: Upload verified APKs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pixel-drift-apks
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          include-hidden-files: false
+          path: .ci-source/PixelDrift/app/build/verified-apks/
+
+      - name: Upload verification reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pixel-drift-reports
+          if-no-files-found: warn
+          retention-days: 14
+          include-hidden-files: false
+          path: |
+            .ci-source/PixelDrift/app/build/dependency-report.txt
+            .ci-source/PixelDrift/app/build/reports/
+            .ci-source/PixelDrift/app/build/test-results/
