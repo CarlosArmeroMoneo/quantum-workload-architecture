@@ -1,0 +1,107 @@
+name: Pixel Drift preview fix verification
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pixel-drift-preview-fix-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out isolated build payload
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+
+      - name: Verify and unpack source
+        run: |
+          base64 --decode ci/PixelDrift-source-0.1.1-preview-fix.zip.b64 > /tmp/PixelDrift-source-0.1.1-preview-fix.zip
+          echo "63ac2208045d5b7c239be586f497ba38f04339129be0952262ebf93127edde67  /tmp/PixelDrift-source-0.1.1-preview-fix.zip" | sha256sum --check
+          unzip -q /tmp/PixelDrift-source-0.1.1-preview-fix.zip -d PixelDrift
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: "17"
+          overwrite-settings: false
+
+      - name: Set up Android SDK tools
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          cmdline-tools-version: "12266719"
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+
+      - name: Install pinned Android SDK
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify Gradle trust roots
+        working-directory: PixelDrift
+        run: |
+          echo "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check
+          echo "a130d75392c7f27987e832a0ffab892d12ecc57ca5a721831f1bb4cd1be1212d  gradle/verification-metadata.xml" | sha256sum --check
+          grep --fixed-strings "distributionSha256Sum=20f1b1176237254a6fc204d8434196fa11a4cfb387567519c61556e8710aed78" gradle/wrapper/gradle-wrapper.properties
+
+      - name: Contract check, tests, lint, and hardened builds
+        working-directory: PixelDrift
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --dependency-verification=strict --warning-mode all verifyWallpaperSurfaceContract testDebugUnitTest lintDebug lintProfile assembleProfile assembleRelease
+
+      - name: Verify install variants are non-debuggable
+        working-directory: PixelDrift
+        run: |
+          apkanalyzer manifest debuggable app/build/outputs/apk/profile/app-profile.apk | grep --fixed-strings --line-regexp false
+          apkanalyzer manifest debuggable app/build/outputs/apk/release/app-release-unsigned.apk | grep --fixed-strings --line-regexp false
+          apkanalyzer manifest version-name app/build/outputs/apk/profile/app-profile.apk | grep --fixed-strings --line-regexp 0.1.1-profile
+          apkanalyzer manifest version-name app/build/outputs/apk/release/app-release-unsigned.apk | grep --fixed-strings --line-regexp 0.1.1
+
+      - name: Package verified outputs
+        working-directory: PixelDrift
+        run: |
+          mkdir -p ci-output/apks ci-output/reports
+          cp app/build/outputs/apk/profile/app-profile.apk ci-output/apks/PixelDrift-0.1.1-profile.apk
+          cp app/build/outputs/apk/release/app-release-unsigned.apk ci-output/apks/PixelDrift-0.1.1-release-unsigned.apk
+          cp -R app/build/reports/. ci-output/reports/
+          cp gradle/verification-metadata.xml ci-output/reports/dependency-verification-metadata.xml
+          cd ci-output/apks
+          sha256sum *.apk > SHA256SUMS
+          printf 'source_sha256=%s\nworkflow_commit=%s\nrunner=%s\njava=%s\nandroid_compile_sdk=%s\nandroid_build_tools=%s\nwrapper_jar_sha256=%s\ndependency_metadata_sha256=%s\n' \
+            '63ac2208045d5b7c239be586f497ba38f04339129be0952262ebf93127edde67' \
+            "${GITHUB_SHA}" \
+            'ubuntu-24.04' \
+            '17' \
+            '36' \
+            '36.0.0' \
+            '81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f' \
+            'a130d75392c7f27987e832a0ffab892d12ecc57ca5a721831f1bb4cd1be1212d' \
+            > BUILD_INFO.txt
+
+      - name: Upload verified non-debuggable APKs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pixel-drift-preview-fix-apks
+          if-no-files-found: error
+          retention-days: 14
+          path: PixelDrift/ci-output/apks/
+
+      - name: Upload verification reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pixel-drift-preview-fix-reports
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            PixelDrift/ci-output/reports/
+            PixelDrift/app/build/test-results/
