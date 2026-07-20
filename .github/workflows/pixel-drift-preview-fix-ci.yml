@@ -66,6 +66,75 @@ jobs:
           apkanalyzer manifest version-name app/build/outputs/apk/profile/app-profile.apk | grep --fixed-strings --line-regexp 0.1.1-profile
           apkanalyzer manifest version-name app/build/outputs/apk/release/app-release-unsigned.apk | grep --fixed-strings --line-regexp 0.1.1
 
+      - name: Sign stable release and encrypt key recovery
+        working-directory: PixelDrift
+        run: |
+          set -euo pipefail
+          recovery_dir="$(mktemp -d)"
+          trap 'rm -rf "${recovery_dir}"' EXIT
+          signing_password="$(openssl rand -hex 32)"
+          export SIGNING_PASSWORD="${signing_password}"
+
+          mkdir -p ci-output/apks ci-output/recovery
+          keytool -genkeypair \
+            -keystore "${recovery_dir}/pixel-drift-release.p12" \
+            -storetype PKCS12 \
+            -storepass "${signing_password}" \
+            -keypass "${signing_password}" \
+            -alias pixeldrift \
+            -keyalg RSA \
+            -keysize 4096 \
+            -sigalg SHA256withRSA \
+            -validity 10000 \
+            -dname "CN=Pixel Drift Release,O=Pixel Drift" \
+            -noprompt
+
+          "${ANDROID_HOME}/build-tools/36.0.0/zipalign" -f -p 4 \
+            app/build/outputs/apk/release/app-release-unsigned.apk \
+            "${recovery_dir}/PixelDrift-0.1.1-aligned.apk"
+          "${ANDROID_HOME}/build-tools/36.0.0/apksigner" sign \
+            --ks "${recovery_dir}/pixel-drift-release.p12" \
+            --ks-key-alias pixeldrift \
+            --ks-pass "env:SIGNING_PASSWORD" \
+            --key-pass "env:SIGNING_PASSWORD" \
+            --v1-signing-enabled true \
+            --v2-signing-enabled true \
+            --v3-signing-enabled true \
+            --v4-signing-enabled false \
+            --out ci-output/apks/PixelDrift-0.1.1.apk \
+            "${recovery_dir}/PixelDrift-0.1.1-aligned.apk"
+          "${ANDROID_HOME}/build-tools/36.0.0/apksigner" verify \
+            --verbose \
+            --print-certs \
+            ci-output/apks/PixelDrift-0.1.1.apk
+          apkanalyzer manifest debuggable ci-output/apks/PixelDrift-0.1.1.apk | grep --fixed-strings --line-regexp false
+          apkanalyzer manifest application-id ci-output/apks/PixelDrift-0.1.1.apk | grep --fixed-strings --line-regexp com.pixeldrift.wallpaper
+
+          keytool -exportcert \
+            -rfc \
+            -keystore "${recovery_dir}/pixel-drift-release.p12" \
+            -storepass "${signing_password}" \
+            -alias pixeldrift \
+            -file ci-output/apks/PixelDrift-release-certificate.pem
+          keytool -printcert \
+            -file ci-output/apks/PixelDrift-release-certificate.pem \
+            > ci-output/apks/SIGNING_CERTIFICATE.txt
+          printf 'format=PKCS12\nalias=pixeldrift\nstore_password=%s\nkey_password=%s\n' \
+            "${signing_password}" \
+            "${signing_password}" \
+            > "${recovery_dir}/signing-credentials.txt"
+          tar -C "${recovery_dir}" \
+            -cf "${recovery_dir}/PixelDrift-signing-recovery-v1.tar" \
+            pixel-drift-release.p12 \
+            signing-credentials.txt
+          openssl cms -encrypt \
+            -binary \
+            -aes-256-cbc \
+            -in "${recovery_dir}/PixelDrift-signing-recovery-v1.tar" \
+            -outform DER \
+            -out ci-output/recovery/PixelDrift-signing-recovery-v1.tar.cms \
+            ../ci/recovery-certificate.pem
+
       - name: Package verified outputs
         working-directory: PixelDrift
         run: |
@@ -94,6 +163,14 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: PixelDrift/ci-output/apks/
+
+      - name: Upload encrypted signing recovery
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pixel-drift-signing-recovery-encrypted
+          if-no-files-found: error
+          retention-days: 14
+          path: PixelDrift/ci-output/recovery/
 
       - name: Upload verification reports
         if: always()
