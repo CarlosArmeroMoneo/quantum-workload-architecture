@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           base64 --decode pixel-drift-source.zip.b64 > pixel-drift-source.zip
-          echo "1b3875100d0e905a7e14e2f4f25838f26c27600950e08efc28c1921d2e09eb15  pixel-drift-source.zip" | sha256sum --check
+          echo "83a6269bbd78e1e4d87bcd62e0ed4378f06c3f7be8d51cb1d31a1b25576e51c2  pixel-drift-source.zip" | sha256sum --check
           unzip -q pixel-drift-source.zip -d .ci-source
 
       - name: Set up fixed JDK
@@ -38,6 +38,14 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          overwrite-settings: false
+
+      - name: Set up pinned Android SDK tools
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          cmdline-tools-version: "12266719"
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
 
       - name: Install fixed Android SDK
         shell: bash
@@ -74,8 +82,8 @@ jobs:
           cd app/build/verified-apks
           sha256sum *.apk > SHA256SUMS
           {
-            echo "source_zip_sha256=1b3875100d0e905a7e14e2f4f25838f26c27600950e08efc28c1921d2e09eb15"
-            echo "workflow_commit=${GITHUB_SHA}"
+            echo "source_zip_sha256=83a6269bbd78e1e4d87bcd62e0ed4378f06c3f7be8d51cb1d31a1b25576e51c2"
+            echo "github_sha=${GITHUB_SHA}"
             echo "workflow_run_id=${GITHUB_RUN_ID}"
             echo "runner=ubuntu-24.04"
             echo "jdk=temurin-17"
