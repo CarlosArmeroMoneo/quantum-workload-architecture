@@ -55,8 +55,9 @@ The schema describes more than the executor supports. Cirq and Stim entries are 
 | Item | Status |
 | --- | --- |
 | Latest project release | [v0.2-crossover-calibration](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.2-crossover-calibration), published June 8, 2026: calibration and preflight tooling, not a new GPU campaign. |
+| Python package version | `aqs` reports `0.5.0`. The named project releases describe evidence/methodology milestones and are not synchronized with the package version. |
 | Canonical measured slice | OVH RTX 5000; packaged in [v0.1-first-real-profiler-slice](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.1-first-real-profiler-slice). |
-| Raw profiler archive | [v0.5.0-evidence](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.5.0-evidence) is a historical evidence-archive tag, not the current project version. |
+| Raw profiler archive | [v0.5.0-evidence](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.5.0-evidence) is a historical evidence-archive tag, not the current project release. |
 | Other accelerators | GCP A100 remains pending acceptance; local NVIDIA 6GB results are preflight/dev only. H100, Hyperstack, TPU/JAX, and QPU templates or plans are not accepted measured results in this package. |
 | Validation | The CI badge links to workflow results. CPU tests do not certify GPU performance or reproduce the historical captures. |
 
@@ -65,6 +66,8 @@ No validated general-purpose fastest-backend advisor or quantum advantage is cla
 ## CPU quickstart
 
 Use a repository checkout and Python 3.10–3.12, the versions in the CPU test matrix. The commands below use Bash, for example on Linux or WSL2. No GPU, cloud credentials, Qiskit, or Nsight is needed for this path.
+
+This generated workload uses `surrogate_only` to build a family-derived tensor-network shape for planning. The `structural_real` strategy instead requires an imported circuit source and must not be used with this generated `normalized_ir` example.
 
 ```bash
 git clone https://github.com/CarlosArmeroMoneo/quantum-workload-architecture.git
@@ -82,16 +85,16 @@ python -m aqs manifest validate \
 
 python -m aqs tnep probe \
   --manifest workloads/manifests/generated/dense_universal_smoke.yaml \
-  --probe-strategy structural_real
+  --probe-strategy surrogate_only
 
 python -m aqs tnep plan \
   --manifest workloads/manifests/generated/dense_universal_smoke.yaml \
   --system-manifest configs/systems/cpu_probe.yml \
-  --probe-strategy structural_real \
+  --probe-strategy surrogate_only \
   --out artifacts/plans/dense_universal_smoke.plan.json
 ```
 
-Successful commands validate the inputs and write a plan JSON. Plan estimates are not measured GPU results. For a real GPU rerun, follow the [OVH execution runbook](docs/runbooks/ovh_cu13_real_execution.md). The `quantum` extra installs Qiskit; it does not install the full CUDA/cuQuantum/Nsight environment.
+Successful commands validate the inputs, return a successful structural surrogate probe, and write a plan JSON. These are planning outputs, not circuit amplitude calculations or measured GPU results. For a real GPU rerun, follow the [OVH execution runbook](docs/runbooks/ovh_cu13_real_execution.md). The `quantum` extra installs Qiskit; it does not install the full CUDA/cuQuantum/Nsight environment.
 
 To run the non-GPU validation suite:
 
