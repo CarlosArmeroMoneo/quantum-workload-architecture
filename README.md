@@ -1,73 +1,81 @@
 # Quantum Workload Atlas
 
-Quantum Workload Atlas is a workload-to-accelerator evidence system for quantum tensor-network simulation and hard scientific workloads. It maps workloads to execution paths, records real execution and profiler evidence, and turns measured bottlenecks into architecture-facing recommendations.
+[![CI](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/actions/workflows/cpu-smoke.yml/badge.svg?branch=main)](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/actions/workflows/cpu-smoke.yml)
 
-The repo takes workloads from normalized manifests through planning, real `cuTensorNet` execution, profiler reduction, and architecture analysis, with the supporting artifacts either tracked in git or linked from a pinned release.
+**Measure where quantum tensor-network simulations spend time, then test which execution changes help.**
 
-## Release Status
+Quantum Workload Atlas connects workload manifests, tensor-network planning, real GPU execution, accuracy checks, and Nsight profiling. Its reports distinguish measurements from model predictions and unsupported or future execution paths.
+
+The project name is **Quantum Workload Atlas (QWA)**. This repository keeps the URL `quantum-workload-architecture`; the Python package and CLI remain `aqs` for compatibility.
+
+## Start here
+
+Read the [project overview](PROJECT_OVERVIEW.md) for the engineering scope, the [measured results](docs/reports/measured_results.md) for the numbers and their limits, or the [review guide](docs/reports/how_to_review_this_project.md) to inspect the evidence yourself. The [documentation index](docs/README.md) contains the detailed reports and runbooks.
+
+## Two measured results
+
+Both results below come from the single-GPU OVH Quadro RTX 5000 environment. They answer different questions and must not be combined into a single speedup claim.
+
+| Result | Observation | What it establishes |
+| --- | --- | --- |
+| Profiler-backed case study | Load, conversion, and postprocessing account for **21.86% of recorded phase time** in `real_dense_ring6_batched`. | A measured reason to investigate orchestration overhead; not a demonstrated 21.86% speedup. |
+| Warm session execution | Across three workloads, median warm request wall time changes from **653–672 ms** through the persistent CLI to **51–56 ms** through an existing-worker session. | Lower request/invocation overhead under the recorded benchmark conditions; not faster contraction kernels or a cross-hardware benchmark. |
+
+The [result details](docs/reports/measured_results.md) link directly to the execution, profile, architecture, and session-summary JSON. The session summary records no correctness drift, selected-plan drift, or fallback. Cold startup is excluded from those warm per-request medians and remains a separate cost.
+
+![Recorded phases and nomination for the canonical OVH case](docs/reports/assets/first_real_profiler_slice_canonical.svg)
+
+This figure is a frozen March 14, 2026 measurement. Its phase shares use the sum of the recorded phases, not the whole process wall time. The `launch_overhead` label is a candidate explanation produced by the analysis rules, not proof that GPU kernel launch latency is the only bottleneck. The canonical Nsight Compute summary does not contain occupancy, SM-utilization, or DRAM-utilization measurements.
+
+## What the repository implements
+
+```mermaid
+flowchart LR
+    A[Workload manifest] --> B[Normalize and probe]
+    B --> C[Candidate plan]
+    C --> D[Single-GPU execution]
+    D --> E[Accuracy and phase timings]
+    D --> F[Nsight capture and reduction]
+    E --> G[Analysis and reports]
+    F --> G
+```
+
+| Layer | Implemented scope |
+| --- | --- |
+| Inputs and planning | Qiskit/OpenQASM2, supported family-backed normalized workloads, and a CUDA-Q adapter for normalization and structural planning. |
+| Real GPU execution | Single-GPU Qiskit/OpenQASM2 `amplitude` and `batched_amplitudes` through cuTensorNet. |
+| Profiling and analysis | Nsight Systems and Nsight Compute summaries, instrumented execution timings, calibration reports, and bottleneck candidates with supporting evidence. Metric coverage varies by capture. |
+| Execution experiments | Reusable plan bundles, a persistent worker, a session runner, and an embedded session client. These are bounded local performance paths, not additional simulator backends. |
+| CPU workflow | Manifest validation, structural probing, planning, and tests without CUDA or Nsight. This does not reproduce GPU timings. |
+
+The schema describes more than the executor supports. Cirq and Stim entries are vocabulary, not working execution integrations. CUDA-Q is adapter-backed structural planning only; native CUDA-Q execution, distributed GPU results, and QPU execution are not established by this public package. The tiny-MNK sidecar is a separate shape-isolation experiment, not a replacement for cuTensorNet internals.
+
+## Release and evidence status
 
 | Item | Status |
 | --- | --- |
-| Public release | `v0.1-first-real-profiler-slice` released |
-| Canonical evidence | OVH RTX 5000 Tier 3 profiler-backed exact-TN slice |
-| CI | Green on the released public package |
-| Public check | `bash scripts/public_check.sh` passing |
-| GCP A100 | Pending acceptance-gated portability evidence |
-| Local NVIDIA 6GB | Preflight/dev host only; not public performance evidence |
+| Latest project release | [v0.2-crossover-calibration](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.2-crossover-calibration), published June 8, 2026: calibration and preflight tooling, not a new GPU campaign. |
+| Python package version | `aqs` reports `0.5.0`. The named project releases describe evidence/methodology milestones and are not synchronized with the package version. |
+| Canonical measured slice | OVH RTX 5000; packaged in [v0.1-first-real-profiler-slice](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.1-first-real-profiler-slice). |
+| Raw profiler archive | [v0.5.0-evidence](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.5.0-evidence) is a historical evidence-archive tag, not the current project release. |
+| Other accelerators | GCP A100 remains pending acceptance; local NVIDIA 6GB results are preflight/dev only. H100, Hyperstack, TPU/JAX, and QPU templates or plans are not accepted measured results in this package. |
+| Validation | The CI badge links to workflow results. CPU tests do not certify GPU performance or reproduce the historical captures. |
 
-## What It Shows
+No validated general-purpose fastest-backend advisor or quantum advantage is claimed. The canonical profiled case also exposes substantial planner prediction errors; these are reported rather than treated as calibrated performance estimates.
 
-- A workload can be normalized, probed, planned, and executed through one reproducible CLI flow.
-- The architecture recommendations come from measured Nsight data, not synthetic scoring alone.
-- Nsight artifacts are reduced into workload-level signals instead of being left as raw profiler dumps.
-- Small summaries stay in git, while large profiler artifacts are published through a pinned release.
-- The packaged follow-on reports keep negative and partial remote results intact instead of filtering them out.
+## CPU quickstart
 
-## Result Snapshot
+Use a repository checkout and Python 3.10–3.12, the versions in the CPU test matrix. The commands below use Bash, for example on Linux or WSL2. No GPU, cloud credentials, Qiskit, or Nsight is needed for this path.
 
-| Signal | Value | Evidence |
-| --- | --- | --- |
-| Canonical host | OVH Ubuntu 24.04.3 LTS, Quadro RTX 5000, driver `580.126.09`, host-installed `nsys` / `QdstrmImporter` / `ncu` | [OVH session summary](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md) |
-| Evidence source | Real `cuTensorNet` execution with profiler-backed artifact reduction | [Evidence index](docs/reports/first_real_profiler_slice_index.md) |
-| First architecture nomination | `nomination_source=real_profiler_analysis` | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
-| Bottleneck family | `launch_overhead` | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
-| Setup share | `21.86%` on the canonical batched run | [Public evidence index](docs/reports/first_real_profiler_slice_index.md) |
-| Follow-on evidence package | Measured repeat-ROI, NCU, CUDA Graph, CUDA-Q adapter, and tiny-MNK sidecar reports from the OVH host | [Evidence package index](docs/reports/portfolio_index.md) |
-| Reproducibility path | Canonical rerun guide and pinned release assets | [OVH rerun guide](docs/runbooks/ovh_cu13_real_execution.md), [release `v0.5.0-evidence`](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.5.0-evidence) |
-
-![Canonical profiler-backed architecture snapshot](docs/reports/assets/first_real_profiler_slice_canonical.svg)
-
-Frozen March 14, 2026 snapshot for the canonical `real_dense_ring6_batched` run. The left panel is normalized from `execution_run.failure_detail_json.phase_times` in the [public evidence index](docs/reports/first_real_profiler_slice_index.md), using the tracked [batched execution payload](evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.execution.json); the right panel shows the matching primary nomination from the tracked [batched architecture output](evidence/first_real_profiler_slice/real_dense_ring6_batched.arch.json).
-
-### Portability lane: GCP A100
-
-The A100 portability lane is intentionally pending until a confirmed A100 40GB host captures and publishes pinned artifacts. A local GCP draft from June 2026 captured a real `ncu` run on `NVIDIA L4`, so it is not accepted as A100 evidence and is not part of the public result set.
-
-The intended A100 validation is documented as a future portability/profiler check, not a throughput benchmark. It must confirm the device identity, preserve the tiny-workload overhead caveat, and keep OVH as the canonical first profiler-backed architecture slice.
-
-### Local preflight lane
-
-`configs/systems/local_nvidia_laptop_6gb.template.yml` documents a constrained local NVIDIA laptop GPU lane for environment checks, manifest validation, and tiny sanity runs. Results from that host are local preflight evidence only and do not weaken the OVH or GCP claim boundaries.
-
-## Capability Matrix
-
-This table is the compact truth pass for public claims. The longer capability audit lives in [docs/reports/current_state_truth_pass.md](docs/reports/current_state_truth_pass.md), and the current public-release audit lives in [docs/reports/public_release_audit.md](docs/reports/public_release_audit.md).
-
-| Area | Manifest/schema allows | Actually implemented | Real measured evidence exists | Proof file | Claim allowed in README |
-| --- | --- | --- | --- | --- | --- |
-| Manifest ontology | `qiskit`, `cirq`, `stim`, `cudaq`, `normalized_ir`; broad semantic targets | Broad schema only; executable implementation is narrower | N/A | [Truth pass report](docs/reports/current_state_truth_pass.md) | Describe breadth as schema vocabulary, not working backend support |
-| Normalize + features | All workload manifests | `qiskit` OpenQASM2 imports, adapter-backed `cudaq` manifests, and family-backed `normalized_ir` manifests | Yes | [Profiler slice index](docs/reports/first_real_profiler_slice_index.md) | Claim deterministic normalization for implemented source paths only, and call CUDA-Q adapter-backed |
-| Structural probe + planner | Any benchmark/workload combination | `qiskit`, adapter-backed `cudaq`, or supported `normalized_ir` families with `state`, `amplitude`, `batched_amplitudes`, `expectation` | Yes | [Profiler slice index](docs/reports/first_real_profiler_slice_index.md) | Claim exact-TN planning for the implemented subset only, and keep CUDA-Q marked adapter-backed |
-| Real cuTensorNet execution | Any manifest can declare real intent | Single-GPU `qiskit` workloads for `amplitude` and `batched_amplitudes` only | Yes | [Tracked `nsys` execution payload](evidence/first_real_profiler_slice/real_ghz3_amplitude.nsys.f6bc40e76bb947a6.execution.json) | Claim real measured execution only for the single-GPU Qiskit/OpenQASM2 path |
-| Profiler reduction | Profiler metadata can be attached to runs | Nsight Systems reduction is mature; Nsight Compute reduction exists but remains metrics-thin | Yes | [Tracked `ncu` profile summary](evidence/first_real_profiler_slice/real_dense_ring6_batched.ncu.0e70e7aabe3342c1.profile_summary.json) | Claim real profiler-backed summaries and note NCU depth limits explicitly |
-| Architecture nominations | Any profiled run can be analyzed | Profiler-backed nominations for launch/setup, memory bandwidth, reuse, planner ROI, capacity, and communication | Yes | [Profiler slice index](docs/reports/first_real_profiler_slice_index.md) | Claim measured nomination reasoning, not exhaustive diagnosis |
-
-## 60-Second CPU Quickstart
-
-The CPU path is meant to prove the end-to-end workflow without requiring Qiskit, CUDA, or Nsight.
+This generated workload uses `surrogate_only` to build a family-derived tensor-network shape for planning. The `structural_real` strategy instead requires an imported circuit source and must not be used with this generated `normalized_ir` example.
 
 ```bash
-python -m pip install -e .[dev,db]
+git clone https://github.com/CarlosArmeroMoneo/quantum-workload-architecture.git
+cd quantum-workload-architecture
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev,db]'
+
 python scripts/init_db.py --db benchmarks/warehouse/aqs.duckdb --schema benchmarks/warehouse/schema.sql
 
 python -m aqs manifest validate \
@@ -77,112 +85,40 @@ python -m aqs manifest validate \
 
 python -m aqs tnep probe \
   --manifest workloads/manifests/generated/dense_universal_smoke.yaml \
-  --probe-strategy structural_real
+  --probe-strategy surrogate_only
 
 python -m aqs tnep plan \
   --manifest workloads/manifests/generated/dense_universal_smoke.yaml \
   --system-manifest configs/systems/cpu_probe.yml \
-  --probe-strategy structural_real \
+  --probe-strategy surrogate_only \
   --out artifacts/plans/dense_universal_smoke.plan.json
 ```
 
-This quickstart is a local smoke path. The headline public result comes from the canonical OVH CUDA 13 host, where real `cuTensorNet` execution and Nsight artifacts are captured and reduced into the evidence linked above. For imported QASM workflows or real GPU execution, install the `quantum` extra and use the runbooks below.
+Successful commands validate the inputs, return a successful structural surrogate probe, and write a plan JSON. These are planning outputs, not circuit amplitude calculations or measured GPU results. For a real GPU rerun, follow the [OVH execution runbook](docs/runbooks/ovh_cu13_real_execution.md). The `quantum` extra installs Qiskit; it does not install the full CUDA/cuQuantum/Nsight environment.
 
-## Evidence Chain
+To run the non-GPU validation suite:
 
-```mermaid
-flowchart LR
-    A[Workload Manifest] --> B[Normalize + Features]
-    B --> C[Exact-TN Probe]
-    C --> D[Real cuTensorNet Execution]
-    D --> E[Nsight Systems / Nsight Compute]
-    E --> F[Architecture Nomination]
+```bash
+python -m ruff check src tests scripts
+python -m mypy src/aqs
+python -m pytest -m "not gpu and not profiler" -q
+bash scripts/public_check.sh
 ```
 
-Public repo policy:
+## Evidence and further reading
 
-- Small curated summaries stay in [`evidence/first_real_profiler_slice`](evidence/first_real_profiler_slice).
-- Heavy profiler binaries are published through the GitHub Release `v0.5.0-evidence` or stored in the configured GCP Cloud Storage canonical artifact prefix.
-- Google Drive is reserved for human-facing reports, notes, screenshots, and exported docs.
-- Private host credentials are never stored in this repository.
+Small curated summaries and selected experiment artifacts are tracked in Git. Heavy profiler binaries belong to the linked releases or configured external storage. Historical package checksums apply to their original release contents, not to changing documentation on `main`. See the [storage management runbook](docs/runbooks/storage_management.md) for artifact handling; keep credentials and private host configuration outside Git.
 
-## Technical Appendix
+<details>
+<summary>Methodology and evidence references</summary>
 
-- Capability truth pass: [`docs/reports/current_state_truth_pass.md`](docs/reports/current_state_truth_pass.md)
-- Public release audit: [`docs/reports/public_release_audit.md`](docs/reports/public_release_audit.md)
-- Public evidence index: [`docs/reports/first_real_profiler_slice_index.md`](docs/reports/first_real_profiler_slice_index.md)
-- Repeat ROI foundation: [`docs/reports/repeat_roi_foundation.md`](docs/reports/repeat_roi_foundation.md)
-- Measured repeat ROI results: [`docs/reports/remote_repeat_roi_results_blocked.md`](docs/reports/remote_repeat_roi_results_blocked.md)
-- Measured NCU and CUDA Graphs results: [`docs/reports/remote_ncu_and_graphs_results_blocked.md`](docs/reports/remote_ncu_and_graphs_results_blocked.md)
-- Measured CUDA-Q adapter and sidecar results: [`docs/reports/remote_cudaq_and_sidecar_results_blocked.md`](docs/reports/remote_cudaq_and_sidecar_results_blocked.md)
-- OVH measured-validation follow-on: [`docs/reports/ovh_measured_validation_follow_on.md`](docs/reports/ovh_measured_validation_follow_on.md)
-- OVH baseline freeze: [`docs/reports/ovh_v1_baseline.md`](docs/reports/ovh_v1_baseline.md)
-- OVH top-3 reconcile note: [`docs/reports/ovh_top3_reconcile_note.md`](docs/reports/ovh_top3_reconcile_note.md)
-- OVH merge-gate policy: [`docs/reports/ovh_merge_gate_policy.md`](docs/reports/ovh_merge_gate_policy.md)
-- OVH calibration readout: [`docs/reports/ovh_calibration_readout.md`](docs/reports/ovh_calibration_readout.md)
-- OVH confidence-validation readout: [`docs/reports/ovh_confidence_validation_readout.md`](docs/reports/ovh_confidence_validation_readout.md)
-- OVH confidence defaulting readout: [`docs/reports/ovh_confidence_defaulting_readout.md`](docs/reports/ovh_confidence_defaulting_readout.md)
-- TTFR variance methodology v2: [`docs/reports/ttfr_variance_methodology_v2.md`](docs/reports/ttfr_variance_methodology_v2.md)
-- OVH plan reuse prototype readout: [`docs/reports/ovh_plan_reuse_prototype_readout.md`](docs/reports/ovh_plan_reuse_prototype_readout.md)
-- OVH Gate P policy: [`docs/reports/ovh_gate_p_policy.md`](docs/reports/ovh_gate_p_policy.md)
-- OVH persistent executor prototype plan: [`docs/reports/ovh_persistent_executor_prototype_plan.md`](docs/reports/ovh_persistent_executor_prototype_plan.md)
-- OVH persistent executor prototype readout: [`docs/reports/ovh_persistent_executor_prototype_v1.md`](docs/reports/ovh_persistent_executor_prototype_v1.md)
-- OVH Gate S policy: [`docs/reports/ovh_gate_s_policy.md`](docs/reports/ovh_gate_s_policy.md)
-- OVH session runner prototype plan: [`docs/reports/ovh_session_runner_prototype_plan.md`](docs/reports/ovh_session_runner_prototype_plan.md)
-- OVH session runner prototype readout: [`docs/reports/ovh_session_runner_prototype_v1.md`](docs/reports/ovh_session_runner_prototype_v1.md)
-- OVH embedded session client readout: [`docs/reports/ovh_embedded_session_client_v1.md`](docs/reports/ovh_embedded_session_client_v1.md)
-- Evidence package index: [`docs/reports/portfolio_index.md`](docs/reports/portfolio_index.md)
-- How to review this project: [`docs/reports/how_to_review_this_project.md`](docs/reports/how_to_review_this_project.md)
-- Technical report v0.1: [`docs/reports/quantum_workload_atlas_v0_1_report.md`](docs/reports/quantum_workload_atlas_v0_1_report.md)
-- Evidence contract: [`docs/architecture/evidence_contract.md`](docs/architecture/evidence_contract.md)
-- Profiler signal taxonomy: [`docs/architecture/profiler_signal_taxonomy.md`](docs/architecture/profiler_signal_taxonomy.md)
-- Crossover calibration schema: [`docs/architecture/calibration_dataset_schema.md`](docs/architecture/calibration_dataset_schema.md)
-- Workload scale ladder: [`docs/architecture/workload_scale_ladder.md`](docs/architecture/workload_scale_ladder.md)
-- Current profiler-kernel taxonomy report: [`docs/reports/profiler_kernel_taxonomy_current_evidence.md`](docs/reports/profiler_kernel_taxonomy_current_evidence.md)
-- Current model-calibration report: [`docs/reports/model_calibration_current_evidence.md`](docs/reports/model_calibration_current_evidence.md)
-- Model calibration table: [`docs/reports/model_calibration_table.md`](docs/reports/model_calibration_table.md)
-- v0.2 crossover calibration skeleton: [`docs/reports/quantum_workload_atlas_v0_2_crossover_calibration.md`](docs/reports/quantum_workload_atlas_v0_2_crossover_calibration.md)
-- v0.2 release notes: [`docs/reports/v0_2_crossover_release_notes.md`](docs/reports/v0_2_crossover_release_notes.md)
-- Public evidence catalog: [`docs/reports/public_evidence_catalog.md`](docs/reports/public_evidence_catalog.md), [`docs/reports/public_evidence_catalog.csv`](docs/reports/public_evidence_catalog.csv)
-- Experiment card template: [`docs/experiments/experiment_card_template.md`](docs/experiments/experiment_card_template.md)
-- Launch-overhead counterfactual: [`docs/experiments/launch_overhead_counterfactual.md`](docs/experiments/launch_overhead_counterfactual.md)
-- v0.1 release notes: [`docs/reports/v0_1_first_real_profiler_slice_release_notes.md`](docs/reports/v0_1_first_real_profiler_slice_release_notes.md)
-- Next PR roadmap: [`docs/reports/next_pr_roadmap.md`](docs/reports/next_pr_roadmap.md)
-- Project overview: [`PROJECT_OVERVIEW.md`](PROJECT_OVERVIEW.md)
-- GCP A100 portability lane: [`docs/reports/gcp_a100_portability_index.md`](docs/reports/gcp_a100_portability_index.md)
-- GCP A100 acceptance gate: [`docs/runbooks/gcp_a100_acceptance_gate.md`](docs/runbooks/gcp_a100_acceptance_gate.md)
-- Accelerator lab architecture: [`docs/architecture/accelerator_lab_architecture.md`](docs/architecture/accelerator_lab_architecture.md)
-- Tiny-MNK sidecar lab: [`sidecars/tiny_mnk_lab/README.md`](sidecars/tiny_mnk_lab/README.md)
-- Canonical OVH rerun guide: [`docs/runbooks/ovh_cu13_real_execution.md`](docs/runbooks/ovh_cu13_real_execution.md)
-- Local 6GB preflight runbook: [`docs/runbooks/local_6gb_preflight.md`](docs/runbooks/local_6gb_preflight.md)
-- Run triage runbook: [`docs/runbooks/run_triage.md`](docs/runbooks/run_triage.md)
-- Hyperstack crossover campaign runbook: [`docs/runbooks/hyperstack_crossover_campaign.md`](docs/runbooks/hyperstack_crossover_campaign.md)
-- Post-run ingestion runbook: [`docs/runbooks/post_run_ingestion.md`](docs/runbooks/post_run_ingestion.md)
-- Launch-overhead counterfactual runbook: [`docs/runbooks/launch_overhead_counterfactual_runbook.md`](docs/runbooks/launch_overhead_counterfactual_runbook.md)
-- OVH persistent executor runbook: [`docs/runbooks/ovh_persistent_executor.md`](docs/runbooks/ovh_persistent_executor.md)
-- OVH session runner runbook: [`docs/runbooks/ovh_session_runner.md`](docs/runbooks/ovh_session_runner.md)
-- OVH embedded session client runbook: [`docs/runbooks/ovh_embedded_session_client.md`](docs/runbooks/ovh_embedded_session_client.md)
-- Evidence package demo runbook: [`docs/runbooks/portfolio_demo.md`](docs/runbooks/portfolio_demo.md)
-- Canonical OVH session summary: [`docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md`](docs/runbooks/profiler_ovh_gra9_rtx5000_28_session.md)
-- Generic profiler-host runbook: [`docs/runbooks/profiler_linux_host.md`](docs/runbooks/profiler_linux_host.md)
-- GCP Batch GPU sweeps roadmap: [`docs/runbooks/gcp_batch_gpu_sweeps.md`](docs/runbooks/gcp_batch_gpu_sweeps.md)
-- GCP TPU JAX workloads roadmap: [`docs/runbooks/gcp_tpu_jax_workloads.md`](docs/runbooks/gcp_tpu_jax_workloads.md)
-- TPU sister-workload lane: [`docs/architecture/tpu_sister_workload_lane.md`](docs/architecture/tpu_sister_workload_lane.md)
-- Storage management runbook: [`docs/runbooks/storage_management.md`](docs/runbooks/storage_management.md)
-- Known local-host blockers: [`docs/known_limitations/profiler_host_blockers.md`](docs/known_limitations/profiler_host_blockers.md)
+- [Public release audit](docs/reports/public_release_audit.md) and [canonical evidence index](docs/reports/first_real_profiler_slice_index.md).
+- [Evidence contract](docs/architecture/evidence_contract.md), [profiler signal taxonomy](docs/architecture/profiler_signal_taxonomy.md), and [kernel taxonomy report](docs/reports/profiler_kernel_taxonomy_current_evidence.md).
+- [Model calibration table](docs/reports/model_calibration_table.md) and [historical capability audit](docs/reports/current_state_truth_pass.md).
+- [Experiment card template](docs/experiments/experiment_card_template.md) and [launch-overhead counterfactual](docs/experiments/launch_overhead_counterfactual.md).
+- [GCP A100 acceptance gate](docs/runbooks/gcp_a100_acceptance_gate.md) and [future TPU sister-workload design](docs/architecture/tpu_sister_workload_lane.md).
+- [v0.1 release notes](docs/reports/v0_1_first_real_profiler_slice_release_notes.md), [v0.2 release notes](docs/reports/v0_2_crossover_release_notes.md), and [staged roadmap](docs/reports/next_pr_roadmap.md).
 
-## Repository Notes
+</details>
 
-- The public project name is **Quantum Workload Atlas**; the stable Python package and CLI remain `aqs` for compatibility.
-- Nsight Compute profiling now supports `python -m aqs profile ncu --profile-mode basic|diagnostic|deep`, backed by `configs/profiling/ncu_metric_sets.yaml`.
-- The measured repeat-ROI pass on the OVH host kept autotune conservative; the dry-run suggestion to lower thresholds to `{2, 2}` was not promoted.
-- CUDA Graphs were measured on the OVH host, but capture failed on the default (legacy) stream, so the repo does not claim graph speedups.
-- `source_format: cudaq` is now implemented through an adapter-backed path: `source.loader: cudaq_python_file` must export `aqs_cudaq_program()`, and today that path normalizes and plans structurally but does not claim real measured CUDA-Q execution.
-- The tiny-MNK sidecar now has measured benchmark and Nsight Compute outputs, but it is a shape-isolation lab and not a parity proxy for cuTensorNet's internal kernel family.
-- Confidence-aware validation is now the default reporting surface for planner validation summaries, but the current OVH evidence still does not justify a planner retune.
-- Explicit reusable plan bundles are now available as an opt-in performance path for `aqs tnep execute`, but the current OVH evidence shows only modest low-repeat amplitude CLI wins and does not change any ranking or calibration claim.
-- Persistent execution is now a separate local experimental performance path behind `persistent-executor` and Gate P; on the canonical OVH trio it cut warm bundle-hit CLI wall by about `1.48 s` per request while keeping selected-plan identity, correctness, and compatibility strict.
-- The new session runner is another local experimental performance path behind Gate S; on the same OVH trio it cut the remaining warm persistent CLI wall from about `653-672 ms` down to about `51-56 ms` per request with no plan-id drift, no fallback, and no ranking implication.
-- The embedded session client now packages that same OVH fast path as a reusable local Python API; on the canonical trio it stayed in the same regime at about `51-57 ms` per request for existing-worker sessions and about `47-52 ms` with autospawn, again with no plan-id drift, no fallback, and no ranking implication.
-- Most of `artifacts/` and all of `release-assets/` are intentionally ignored so local reruns do not pollute the public tree. Small tracked truth-pass fixtures under `artifacts/truth_pass/` are the current exception.
-- `ovh.conf.example` documents the expected OVH client shape. Real credentials must live outside git.
+[License](LICENSE)

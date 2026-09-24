@@ -101,3 +101,5 @@ jobs:
       - name: Core smoke tests
         run: |
           make test-core
+      - name: Public checks
+        run: bash scripts/public_check.sh

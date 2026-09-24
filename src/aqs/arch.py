@@ -112,6 +112,9 @@ def _candidate_profile_summary_paths(payload_path: Path, payload: dict[str, Any]
 
 
 def _load_adjacent_profile_summary(payload_path: Path, payload: dict[str, Any]) -> dict[str, Any] | None:
+    run_id = (payload.get("execution_run") or {}).get("run_id")
+    if not isinstance(run_id, str) or not run_id.strip():
+        return None
     for candidate in _candidate_profile_summary_paths(payload_path, payload):
         if not candidate.exists() or not candidate.is_file():
             continue
@@ -121,7 +124,8 @@ def _load_adjacent_profile_summary(payload_path: Path, payload: dict[str, Any]) 
         except Exception:
             continue
         summary = _extract_profile_summary(loaded)
-        if summary:
+        # A nearby filename is not evidence that two records describe one run.
+        if summary and summary.get("run_id") == run_id:
             return summary
     return None
 
@@ -146,6 +150,8 @@ def analyze_execution_payload(payload: dict[str, Any], *, top_k: int = 3) -> dic
         profile = {}
     if not isinstance(execution_detail, dict):
         execution_detail = {}
+    if profile.get("run_id") is not None and profile["run_id"] != run.get("run_id"):
+        raise ArchAnalysisError("profile summary run_id does not match execution_run.run_id")
 
     derived = profile.get("derived_signals_json") or execution_detail.get("derived_signals_json") or {}
     phase_times = profile.get("nvtx_phase_times_json") or execution_detail.get("phase_times") or {}
