@@ -1,50 +1,40 @@
-# Quantum Workload Atlas Project Overview
+# Quantum Workload Atlas — project overview
 
-Quantum Workload Atlas is a profiler-backed evidence system for quantum tensor-network workloads on accelerators. It connects workload structure, exact-TN planning, real cuQuantum execution, Nsight evidence, model calibration, and architecture-facing recommendations.
+Quantum Workload Atlas (QWA) is a Python toolkit for studying the execution cost of quantum tensor-network workloads. The repository is named `quantum-workload-architecture`; its package and command-line interface are named `aqs`.
 
-## Released Slice
+The engineering question is practical: **is a workload spending time on useful contraction work, on finding a plan, or on preparing and invoking the execution?** The project records enough context to inspect that distinction rather than reporting an unexplained timing number.
 
-**v0.1 First Real Profiler-Backed Slice** freezes the first public evidence package around the OVH Tier 3 profiler-backed exact-TN result.
+## Engineering scope
 
-- Release: [v0.1-first-real-profiler-slice](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.1-first-real-profiler-slice)
-- Canonical result: OVH RTX 5000 `real_dense_ring6_batched`.
-- Claim boundary: GCP A100 remains pending until confirmed A100 artifacts are pinned.
+The pipeline validates workload and system manifests, normalizes supported inputs, probes tensor-network structure, proposes plans, runs the implemented single-GPU cuTensorNet path, checks numerical output, and combines execution timings with reduced Nsight evidence. Reports retain unsupported cases, failed probes, prediction errors, and negative experiments.
 
-## Main Result
+The project builds the workflow, measurement, analysis, and reusable execution-session layers around existing numerical libraries. It does not implement cuTensorNet itself, a new quantum algorithm, or accelerator hardware.
 
-```text
-real_dense_ring6_batched -> cuquantum_tensornet_gpu -> Nsight Compute summary -> launch_overhead nomination
-```
+## What has been measured
 
-Evidence starts here:
+**Canonical profiler-backed slice.** On OVH Quadro RTX 5000, `real_dense_ring6_batched` has load/conversion/postprocessing equal to 21.86% of its recorded phase time. The associated analysis nominates `launch_overhead`. This is a hypothesis supported by measured phases and a real profile, not a measured speedup or an exhaustive hardware diagnosis.
 
-- How to review this project: [docs/reports/how_to_review_this_project.md](docs/reports/how_to_review_this_project.md)
-- Public release audit: [docs/reports/public_release_audit.md](docs/reports/public_release_audit.md)
-- Public evidence index: [docs/reports/first_real_profiler_slice_index.md](docs/reports/first_real_profiler_slice_index.md)
-- Evidence contract: [docs/architecture/evidence_contract.md](docs/architecture/evidence_contract.md)
-- Profiler signal taxonomy: [docs/architecture/profiler_signal_taxonomy.md](docs/architecture/profiler_signal_taxonomy.md)
-- Current profiler-kernel taxonomy report: [docs/reports/profiler_kernel_taxonomy_current_evidence.md](docs/reports/profiler_kernel_taxonomy_current_evidence.md)
-- Evidence catalog: [docs/reports/public_evidence_catalog.md](docs/reports/public_evidence_catalog.md)
-- Technical report: [docs/reports/quantum_workload_atlas_v0_1_report.md](docs/reports/quantum_workload_atlas_v0_1_report.md)
-- Calibration report: [docs/reports/model_calibration_current_evidence.md](docs/reports/model_calibration_current_evidence.md)
-- Calibration table: [docs/reports/model_calibration_table.md](docs/reports/model_calibration_table.md)
-- Crossover calibration schema: [docs/architecture/calibration_dataset_schema.md](docs/architecture/calibration_dataset_schema.md)
-- Workload scale ladder: [docs/architecture/workload_scale_ladder.md](docs/architecture/workload_scale_ladder.md)
-- v0.2 crossover calibration skeleton: [docs/reports/quantum_workload_atlas_v0_2_crossover_calibration.md](docs/reports/quantum_workload_atlas_v0_2_crossover_calibration.md)
-- v0.2 release notes: [docs/reports/v0_2_crossover_release_notes.md](docs/reports/v0_2_crossover_release_notes.md)
-- Local 6GB preflight runbook: [docs/runbooks/local_6gb_preflight.md](docs/runbooks/local_6gb_preflight.md)
-- Run triage runbook: [docs/runbooks/run_triage.md](docs/runbooks/run_triage.md)
-- Experiment card template: [docs/experiments/experiment_card_template.md](docs/experiments/experiment_card_template.md)
-- Launch-overhead counterfactual: [docs/experiments/launch_overhead_counterfactual.md](docs/experiments/launch_overhead_counterfactual.md)
-- v0.1 release notes: [docs/reports/v0_1_first_real_profiler_slice_release_notes.md](docs/reports/v0_1_first_real_profiler_slice_release_notes.md)
-- Next PR roadmap: [docs/reports/next_pr_roadmap.md](docs/reports/next_pr_roadmap.md)
-- TPU sister-workload lane: [docs/architecture/tpu_sister_workload_lane.md](docs/architecture/tpu_sister_workload_lane.md)
+**Warm session experiment.** On three workloads on the OVH host, the recorded same-workload medians fall from 653–672 ms through the persistent CLI to 51–56 ms through an existing-worker session. This comparison concerns warm request wall time. It excludes cold worker startup and does not establish faster GPU kernels. The summary records unchanged plan selection, no correctness drift, and no fallback.
 
-## What To Notice
+The [measured results](docs/reports/measured_results.md) provide exact values, denominators, source files, and limitations. Those two experiments must not be presented as one controlled before/after experiment.
 
-- Real `cuquantum_tensornet_gpu` execution is tracked with accuracy checks.
-- Nsight Systems/Compute artifacts are reduced into structured summaries.
-- The architecture nomination uses `real_profiler_analysis`, not synthetic scoring.
-- Prediction-error ratios are visible instead of hidden.
-- The GCP A100 lane is still pending; the June 2026 GCP draft was L4, not A100.
-- The local NVIDIA 6GB lane is preflight/dev only and cannot support public performance claims.
+## Current release and limits
+
+The latest project release is [v0.2-crossover-calibration](https://github.com/CarlosArmeroMoneo/quantum-workload-architecture/releases/tag/v0.2-crossover-calibration), published June 8, 2026. It adds calibration and preflight tools while retaining the earlier accepted OVH evidence. The historical `v0.5.0-evidence` tag identifies a raw-artifact package, not a newer project release.
+
+Real GPU execution is limited to single-GPU Qiskit/OpenQASM2 amplitude and batched-amplitude workloads. CUDA-Q is adapter-backed structural planning only. GCP A100 remains pending acceptance; local NVIDIA 6GB is preflight/dev only. H100, distributed GPU, Hyperstack, TPU/JAX, and QPU results are not established by this public package. The planner is not presented as a generally validated fastest-backend selector.
+
+## Review and reproduce
+
+Start with the [review guide](docs/reports/how_to_review_this_project.md), the [CPU quickstart](README.md#cpu-quickstart), and the [documentation index](docs/README.md). The CPU path checks workflow behavior, not historical GPU performance.
+
+<details>
+<summary>Supporting methodology</summary>
+
+- [Public release audit](docs/reports/public_release_audit.md) and [canonical evidence index](docs/reports/first_real_profiler_slice_index.md).
+- [Evidence contract](docs/architecture/evidence_contract.md), [profiler signal taxonomy](docs/architecture/profiler_signal_taxonomy.md), and [kernel taxonomy report](docs/reports/profiler_kernel_taxonomy_current_evidence.md).
+- [Model calibration table](docs/reports/model_calibration_table.md).
+- [Experiment card template](docs/experiments/experiment_card_template.md) and [launch-overhead counterfactual](docs/experiments/launch_overhead_counterfactual.md).
+- [v0.1 release notes](docs/reports/v0_1_first_real_profiler_slice_release_notes.md), [v0.2 release notes](docs/reports/v0_2_crossover_release_notes.md), and [staged roadmap](docs/reports/next_pr_roadmap.md).
+
+</details>

@@ -55,6 +55,7 @@ def test_analyze_execution_json_uses_adjacent_profile_summary_when_embedded_is_n
         'system_manifest': {'gpu_mem_gb': 15.0},
     }
     profile_summary = {
+        'run_id': 'run_real_adjacent',
         'profile_id': 'prof_adjacent',
         'profile_version': 'aqs.profile.real.v1',
         'profiler_kind': 'nsys',
