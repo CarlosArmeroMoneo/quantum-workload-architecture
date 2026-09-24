@@ -9,6 +9,8 @@ from urllib.parse import unquote, urlsplit
 
 import pytest
 
+from aqs import __version__
+
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_DOCS = (
     "README.md",
@@ -47,6 +49,7 @@ def test_project_release_and_package_names_are_explained():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "v0.5.0-evidence" in readme
     assert "historical evidence-archive tag" in readme
+    assert f"`aqs` reports `{__version__}`" in readme
 
 
 def test_canonical_result_card_matches_recorded_evidence():
@@ -94,15 +97,24 @@ def test_documented_cpu_workflow_writes_a_plan(tmp_path):
     pytest.importorskip("duckdb")
     manifest = "workloads/manifests/generated/dense_universal_smoke.yaml"
     system = "configs/systems/cpu_probe.yml"
+    strategy = "surrogate_only"
     output = tmp_path / "smoke.plan.json"
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert manifest in readme and system in readme
+    assert readme.count(f"--probe-strategy {strategy}") == 2
     commands = (
         ["scripts/init_db.py", "--db", str(tmp_path / "smoke.duckdb"), "--schema", "benchmarks/warehouse/schema.sql"],
         ["-m", "aqs", "manifest", "validate", "--mode", "implemented", manifest, system],
-        ["-m", "aqs", "tnep", "probe", "--manifest", manifest, "--probe-strategy", "structural_real"],
-        ["-m", "aqs", "tnep", "plan", "--manifest", manifest, "--system-manifest", system, "--probe-strategy", "structural_real", "--out", str(output)],
+        ["-m", "aqs", "tnep", "probe", "--manifest", manifest, "--probe-strategy", strategy],
+        ["-m", "aqs", "tnep", "plan", "--manifest", manifest, "--system-manifest", system, "--probe-strategy", strategy, "--out", str(output)],
     )
     for args in commands:
         completed = subprocess.run([sys.executable, *args], cwd=ROOT, capture_output=True, text=True, timeout=90)
         assert completed.returncode == 0, completed.stdout + completed.stderr
-    assert isinstance(_json(output), dict)
-    assert _json(output)
+        if args[:4] == ["-m", "aqs", "tnep", "probe"]:
+            probe = json.loads(completed.stdout)
+            assert probe["status"] == "success"
+            assert probe["optimizer_cost"] is not None
+    plan = _json(output)
+    assert plan["probe_id"]
+    assert plan["candidates"]
